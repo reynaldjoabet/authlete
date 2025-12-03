@@ -6,23 +6,26 @@
   "apiPackage": "authlete.api",
   "modelPackage": "authlete.models",
   "invokerPackage": "authlete",
-  "globalProperties": { "apis": "", "models": "", "supportingFiles": "" },
-  "configOptions": {                    
-    "modelPropertyNaming": "camelCase",
-    "ensureUniqueParams": "true",
-    "sortParamsByRequiredFlag": "true",
-    "sortModelPropertiesByRequiredFlag": "true",
-    "allowUnicodeIdentifiers": "false",
-    "prependFormOrBodyParameters": "false",
-    "enumUnknownDefaultCase": "true",
-    "disallowAdditionalPropertiesIfNotPresent": "false",
-    "separateErrorChannel": "false",
-    "sttpClientVersion": "4.0.13",
-    "jsoniterVersion": "2.38.4"
+  "globalProperties": {
+    "apis": "",
+    "models": "",
+    "supportingFiles": ""
   },
+  "modelPropertyNaming": "camelCase",
+  "ensureUniqueParams": "true",
+  "sortParamsByRequiredFlag": "true",
+  "sortModelPropertiesByRequiredFlag": "true",
+  "allowUnicodeIdentifiers": "false",
+  "prependFormOrBodyParameters": "false",
+  "enumUnknownDefaultCase": "true",
+  "disallowAdditionalPropertiesIfNotPresent": "false",
+  "separateErrorChannel": "true",
+  "sttpClientVersion": "4.0.13",
+  "jsoniterVersion": "2.38.4",
   "additionalProperties": {
     "artifactVersion": "1.0.0",
-     "sourceFolder": "",
-     "apiNameSuffix" : ""
+    "sourceFolder": "",
+    "apiNameSuffix": "",
+    "hideGenerationTimestamp": "true"
   }
 }

@@ -1,7 +1,7 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "3.3.6"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion := "3.3.6"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
   // "-no-indent",
@@ -53,7 +53,7 @@ val sttpFs2 = sttp("fs2")
 val sttpCats = sttp("cats")
 val sttpCirce = sttp("circe")
 val sttpJsoniter = sttp("jsoniter")
-val sttpSlf4j=sttp("slf4j-backend")
+val sttpSlf4j = sttp("slf4j-backend")
 // https://mvnrepository.com/artifact/com.softwaremill.sttp.client4/async-http-client-backend-fs2
 val clientBackendFs2 = sttp("async-http-client-backend-fs2")
 val http4sBackend = sttp("http4s-backend")
@@ -65,8 +65,8 @@ val generate = taskKey[Unit]("generate code from APIs")
 
 lazy val root = (project in file("."))
   .settings(
-     name := "authlete",
-        libraryDependencies ++= Seq(
+    name := "authlete",
+    libraryDependencies ++= Seq(
       sttpCore,
       sttpJsoniter,
       http4sBackend,
@@ -85,12 +85,12 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % Version.logback % Runtime,
       "co.fs2" %% "fs2-core" % Version.fs2,
       munit % Test,
-						"qa.hedgehog" %% "hedgehog-sbt" % "0.13.0" % Test,
-						"qa.hedgehog" %% "hedgehog-core" % "0.13.0" % Test,
-						"qa.hedgehog" %% "hedgehog-runner" % "0.13.0" % Test,
+      "qa.hedgehog" %% "hedgehog-sbt" % "0.13.0" % Test,
+      "qa.hedgehog" %% "hedgehog-core" % "0.13.0" % Test,
+      "qa.hedgehog" %% "hedgehog-runner" % "0.13.0" % Test
     )
   )
-  //.dependsOn(`authlete-codegen` % "compile->compile;test->test")
+.dependsOn(`authlete-codegen` % "compile->compile")
 
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
@@ -100,6 +100,8 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // openApiGeneratorName := "sclala-sttp-client4",
     openApiModelNamePrefix := "",
     openApiModelNameSuffix := "",
+    openApiSkipOverwrite := Some(false),
+    openApiRemoveOperationIdPrefix := Some(true),
     openApiGenerateMetadata := Some(false),
     openApiGenerateMetadata := SettingDisabled,
     // Use the same JSON so CLI and SBT stay in sync
@@ -112,7 +114,7 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     openApiGenerateApiTests := SettingDisabled,
     openApiValidateSpec := SettingDisabled,
     // Fail fast on bad specs (optional but recommended)
-    //openApiValidateSpec := Some(true),
+    openApiValidateSpec := Some(true),
     // Compile / sourceGenerators += openApiGenerate.taskValue,
     (Compile / compile) := ((Compile / compile) dependsOn generate).value,
     // (Compile/compile) := ((compile in Compile) dependsOn openApiGenerate).value
@@ -144,4 +146,3 @@ populateTestDB := {
     .toTask(s"utils.PopulateTestDatabase")
     .value
 }
-
