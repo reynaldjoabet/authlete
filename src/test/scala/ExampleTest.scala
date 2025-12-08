@@ -402,6 +402,6 @@ object ExampleTest extends Properties {
       "list toString contains element",
       propListToStringContainsElements
     )
-  )
+  ).map(_.withTests(500))
 
 }

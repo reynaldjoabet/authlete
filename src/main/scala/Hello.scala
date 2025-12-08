@@ -1,4 +1,3 @@
-package example
 import authlete.api.*
 import authlete.models.*
 import authlete.api.AuthorizationEndpoint
@@ -19,15 +18,15 @@ object Hello extends Greeting with App {
 
   // If yout want to reuse some Transformation (and you don't want to write it by hand)
   // you can generate it with .derive:
-  implicit val transformer: Transformer[User, ApiUser] =
+  implicit lazy val transformer: Transformer[User, ApiUser] =
     Transformer.derive[User, ApiUser]
 
   // ...or with .define.customization.buildTransformer:
-  implicit val transformerWithOverrides: Transformer[ApiUser, User] =
-    Transformer
-      .define[ApiUser, User]
-      .withFieldConst(_.id, userID)
-      .buildTransformer
+  // implicit val transformerWithOverrides: Transformer[ApiUser, User] =
+  //   Transformer
+  //     .define[ApiUser, User]
+  //     .withFieldConst(_.id, userID)
+  //     .buildTransformer
 }
 
 trait Greeting {
