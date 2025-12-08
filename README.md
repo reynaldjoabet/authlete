@@ -274,3 +274,228 @@ Example error response:
 | `A001215` | Client is locked |
 | `A004101` | Invalid authorization request parameters |
 
+`Request Model → Domain → Domain Logic → Domain → Response Model`
+
+```sh
+HTTP JSON Request
+      ↓
+ models.requests.CreateUserRequest
+      ↓ (validation, mapping)
+ domain.User
+      ↓ (services, business logic)
+ domain.User
+      ↓ (mapping)
+ models.responses.UserResponse
+      ↓
+HTTP JSON Response
+```
+
+Convert models → domain for input, and domain → models for output.
+
+this is where we can make use of `Chimney`
+
+
+This authorization server implementation uses Authlete as its backend.
+What this means are (1) that the core part of the implementation of OAuth
+2.0 and OpenID Connect is not in the source tree of java-oauth-server
+but in the Authlete server on cloud, and (2) that authorization data such as
+access tokens, settings of the authorization server itself and settings of
+client applications are not stored in any local database but in the database
+on cloud. Therefore, to put it very simply, this implementation is just an
+intermediary between client applications and Authlete server as illustrated
+below.
+
+```
++--------+          +-------------------+          +----------+
+|        |          |                   |          |          |
+| Client | <------> | scala-oauth-server | <------> | Authlete |
+|        |          |                   |          |          |
++--------+          +-------------------+          +----------+
+```
+
+However, because Authlete focuses on **authorization** and does NOT do
+anything about end-user **authentication**, functions related to
+authentication are implemented in the source tree of java-oauth-server.
+Authlete provides Web APIs that can be used to write an authorization
+server
+
+### Authorization Endpoint
+
+  1. `boolean isUserAuthenticated()`
+  2. `long getUserAuthenticatedAt()`
+  3. `String getUserSubject()`
+  4. `String getAcr()`
+  5. `Response generateAuthorizationPage(AuthorizationResponse)`
+
+The most important method among the above is
+`generateAuthorizationPage()` The method is called to
+generate an authorization page. In contrast, the other methods are not so
+important because they are called only when an authorization request comes
+with a special request parameter `prompt=none`. If you have no mind to
+support `prompt=none`, you can leave your implementations of the methods
+empty. Details about `prompt=none` is written in
+`3.1.2.1. Authorization Request` of `OpenID Connect Core 1.0`
+
+
+### Authorization Page
+
+
+As mentioned, `generateAuthorizationPage()` is a method to generate an authorization page.Retrieve the data from the
+argument (an intance of `AuthorizationResponse` class which
+represents a response from Authlete's `/api/auth/authorization` API) and
+embeds them into an HTML template, `authorization.jsp`
+
+### Internationalization
+
+For the internationalization of the authorization page, you may take
+`ui_locales` parameter into consideration which may be contained in an
+authorization request. It is a new request parameter defined in `OpenID Connect Core 1.0`. The following is the description about the parameter
+excerpted from the specification.
+
+> OPTIONAL. End-User's preferred languages and scripts for the user interface,
+> represented as a space-separated list of BCP47 [RFC5646] language tag values,
+> ordered by preference. For instance, the value "fr-CA fr en" represents a
+> preference for French as spoken in Canada, then French (without a region
+> designation), followed by English (without a region designation). An error
+> SHOULD NOT result if some or all of the requested locales are not supported
+> by the OpenID Provider.
+
+You can get the value of `ui_locales` request paremeter as a `String` array
+by calling `getUiLocales()` method of `AuthorizationResponse` instance. Note
+that, however, you have to explicitly specify which UI locales to support
+using the management console ([Service Owner Console][13]) because
+`getUiLocales()` method returns only supported UI locales. In other words,
+it is ensured that the array returned by `getUiLocales()` never contains
+unsupported UI locales whatever `ui_locales` request parameter contains.
+
+
+#### Display type
+
+An authorization request may contain `display` request parameter to specify
+how to display the authorization page. It is a new request parameter defined
+in `OpenID Connect Core 1.0`. The predefined values of the request
+parameter are as follows. The descriptions in the table are excerpts from
+the specification.
+
+| Value | Description |
+|:------|:------------|
+| page  | The Authorization Server SHOULD display the authentication and consent UI consistent with a full User Agent page view. If the display parameter is not specified, this is the default display mode. |
+| popup | The Authorization Server SHOULD display the authentication and consent UI consistent with a popup User Agent window. The popup User Agent window should be of an appropriate size for a login-focused dialog and should not obscure the entire window that it is popping up over. |
+| touch | The Authorization Server SHOULD display the authentication and consent UI consistent with a device that leverages a touch interface. |
+| wap   | The Authorization Server SHOULD display the authentication and consent UI consistent with a "feature phone" type display. |
+
+You can get the value of `display` request parameter as an instance of
+`Display` enum by calling `getDisplay()` method of
+`AuthorizationResponse` instance. By default, all the display types are
+checked as supported in the management console (`Service Owner Console`),
+but you can uncheck them to declare some values are not supported. If an
+unsupported value is specified as the value of `display` request parameter,
+it will result in returning an `invalid_request` error to the client
+application that made the authorization request.
+
+### Authorization Decision Endpoint
+In an authorization page, an end-user decides either to grant permissions to
+the client application which made the authorization request or to deny the
+authorization request. An authorization server must be able to receive the
+decision and return a proper response to the client application according to
+the decision.
+
+The server receives the end-user's
+decision at `/api/authorization/decision`. 
+
+  1. `boolean isClientAuthorized()`
+  2. `long getUserAuthenticatedAt()`
+  3. `String getUserSubject()`
+  4. `String getAcr()`
+  5. `getUserClaim(String claimName, String languageTag)`
+
+
+### End-User Authentication
+
+Authlete does not care about how to authenticate an end-user at all.
+Instead, Authlete requires the subject of the authenticated end-user.
+`_Subject_` is a technical term in the area related to identity and it means
+a unique identifier. In a typical case, subjects of end-users are values of
+the primary key column or another unique column in a user database.
+
+When an end-user grants permissions to a client application, you have
+to let Authlete know the subject of the end-user. "if `isClientAuthorized()` returns `true`, then `getUserSubject()`
+must return the subject of the end-user."_
+
+For end-user authentication, server has `UserDao` class and
+`UserEntity` class. These two classes compose a dummy user database.
+Of course, you have to replace them with your own implementation to
+refer to your actual user database.
+
+### Token Endpoint
+The current definition of the interface has only one method named `authenticateUser`.
+This method is used to authenticate an end-user. However, the method is called
+only when the grant type of a token request is [Resource Owner Password
+Credentials]. Therefore, if you have no mind to support the grant type,
+you can leave your implementation of the method empty.
+
+### Introspection Endpoint
+
+[RFC 7662][35] (OAuth 2.0 Token Introspection) requires that the endpoint
+be protected in some way or other. 
+
+
+The difference between a Web Application Firewall (WAF) and an API Gateway comes down to their primary focus: the WAF is a security specialist, while the API Gateway is a traffic manager and general security enforcer
+
+An API Gateway is a traffic and policy enforcement layer that acts as a single point of entry for all API requests.
+
+- A client sends a request.
+- The WAF inspects the request for malicious code (e.g., SQL injection). If it's malicious, it's blocked.
+- The request passes to the API Gateway, which checks the JWT/API Key, enforces rate limits, and routes it to the correct microservice
+
+
+
+### API Gateway for Kubernetes
+
+Containers are the most efficient way to run microservices, and Kubernetes is the de facto standard for deploying and managing containerized applications and workloads.
+ ![alt text](api-gateway.svg)   
+
+### API Gateway and Ingress Gateway or Ingress Controller
+
+Ingress gateways and Ingress controllers are tools that implement the Ingress object, a part of the Kubernetes Ingress API, to expose applications running in Kubernetes to external clients. They manage communications between users and applications (user-to-service or north-south connectivity). However, the Ingress object by itself is very limited in its capabilities. For example, it does not support defining the security policies attached to it. As a result, many vendors create custom resource definitions (CRDs) to expand their Ingress controller’s capabilities and satisfy evolving customer needs and requirements, including use of the Ingress controller as an API gateway
+
+### API Gateway Is Not the Same as Gateway API
+
+While their names are similar, an API gateway is not the same as the Kubernetes Gateway API. The Kubernetes Gateway API is an open source project managed by the Kubernetes community to improve and standardize service networking in Kubernetes. The Gateway API specification evolved from the Kubernetes Ingress API to solve various challenges around deploying Ingress resources to expose Kubernetes apps in production, including the ability to define fine-grained policies for request processing and delegate control over configuration across multiple teams and roles.
+
+### Service Mesh vs API Gateway
+
+A service mesh is an infrastructure layer that controls communications across services in a Kubernetes cluster (service-to-service or east-west connectivity). The service mesh delivers core capabilities for services running in Kubernetes, including load balancing, authentication, authorization, access control, encryption, observability, and advanced patterns for managing connectivity (circuit braker, A/B testing, and blue-green and canary deployments), to ensure that communication is fast, reliable, and secure.
+
+Deployed closer to the apps and services, a service mesh can be used as a lightweight, yet comprehensive, distributed API gateway for service-to-service communications in Kubernetes.
+
+
+## Load Balancing
+
+```conf
+upstream f1-api{
+    server 10.1.1.4:8001
+    server 10.1.1.4:8002
+    sticky cookie srv_id expires=1h path=/ domain=example.com
+}
+
+```
+name of cookie is `srv_id`
+A cookie is created and sent with the response and the client sends the cookie every time it makes a request
+Each request is routed to the server which initially served the request
+
+So apparently, the load balancing algorithms still apply but only for the first request,subsequent requests rely on the cookie
+
+
+Each request routed to this endpoint is verified against the local `.jwk`
+```conf
+localtion=/api/f1/circuits{
+    auth_jwt on;
+    auth_jwt_key_file /etc/nginx/api_secret_jwt
+proxy_pass http://f1-1api
+}
+```
+Format a specific directory:
+`scala-cli fmt src`
+
+Check formatting without modifying files (“CI mode”): `scala-cli fmt --check .`
