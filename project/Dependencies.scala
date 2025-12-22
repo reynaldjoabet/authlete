@@ -9,14 +9,14 @@ object Dependencies {
     val sttp4 = "4.0.13"
     val doobie = "1.0.0-RC5"
     val flyway = "10.18.2"
-    val pureconfig = "0.17.6"
-    val logback = "1.5.6"
-    val slf4j = "2.0.16"
+    val pureconfig = "0.17.9"
+    val logback = "1.5.22"
+    val slf4j = "2.0.17"
     val scalacheck = "1.17.0"
     val fs2 = "3.12.2"
     val scribe = "3.17.0"
     val chimney = "1.8.2"
-
+    val munit = "1.2.1"
   }
   def http4s(artifact: String): ModuleID =
     "org.http4s" %% s"http4s-$artifact" % Version.http4s
@@ -46,7 +46,7 @@ object Dependencies {
   lazy val sttpScribeBackend = sttp("scribe-backend")
   lazy val generate = taskKey[Unit]("generate code from APIs")
 
-  lazy val munit = "org.scalameta" %% "munit" % "0.7.29"
+  lazy val munit = "org.scalameta" %% "munit" % Version.munit
 
   lazy val scribe = "com.outr" %% "scribe" % "3.16.1"
   lazy val scribeSlf4j = "com.outr" %% "scribe-slf4j" % "3.16.1"

@@ -72,7 +72,6 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     openApiModelNameSuffix := "",
     openApiSkipOverwrite := Some(false),
     openApiRemoveOperationIdPrefix := Some(true),
-    openApiGenerateMetadata := Some(false),
     openApiGenerateMetadata := SettingDisabled,
     // Use the same JSON so CLI and SBT stay in sync
     openApiConfigFile := ((Compile / baseDirectory).value / "config.json").getPath,

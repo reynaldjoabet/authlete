@@ -499,3 +499,47 @@ Format a specific directory:
 `scala-cli fmt src`
 
 Check formatting without modifying files (“CI mode”): `scala-cli fmt --check .`
+IdentityServer = Federation Gateway
+
+AccountController
+
+ws-federation: Uses WS-Federation and SAML to let external apps authenticate AD users
+
+`Public-facing: /authorize, /token, /userinfo, /jwks.json (must be reachable by users/clients)`
+
+```sh
+src/main/scala/com/example
+├─ api
+│  ├─ requests
+│  │  └─ CreateUserRequest.scala
+│  ├─ responses
+│  │  └─ UserResponse.scala
+│  ├─ endpoints
+│  │  └─ UserEndpoints.scala        // Tapir endpoints
+│  └─ routes
+│     └─ UserRoutes.scala           // Tapir -> http4s wiring
+├─ domain
+│  └─ model
+│     └─ User.scala
+├─ service
+│  └─ UserService.scala
+├─ handlers
+│  └─ UserHandler.scala
+└─ Main.scala
+build.sbt
+```
+
+API models (DTOs) — how data enters/leaves the system
+The database stores domain data (domain concepts), not API models.
+
+Most YubiKeys require a physical touch on the gold contact point to complete a request. This proves that a human is physically present and intends to log in. It cannot be triggered remotely by a hacker in another country
+
+During the FIDO2 handshake, the YubiKey checks the Origin (the URL) of the website. 
+
+Why Running as Root Is a Problem
+
+Even though Kubernetes provides a strong isolation model, it doesn’t make root privileges inside containers harmless. Running workloads as root leads to multiple issues:
+
+- Privilege escalation risks – if someone exploits a vulnerability or breaks out of the container, they can access the underlying node with root privileges.
+- Policy violations – clusters enforcing Pod Security Standards (PSS) or using policy engines like Kyverno, OPA Gatekeeper, or runtime tools like Falco will flag or block root containers.
+- Principle of least privilege violation – security best practice dictates that each workload should run with only the permissions it needs. Running as root violates this fundamental concept.

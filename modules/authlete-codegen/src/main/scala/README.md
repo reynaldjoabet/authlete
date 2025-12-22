@@ -2,7 +2,7 @@
 
 Authlete API
 - API version: 3.0.16
-    - Generator version: 7.17.0
+    - Generator version: 7.18.0
 
 Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the 
 platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to 
