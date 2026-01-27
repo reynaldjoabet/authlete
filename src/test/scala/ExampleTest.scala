@@ -1,23 +1,16 @@
-import hedgehog.runner.Prop
-import hedgehog.runner.example
-import hedgehog.runner.property
-import hedgehog.runner.Test
-import hedgehog.runner.SeedSource
-import hedgehog.runner.Properties
+import java.time.LocalDateTime
+import java.util.UUID
+
+import hedgehog.core.GenT
+import hedgehog.core.PropertyT
 import hedgehog.core.Seed
-import hedgehog.PropertyR
-import hedgehog.Range
-import hedgehog.Result
-import hedgehog.Gen
-import hedgehog.Property
-import hedgehog.Range
-import hedgehog.Size
-import hedgehog.forTupled
-import hedgehog.propertyT
-import hedgehog.Syntax
-import hedgehog.extra.CharacterOps
 import hedgehog.extra.ByteOps
+import hedgehog.extra.CharacterOps
 import hedgehog.extra.StringOps
+import hedgehog.forTupled
+import hedgehog.predef.sequence
+import hedgehog.predef.some
+import hedgehog.predef.traverse
 import hedgehog.predef.Applicative
 import hedgehog.predef.DecimalPlus
 import hedgehog.predef.EitherOps
@@ -25,31 +18,38 @@ import hedgehog.predef.Functor
 import hedgehog.predef.Identity
 import hedgehog.predef.Monad
 import hedgehog.predef.State
-import hedgehog.predef.sequence
-import hedgehog.predef.traverse
-import hedgehog.predef.some
+import hedgehog.propertyT
+import hedgehog.runner.example
+import hedgehog.runner.property
+import hedgehog.runner.Prop
+import hedgehog.runner.Properties
+import hedgehog.runner.SeedSource
+import hedgehog.runner.Test
 import hedgehog.sbt.Event
+import hedgehog.sbt.Framework
 import hedgehog.sbt.MessageOnlyException
 import hedgehog.sbt.Runner
 import hedgehog.sbt.SlaveRunner
-import hedgehog.sbt.Framework
 import hedgehog.sbt.Task
+import hedgehog.state.parallel
+import hedgehog.state.sequential
 import hedgehog.state.Action
 import hedgehog.state.Command
 import hedgehog.state.CommandIO
-import hedgehog.state.Environment
 import hedgehog.state.Context
+import hedgehog.state.Environment
 import hedgehog.state.EnvironmentError
 import hedgehog.state.Name
+import hedgehog.state.Parallel
 import hedgehog.state.Runner
 import hedgehog.state.Var
-import hedgehog.state.parallel
-import hedgehog.state.sequential
-import hedgehog.state.Parallel
-import hedgehog.core.PropertyT
-import java.util.UUID
-import java.time.LocalDateTime
-import hedgehog.core.GenT
+import hedgehog.Gen
+import hedgehog.Property
+import hedgehog.PropertyR
+import hedgehog.Range
+import hedgehog.Result
+import hedgehog.Size
+import hedgehog.Syntax
 
 object ExampleTest extends Properties {
 
@@ -58,11 +58,11 @@ object ExampleTest extends Properties {
   given genULID: Gen[UUID] = for {
     randomness <- Gen.bytes(Range.singleton(16))
     time <- Gen.long(
-      Range.linear(
-        LocalDateTime.now().toLocalTime().toNanoOfDay(),
-        LocalDateTime.now().toLocalTime().toNanoOfDay()
-      )
-    )
+              Range.linear(
+                LocalDateTime.now().toLocalTime().toNanoOfDay(),
+                LocalDateTime.now().toLocalTime().toNanoOfDay()
+              )
+            )
   } yield UUID.fromString(time.toHexString)
 
   given genInt: Gen[Int] = for {
@@ -72,21 +72,21 @@ object ExampleTest extends Properties {
   val boolGen: Gen[Boolean] = Gen.boolean
 
   private val seedSource = SeedSource.fromEnvOrTime()
-  private val seed = Seed.fromLong(seedSource.seed)
+  private val seed       = Seed.fromLong(seedSource.seed)
 
   def generateUUIDSection(counts: Int): GenT[String] =
     Gen.string(Gen.hexit, Range.singleton(counts))
 
   def generateUUID: GenT[String] =
     for {
-      first <- generateUUIDSection(8)
+      first  <- generateUUIDSection(8)
       second <- generateUUIDSection(4)
-      third <- generateUUIDSection(4)
-      four <- generateUUIDSection(4)
-      five <- generateUUIDSection(12)
+      third  <- generateUUIDSection(4)
+      four   <- generateUUIDSection(4)
+      five   <- generateUUIDSection(12)
     } yield List(first, second, third, four, five).mkString("-")
 
-  val intGen = Gen.int(Range.linear(0, 100))
+  val intGen  = Gen.int(Range.linear(0, 100))
   val listGen = Gen.list[Int](intGen, Range.linear(0, 100))
 
   def testReverse: Property =
@@ -94,10 +94,12 @@ object ExampleTest extends Properties {
       xs <- Gen.alpha.list(Range.linear(0, 100)).forAll
     } yield xs.reverse.reverse ==== xs
 
-  val listSize = 100
+  val listSize    = 100
   val elementSize = 100
+
   def hedgehogDoubles: List[Double] =
-    hedgehog.Gen
+    hedgehog
+      .Gen
       .list(
         hedgehog.Gen.double(hedgehog.Range.constant(0.0, 1.0)),
         hedgehog.Range.constant(0, listSize)
@@ -108,7 +110,8 @@ object ExampleTest extends Properties {
       .getOrElse(List.empty)
 
   def hedgehogIntListsOfSizeN: List[List[Int]] =
-    hedgehog.Gen
+    hedgehog
+      .Gen
       .int(hedgehog.Range.constant(Int.MinValue, Int.MaxValue))
       .list(hedgehog.Range.constant(0, elementSize))
       .list(hedgehog.Range.constant(0, listSize))
@@ -118,7 +121,8 @@ object ExampleTest extends Properties {
       .getOrElse(List.empty)
 
   def hedgehogStringsOfSizeN: List[String] =
-    hedgehog.Gen
+    hedgehog
+      .Gen
       .string(hedgehog.Gen.alpha, hedgehog.Range.constant(0, elementSize))
       .list(hedgehog.Range.constant(0, listSize))
       .run(hedgehog.Size(0), hedgehog.core.Seed.fromTime())
@@ -126,9 +130,10 @@ object ExampleTest extends Properties {
       ._2
       .getOrElse(List.empty)
 
-  private val smallIntGen = Gen.int(Range.linear(0, 10))
+  private val smallIntGen     = Gen.int(Range.linear(0, 10))
   private val nonEmptyListGen = Gen.list(intGen, Range.linear(1, 20))
-  private val smallListGen = Gen.list(intGen, Range.linear(0, 20))
+  private val smallListGen    = Gen.list(intGen, Range.linear(0, 20))
+
   private val eitherGen =
     Gen.element(Left("x"), List[Either[String, Int]](Right(1), Right(0)))
 
@@ -144,7 +149,7 @@ object ExampleTest extends Properties {
   def propSplitAtReconstructs: Property =
     for {
       xs <- smallListGen.forAll
-      n <- Gen.int(Range.linear(0, xs.length)).forAll
+      n  <- Gen.int(Range.linear(0, xs.length)).forAll
     } yield {
       val (l, r) = xs.splitAt(n)
       (l ++ r) ==== xs
@@ -156,7 +161,7 @@ object ExampleTest extends Properties {
       as <- smallListGen.forAll
       bs <- Gen.list(genInt, Range.linear(0, as.length)).forAll // length <= as
     } yield {
-      val zipped = as.zip(bs)
+      val zipped   = as.zip(bs)
       val (ua, ub) = zipped.unzip
       Result.all(
         List(
@@ -169,9 +174,7 @@ object ExampleTest extends Properties {
 //  flatten identity with map(identity)
   def propFlatMapIdentity: Property =
     for {
-      xss <- Gen
-        .list(Gen.list(intGen, Range.linear(0, 3)), Range.linear(0, 10))
-        .forAll
+      xss <- Gen.list(Gen.list(intGen, Range.linear(0, 3)), Range.linear(0, 10)).forAll
     } yield xss.flatMap(identity) ==== xss.flatten
 
 // Option -> toList / headOption / lastOption consistency
@@ -179,7 +182,7 @@ object ExampleTest extends Properties {
     for {
       xs <- smallListGen.forAll
     } yield {
-      val maybeHead = xs.headOption
+      val maybeHead  = xs.headOption
       val headAsList = maybeHead.toList
       Result.assert(headAsList.headOption == maybeHead)
     }
@@ -211,14 +214,14 @@ object ExampleTest extends Properties {
   def propTakeLargeIsWhole: Property =
     for {
       xs <- smallListGen.forAll
-      n <- Gen.int(Range.linear(xs.length, xs.length + 10)).forAll
+      n  <- Gen.int(Range.linear(xs.length, xs.length + 10)).forAll
     } yield xs.take(n) ==== xs
 
 // drop(n) when n >= size -> empty
   def propDropLargeIsEmpty: Property =
     for {
       xs <- smallListGen.forAll
-      n <- Gen.int(Range.linear(xs.length, xs.length + 10)).forAll
+      n  <- Gen.int(Range.linear(xs.length, xs.length + 10)).forAll
     } yield xs.drop(n).isEmpty ==== true
 
 // sliding with k==1 equals singletons
@@ -287,10 +290,10 @@ object ExampleTest extends Properties {
     import hedgehog.core.Seed
     val s1 = Seed.fromLong(123L)
     val s2 = Seed.fromLong(456L)
-    val g = Gen.list(genInt, Range.linear(0, 10))
-    val a = g.run(hedgehog.Size(0), s1).value._2
-    val b = g.run(hedgehog.Size(0), s1).value._2
-    val c = g.run(hedgehog.Size(0), s2).value._2
+    val g  = Gen.list(genInt, Range.linear(0, 10))
+    val a  = g.run(hedgehog.Size(0), s1).value._2
+    val b  = g.run(hedgehog.Size(0), s1).value._2
+    val c  = g.run(hedgehog.Size(0), s2).value._2
     (a == b) ==== true // same seed same output
   }
 
@@ -306,10 +309,11 @@ object ExampleTest extends Properties {
       xs <- smallListGen.forAll
     } yield {
       val s = xs.sorted
-      s.sliding(2).forall {
-        case Seq(a, b) => a <= b
-        case _         => true
-      } ==== true
+      s.sliding(2)
+        .forall {
+          case Seq(a, b) => a <= b
+          case _         => true
+        } ==== true
     }
 
 // zipWithIndex size equals list size and indices match
@@ -330,7 +334,7 @@ object ExampleTest extends Properties {
   def propSlidingSumRelation: Property =
     for {
       xs <- Gen.list(Gen.int(Range.linear(0, 5)), Range.linear(0, 20)).forAll
-      k <- Gen.int(Range.linear(1, 5)).forAll
+      k  <- Gen.int(Range.linear(1, 5)).forAll
     } yield {
       val windows = xs.sliding(k).map(_.sum).toList
       // every window sum >= 0 (since elements >=0)
@@ -366,9 +370,10 @@ object ExampleTest extends Properties {
     for {
       xs <- smallListGen.forAll
     } yield Result.assert(
-      xs.toString.contains(
-        xs.headOption.map(_.toString).getOrElse("")
-      ) || xs.isEmpty
+      xs.toString
+        .contains(
+          xs.headOption.map(_.toString).getOrElse("")
+        ) || xs.isEmpty
     )
 
   override lazy val tests = List(

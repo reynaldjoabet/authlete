@@ -2,9 +2,12 @@ package domain.models
 
 import java.net.URI
 import java.time.Instant
+
 import authlete.models.{JweAlg, JweEnc, JwsAlg}
 
-/** Immutable Scala model for ResourceServerEntity (Scala-friendly). */
+/**
+  * Immutable Scala model for ResourceServerEntity (Scala-friendly).
+  */
 final case class ResourceServer(
     id: String,
     secret: Option[String] = None,

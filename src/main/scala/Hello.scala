@@ -1,14 +1,17 @@
-import authlete.api.*
-import authlete.models.*
-import authlete.api.AuthorizationEndpoint
-import io.scalaland.chimney.dsl.*
 import java.util.UUID
+
+import authlete.api.*
+import authlete.api.AuthorizationEndpoint
+import authlete.models.*
+import io.scalaland.chimney.dsl.*
 import io.scalaland.chimney.Transformer
+
 object Hello extends Greeting with App {
+
   println(greeting)
 
   val userID: UUID = UUID.randomUUID()
-  val user: User = User(userID, "John", "Doe")
+  val user: User   = User(userID, "John", "Doe")
 
   // Use .transformInto[Type], when don't need to customize anything...:
   val apiUser = user.transformInto[ApiUser]

@@ -1,0 +1,201 @@
+version: "3.8"
+
+services:
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      # Use Docker secrets for passwords in production (see below)
+      POSTGRES_PASSWORD_FILE: /run/secrets/KEYCLOAK_DB_PASSWORD
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - sso-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER} -d ${KEYCLOAK_DB_NAME} || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    secrets:
+      - KEYCLOAK_DB_PASSWORD
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+
+  keycloak:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM quay.io/keycloak/keycloak:26.4
+        # Build with DB and metrics/health if you need them at build time
+        RUN /opt/keycloak/bin/kc.sh build --db=postgres --health-enabled=true --metrics-enabled=true
+    restart: unless-stopped
+    container_name: keycloak-prod
+    command:
+      - start
+      - --optimized
+      - --import-realm
+    # do NOT publish port 8080 to the host; Traefik will route to the internal container port
+    ports: []
+    environment:
+      # Admin (read from secrets in production)
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD_FILE: /run/secrets/KEYCLOAK_ADMIN_PASSWORD
+
+      # Health & metrics
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+
+      # Database (use DB URL without including password in env)
+      KC_DB_URL: ${KEYCLOAK_DB_URL}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD_FILE: /run/secrets/KEYCLOAK_DB_PASSWORD
+
+      # Hostname & proxy (HARDENED)
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}                    # e.g. keycloak.example.com
+      KC_HOSTNAME_STRICT: "true"
+      KC_HOSTNAME_STRICT_HTTPS: "true"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
+      # Let Traefik terminate TLS; Keycloak sees forwarded headers
+      KC_PROXY: edge
+      KC_PROXY_HEADERS: x-forwarded
+      # Keycloak should not advertise HTTP externally
+      KC_HTTP_ENABLED: "false"
+      KC_HTTPS_PORT: "8443"
+      # Disable interactive features you don't need:
+      KC_FEATURES: "admin-kcql" # example; only enable what's required
+    volumes:
+      - ./keycloak/realm-export.prod.json:/opt/keycloak/data/import/realm-export.json:ro
+      - ./keycloak/themes:/opt/keycloak/themes:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - sso-network-prod
+      - traefik-public
+      - chariot-group-network-prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      # Router: host based with TLS
+      - "traefik.http.routers.keycloak-prod.rule=Host(`${KEYCLOAK_HOSTNAME}`)"
+      - "traefik.http.routers.keycloak-prod.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-prod.tls.certresolver=letsencrypt"
+      # Ensure Traefik forwards the scheme and port; Keycloak strict hostname expects https
+      - "traefik.http.routers.keycloak-prod.middlewares=keycloak-headers"
+      - "traefik.http.routers.keycloak-prod.service=keycloak-prod-svc"
+      # Service: point to Keycloak internal port (8080 when Keycloak runs HTTP internally)
+      - "traefik.http.services.keycloak-prod-svc.loadbalancer.server.port=8080"
+      # Middleware to set forwarded headers (we already set KC_PROXY and KC_PROXY_HEADERS)
+      - "traefik.http.middlewares.keycloak-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.keycloak-headers.headers.customrequestheaders.X-Forwarded-Port=443"
+    healthcheck:
+      # Lightweight HTTP check against the internal health endpoint
+      test: ["CMD-SHELL", "wget -qO- --timeout=5 http://localhost:8080/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    secrets:
+      - KEYCLOAK_ADMIN_PASSWORD
+      - KEYCLOAK_DB_PASSWORD
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2048M
+
+  keycloak-config:
+    image: quay.io/keycloak/keycloak:26.4
+    container_name: keycloak-config-prod
+    restart: "no"
+    environment:
+      KEYCLOAK_SMTP_HOST: ${SMTP_HOST}
+      KEYCLOAK_SMTP_PORT: ${SMTP_PORT}
+      KEYCLOAK_SMTP_USER: ${SMTP_USER}
+      KEYCLOAK_SMTP_PASSWORD_FILE: /run/secrets/KEYCLOAK_SMTP_PASSWORD
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
+      KEYCLOAK_SMTP_FROM_DISPLAY_NAME: ${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}
+      KEYCLOAK_SMTP_REPLY_TO: ${KEYCLOAK_SMTP_REPLY_TO}
+      KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME: ${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_EMAIL: ${KEYCLOAK_ADMIN_EMAIL}
+      KEYCLOAK_ADMIN_PASSWORD_FILE: /run/secrets/KEYCLOAK_ADMIN_PASSWORD
+      KEYCLOAK_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
+      KEYCLOAK_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
+    networks:
+      - sso-network-prod
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      set -e
+      RETRIES=30; COUNT=0
+      until /opt/keycloak/bin/kcadm.sh config credentials --server http://keycloak:8080 --realm master --user "${KEYCLOAK_ADMIN_USER}" --password "$(cat /run/secrets/KEYCLOAK_ADMIN_PASSWORD)"; do
+        COUNT=$((COUNT+1))
+        if [ "$COUNT" -ge "$RETRIES" ]; then
+          echo "Timeout waiting for Keycloak authentication" >&2
+          exit 1
+        fi
+        echo "Keycloak not ready yet, retrying... ($COUNT/$RETRIES)"
+        sleep 5
+      done
+      # Configure SMTP and admin user (same logic as you had)
+      /opt/keycloak/bin/kcadm.sh update realms/chariot -s 'smtpServer={}'
+      /opt/keycloak/bin/kcadm.sh update realms/chariot \
+        -s smtpServer.host="${KEYCLOAK_SMTP_HOST}" \
+        -s smtpServer.port="${KEYCLOAK_SMTP_PORT}" \
+        -s smtpServer.from="${KEYCLOAK_SMTP_FROM}" \
+        -s smtpServer.fromDisplayName="${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}" \
+        -s smtpServer.replyTo="${KEYCLOAK_SMTP_REPLY_TO}" \
+        -s smtpServer.replyToDisplayName="${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}" \
+        -s smtpServer.auth=true \
+        -s smtpServer.user="${KEYCLOAK_SMTP_USER}" \
+        -s smtpServer.password="$(cat /run/secrets/KEYCLOAK_SMTP_PASSWORD)" \
+        -s smtpServer.starttls=true \
+        -s smtpServer.ssl=true
+      # create admin user if missing...
+      if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="${KEYCLOAK_ADMIN_EMAIL}" | grep -q '"id"'; then
+        echo "Admin user already exists"
+      else
+        /opt/keycloak/bin/kcadm.sh create users -r chariot \
+          -s username="${KEYCLOAK_ADMIN_USER}" \
+          -s email="${KEYCLOAK_ADMIN_EMAIL}" \
+          -s firstName="${KEYCLOAK_ADMIN_FIRSTNAME}" \
+          -s lastName="${KEYCLOAK_ADMIN_LASTNAME}" \
+          -s enabled=true \
+          -s emailVerified=true
+        USER_ID=$(/opt/keycloak/bin/kcadm.sh get users -r chariot -q email="${KEYCLOAK_ADMIN_EMAIL}" | grep -o '"id" : "[^"]*"' | cut -d'"' -f4)
+        /opt/keycloak/bin/kcadm.sh update users/${USER_ID}/reset-password -r chariot -s type=password -s value="$(cat /run/secrets/KEYCLOAK_ADMIN_PASSWORD)" -s temporary=false -n
+      fi
+      echo "Configuration completed successfully"
+    secrets:
+      - KEYCLOAK_ADMIN_PASSWORD
+      - KEYCLOAK_SMTP_PASSWORD
+
+volumes:
+  keycloak_db_data:
+
+networks:
+  sso-network-prod:
+    driver: bridge
+  traefik-public:
+    external: true
+  chariot-group-network-prod:
+    external: true
+
+secrets:
+  KEYCLOAK_DB_PASSWORD:
+    file: ./secrets/keycloak_db_password.txt
+  KEYCLOAK_ADMIN_PASSWORD:
+    file: ./secrets/keycloak_admin_password.txt
+  KEYCLOAK_SMTP_PASSWORD:
+    file: ./secrets/keycloak_smtp_password.txt

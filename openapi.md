@@ -47,3 +47,73 @@ you can override the templates that produce method names:
 - Point sbt at your template dir:
 
 `openApiTemplateDir := baseDirectory.value / "project" / "openapi-templates" / "scala"`
+
+
+```sh
+http/
+└── src/main/scala/com/acme/http/
+    ├── server/
+    │   ├── HttpServer.scala
+    │   ├── ServerBuilder.scala
+    │   └── ServerResources.scala
+    │
+    ├── routes/
+    │   ├── HealthRoutes.scala
+    │   ├── AuthRoutes.scala
+    │   ├── BillingRoutes.scala
+    │   ├── PaymentsRoutes.scala
+    │   └── AdminRoutes.scala
+    │
+    ├── controllers/
+    │   ├── AuthController.scala
+    │   ├── BillingController.scala
+    │   ├── PaymentsController.scala
+    │   └── AdminController.scala
+    │
+    ├── middleware/
+    │   ├── ErrorMappingMiddleware.scala
+    │   ├── AuthMiddleware.scala
+    │   ├── CorrelationIdMiddleware.scala
+    │   ├── LoggingMiddleware.scala
+    │   ├── MetricsMiddleware.scala
+    │   └── RateLimitMiddleware.scala
+    │
+    ├── codecs/
+    │   ├── HttpJsonCodecs.scala
+    │   ├── QueryParamCodecs.scala
+    │   └── HeaderCodecs.scala
+    │
+    ├── responses/
+    │   ├── ErrorResponse.scala
+    │   ├── SuccessResponse.scala
+    │   └── PaginationResponse.scala
+    │
+    ├── requests/
+    │   ├── LoginRequest.scala
+    │   ├── PaymentRequest.scala
+    │   └── BillingRequest.scala
+    │
+    ├── security/
+    │   ├── ScopeAuthorizer.scala
+    │   ├── TokenExtractor.scala
+    │   ├── DPoPValidator.scala
+    │   └── JwtValidator.scala
+    │
+    ├── mapping/
+    │   ├── DomainToHttp.scala
+    │   ├── HttpToDomain.scala
+    │   └── ErrorToHttp.scala
+    │
+    └── util/
+        ├── HttpLogging.scala
+        ├── HttpErrors.scala
+        └── ResponseHelpers.scala
+```
+
+```sh
+jps | grep Bloop | awk '{print $1}'
+34689
+34253
+2773
+34239
+```

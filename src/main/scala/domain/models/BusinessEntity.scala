@@ -1,10 +1,10 @@
 package domain.models
 
-/** BusinessEntity
+/**
+  * BusinessEntity
   *
   * @see
-  *   <a
-  *   href="https://openbanking-brasil.github.io/areadesenvolvedor/#tocS_BusinessEntity"
+  *   <a href="https://openbanking-brasil.github.io/areadesenvolvedor/#tocS_BusinessEntity"
   *   >BusinessEntity</a>
   */
 

@@ -1,8 +1,11 @@
 import java.time.LocalDate
 import java.time.LocalDateTime
+
 import scala.util.Try
+
 import cats.effect.kernel.implicits
 import cats.implicits.catsSyntaxEither
+
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
@@ -44,7 +47,8 @@ package object models {
       .withIsStringified(true)
       // .withDiscriminatorFieldName(Some("$type"))
       .withAdtLeafClassNameMapper(
-        JsonCodecMaker.enforce_snake_case
+        JsonCodecMaker
+          .enforce_snake_case
           .andThen(_.toUpperCase())
           //  JsonCodecMaker.simpleClassName.andThen(name => name.replaceAll("([a-z])([A-Z])", "$1_$2")
           //                              .toUpperCase())
@@ -60,7 +64,8 @@ package object models {
       .withDiscriminatorFieldName(None)
       .withMapAsArray(true)
 
-  /** A wrapper for JSON parsing errors.
+  /**
+    * A wrapper for JSON parsing errors.
     */
   opaque type ParsingError = String
   object ParsingError {
@@ -74,7 +79,8 @@ package object models {
 
     extension (payload: String) {
 
-      /** Deserializes `A` from the provided JSON string.
+      /**
+        * Deserializes `A` from the provided JSON string.
         */
       def fromJson[A](using JsonValueCodec[A]): Either[ParsingError, A] =
         Try(readFromString[A](payload)).toEither.leftMap(ParsingError.apply)
@@ -83,7 +89,8 @@ package object models {
 
     extension [A](obj: A) {
 
-      /** Serializes `A` to a JSON string.
+      /**
+        * Serializes `A` to a JSON string.
         */
       def toJson(using JsonValueCodec[A]): String = writeToString[A](obj)
     }
