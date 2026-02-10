@@ -1840,3 +1840,17 @@ Identity scopes
 Scopes that are all about what information the client wants to know about the user
 Access scopes
 Scopes that represent what the client wants to have access to.
+
+```sbt
+ThisBuild / serverConnectionType := ConnectionType.Tcp
+//[info] sbt server started at tcp://127.0.0.1:5689
+```
+
+```scala
+object ConnectionType {
+  
+  /** This uses Unix domain socket on POSIX, and named pipe on Windows. */
+  case object Local extends ConnectionType
+  case object Tcp extends ConnectionType
+}
+```

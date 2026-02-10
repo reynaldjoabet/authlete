@@ -16,6 +16,6 @@ object Providers extends App {
 
   trait B
 
-  def f:A&B= {???}
+  def f: A & B = ???
 
 }

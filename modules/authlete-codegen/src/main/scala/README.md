@@ -6,12 +6,12 @@ Authlete API
 
 Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the 
 platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to 
-build powerful OAuth 2.0 and OpenID Connect servers. 🚀
+build powerful OAuth 2.0 and OpenID Connect servers.
 
 At a high level, the Authlete API is grouped into two categories:
 
-- **Management APIs**: Enable you to manage services and clients. 🔧
-- **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers. 🔐
+- **Management APIs**: Enable you to manage services and clients.
+- **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers.
 
 ## 🌐 API Servers
 
@@ -73,8 +73,8 @@ curl -X GET https://us.authlete.com/api/service/get/list \\
 
 If you're new to Authlete or want to see sample implementations, these resources will help you get started:
 
-- [🚀 Getting Started with Authlete](https://www.authlete.com/developers/getting_started/)
-- [🔑 From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)
+- [Getting Started with Authlete](https://www.authlete.com/developers/getting_started/)
+- [From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)
 
 ## 🛠 Contact Us
 
@@ -152,19 +152,27 @@ Class | Method | HTTP request | Description
 *CIBA* | **authenticationCompleteApi** | **POST** /api/${serviceIdPathParam}/backchannel/authentication/complete | Complete Backchannel Authentication
 *CIBA* | **authenticationFailApi** | **POST** /api/${serviceIdPathParam}/backchannel/authentication/fail | Fail Backchannel Authentication Request
 *CIBA* | **authenticationIssueApi** | **POST** /api/${serviceIdPathParam}/backchannel/authentication/issue | Issue Backchannel Authentication Response
-*ClientManagement* | **authorizationDeleteApi** | **DELETE** /api/${serviceIdPathParam}/client/authorization/delete/${clientIdPathParam}/${subjectPathParam} | Delete Client Tokens
-*ClientManagement* | **authorizationGetListApi** | **GET** /api/${serviceIdPathParam}/client/authorization/get/list/${subjectPathParam} | Get Authorized Applications
+*ClientManagement* | **authorizationDeleteApi** | **DELETE** /api/${serviceIdPathParam}/client/authorization/delete/${clientIdPathParam} | Delete Client Tokens
+*ClientManagement* | **authorizationDeleteApiPost** | **POST** /api/${serviceIdPathParam}/client/authorization/delete/${clientIdPathParam} | Delete Client Tokens
+*ClientManagement* | **authorizationDeleteBySubjectApi** | **DELETE** /api/${serviceIdPathParam}/client/authorization/delete/${clientIdPathParam}/${subjectPathParam} | Delete Client Tokens (by Subject)
+*ClientManagement* | **authorizationGetListApi** | **GET** /api/${serviceIdPathParam}/client/authorization/get/list | Get Authorized Applications
+*ClientManagement* | **authorizationGetListApiPost** | **POST** /api/${serviceIdPathParam}/client/authorization/get/list | Get Authorized Applications
+*ClientManagement* | **authorizationGetListBySubjectApi** | **GET** /api/${serviceIdPathParam}/client/authorization/get/list/${subjectPathParam} | Get Authorized Applications (by Subject)
 *ClientManagement* | **authorizationUpdateApi** | **POST** /api/${serviceIdPathParam}/client/authorization/update/${clientIdPathParam} | Update Client Tokens
 *ClientManagement* | **createApi** | **POST** /api/${serviceIdPathParam}/client/create | Create Client
 *ClientManagement* | **deleteApi** | **DELETE** /api/${serviceIdPathParam}/client/delete/${clientIdPathParam} | Delete Client ⚡
 *ClientManagement* | **extensionRequestablesScopesDeleteApi** | **DELETE** /api/${serviceIdPathParam}/client/extension/requestable_scopes/delete/${clientIdPathParam} | Delete Requestable Scopes
 *ClientManagement* | **extensionRequestablesScopesGetApi** | **GET** /api/${serviceIdPathParam}/client/extension/requestable_scopes/get/${clientIdPathParam} | Get Requestable Scopes
 *ClientManagement* | **extensionRequestablesScopesUpdateApi** | **PUT** /api/${serviceIdPathParam}/client/extension/requestable_scopes/update/${clientIdPathParam} | Update Requestable Scopes
+*ClientManagement* | **extensionRequestablesScopesUpdateApiPost** | **POST** /api/${serviceIdPathParam}/client/extension/requestable_scopes/update/${clientIdPathParam} | Update Requestable Scopes
 *ClientManagement* | **flagUpdateApi** | **POST** /api/${serviceIdPathParam}/client/lock_flag/update/${clientIdentifierPathParam} | Update Client Lock
 *ClientManagement* | **getApi** | **GET** /api/${serviceIdPathParam}/client/get/${clientIdPathParam} | Get Client
 *ClientManagement* | **getListApi** | **GET** /api/${serviceIdPathParam}/client/get/list | List Clients
-*ClientManagement* | **grantedScopesDeleteApi** | **DELETE** /api/${serviceIdPathParam}/client/granted_scopes/delete/${clientIdPathParam}/${subjectPathParam} | Delete Granted Scopes
-*ClientManagement* | **grantedScopesGetApi** | **GET** /api/${serviceIdPathParam}/client/granted_scopes/get/${clientIdPathParam}/${subjectPathParam} | Get Granted Scopes
+*ClientManagement* | **grantedScopesDeleteApi** | **DELETE** /api/${serviceIdPathParam}/client/granted_scopes/delete/${clientIdPathParam} | Delete Granted Scopes
+*ClientManagement* | **grantedScopesDeleteBySubjectApi** | **DELETE** /api/${serviceIdPathParam}/client/granted_scopes/delete/${clientIdPathParam}/${subjectPathParam} | Delete Granted Scopes (by Subject)
+*ClientManagement* | **grantedScopesGetApi** | **GET** /api/${serviceIdPathParam}/client/granted_scopes/get/${clientIdPathParam} | Get Granted Scopes
+*ClientManagement* | **grantedScopesGetApiPost** | **POST** /api/${serviceIdPathParam}/client/granted_scopes/get/${clientIdPathParam} | Get Granted Scopes
+*ClientManagement* | **grantedScopesGetBySubjectApi** | **GET** /api/${serviceIdPathParam}/client/granted_scopes/get/${clientIdPathParam}/${subjectPathParam} | Get Granted Scopes (by Subject)
 *ClientManagement* | **secretRefreshApi** | **GET** /api/${serviceIdPathParam}/client/secret/refresh/${clientIdentifierPathParam} | Rotate Client Secret
 *ClientManagement* | **secretUpdateApi** | **POST** /api/${serviceIdPathParam}/client/secret/update/${clientIdentifierPathParam} | Update Client Secret
 *ClientManagement* | **updateApi** | **POST** /api/${serviceIdPathParam}/client/update/${clientIdPathParam} | Update Client
@@ -186,6 +194,7 @@ Class | Method | HTTP request | Description
 *IntrospectionEndpoint* | **introspectionStandardApi** | **POST** /api/${serviceIdPathParam}/auth/introspection/standard | Process OAuth 2.0 Introspection Request
 *JWKSetEndpoint* | **jwksGetApi** | **GET** /api/${serviceIdPathParam}/service/jwks/get | Get JWK Set
 *JoseObject* | **verifyApi** | **POST** /api/${serviceIdPathParam}/jose/verify | Verify JOSE
+*Lifecycle* | **apiLifecycleHealthcheckGet** | **GET** /api/lifecycle/healthcheck | Health Check
 *NativeSSO* | **ssoApi** | **POST** /api/${serviceIdPathParam}/nativesso | Native SSO Processing
 *NativeSSO* | **ssoLogoutApi** | **POST** /api/${serviceIdPathParam}/nativesso/logout | Native SSO Logout Processing
 *PushedAuthorizationEndpoint* | **authReqApi** | **POST** /api/${serviceIdPathParam}/pushed_auth_req | Process Pushed Authorization Request
@@ -201,6 +210,8 @@ Class | Method | HTTP request | Description
 *TokenEndpoint* | **tokenFailApi** | **POST** /api/${serviceIdPathParam}/auth/token/fail | Fail Token Request
 *TokenEndpoint* | **tokenIssueApi** | **POST** /api/${serviceIdPathParam}/auth/token/issue | Issue Token Response
 *TokenOperations* | **tokenCreateApi** | **POST** /api/${serviceIdPathParam}/auth/token/create | Create Access Token
+*TokenOperations* | **tokenCreateBatchApi** | **POST** /api/${serviceIdPathParam}/auth/token/create/batch | Create Access Tokens in Batch
+*TokenOperations* | **tokenCreateBatchStatusApi** | **GET** /api/${serviceIdPathParam}/auth/token/create/batch/status/${tokenBatchRequestIdPathParam} | Get Batch Token Creation Status
 *TokenOperations* | **tokenDeleteApi** | **DELETE** /api/${serviceIdPathParam}/auth/token/delete/${accessTokenIdentifierPathParam} | Delete Access Token
 *TokenOperations* | **tokenGetListApi** | **GET** /api/${serviceIdPathParam}/auth/token/get/list | List Issued Tokens
 *TokenOperations* | **tokenRevokeApi** | **POST** /api/${serviceIdPathParam}/auth/token/revoke | Revoke Access Token
@@ -234,6 +245,7 @@ Class | Method | HTTP request | Description
  - [AuthorizationIssueResponse](AuthorizationIssueResponse.md)
  - [AuthorizationRequest](AuthorizationRequest.md)
  - [AuthorizationResponse](AuthorizationResponse.md)
+ - [AuthorizationTicketInfo](AuthorizationTicketInfo.md)
  - [AuthorizationTicketInfoRequest](AuthorizationTicketInfoRequest.md)
  - [AuthorizationTicketInfoResponse](AuthorizationTicketInfoResponse.md)
  - [AuthorizationTicketUpdateRequest](AuthorizationTicketUpdateRequest.md)
@@ -247,10 +259,13 @@ Class | Method | HTTP request | Description
  - [BackchannelAuthenticationIssueResponse](BackchannelAuthenticationIssueResponse.md)
  - [BackchannelAuthenticationRequest](BackchannelAuthenticationRequest.md)
  - [BackchannelAuthenticationResponse](BackchannelAuthenticationResponse.md)
+ - [CimdOptions](CimdOptions.md)
  - [ClaimType](ClaimType.md)
  - [Client](Client.md)
  - [ClientAuthMethod](ClientAuthMethod.md)
+ - [ClientAuthorizationDeleteApiPostRequest](ClientAuthorizationDeleteApiPostRequest.md)
  - [ClientAuthorizationDeleteResponse](ClientAuthorizationDeleteResponse.md)
+ - [ClientAuthorizationGetListRequest](ClientAuthorizationGetListRequest.md)
  - [ClientAuthorizationGetListResponse](ClientAuthorizationGetListResponse.md)
  - [ClientAuthorizationUpdateRequest](ClientAuthorizationUpdateRequest.md)
  - [ClientAuthorizationUpdateResponse](ClientAuthorizationUpdateResponse.md)
@@ -306,6 +321,7 @@ Class | Method | HTTP request | Description
  - [IdtokenReissueRequest](IdtokenReissueRequest.md)
  - [IdtokenReissueResponse](IdtokenReissueResponse.md)
  - [InfoResponse](InfoResponse.md)
+ - [InfoResponseServiceTokenCache](InfoResponseServiceTokenCache.md)
  - [IntrospectionRequest](IntrospectionRequest.md)
  - [IntrospectionResponse](IntrospectionResponse.md)
  - [JoseVerifyRequest](JoseVerifyRequest.md)
@@ -338,6 +354,9 @@ Class | Method | HTTP request | Description
  - [StandardIntrospectionResponse](StandardIntrospectionResponse.md)
  - [SubjectType](SubjectType.md)
  - [TaggedValue](TaggedValue.md)
+ - [TokenBatchStatus](TokenBatchStatus.md)
+ - [TokenCreateBatchResponse](TokenCreateBatchResponse.md)
+ - [TokenCreateBatchStatusResponse](TokenCreateBatchStatusResponse.md)
  - [TokenCreateRequest](TokenCreateRequest.md)
  - [TokenCreateResponse](TokenCreateResponse.md)
  - [TokenFailRequest](TokenFailRequest.md)

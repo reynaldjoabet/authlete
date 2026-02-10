@@ -612,3 +612,335 @@ If you want to fetch data from one subdomain to another via JavaScript, you stil
 In OpenID Connect, the state parameter serves as an opaque value created by the client. Its primary function is maintaining the state between the initial request and the callback, acting as a shield against cross-site request forgery attacks during the authentication process.
 
 While some implementations keep the state as a random value, that is verified during the callback. Other implementations injecting “data” into the state parameter. By doing this, the client doesn’t have to remember this information elsewhere, making the client stateless.
+
+
+The attacker model gives 2 things
+- The attacker model tells you what FAPI 2 is trying to defend against..
+- we can give the attacker model to researhers the question "does FAPI 2 actually defend against all these attackers".`it id written in a way suitable for formal analysis, so that researchers can then say, yes it does or no it doesn't
+
+PRIVATE_KEY_JWT
+- Client authenticates with a JWT signed using a private key.
+- Server validates using the client’s public key.
+- Very secure
+- Best practice for confidential / enterprise clients
+- Common in financial, government, and zero-trust setups
+
+PKCS = Public-Key Cryptography Standards
+
+PKCS #1 — RSA Cryptography
+
+
+```java
+/**
+ * This class implements a key factory for PBE keys derived using
+ * PBKDF2 with HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512,
+ * HmacSHA512/224, and HmacSHA512/256 pseudo random function (PRF) as
+ * defined in PKCS#5 v2.1.
+ *
+ *
+ */
+abstract class PBKDF2Core extends SecretKeyFactorySpi {
+
+    public static final class HmacSHA1 extends PBKDF2Core {
+        public HmacSHA1() {
+            super("HmacSHA1");
+        }
+    }
+
+    public static final class HmacSHA224 extends PBKDF2Core {
+        public HmacSHA224() {
+            super("HmacSHA224");
+        }
+    }
+
+    public static final class HmacSHA256 extends PBKDF2Core {
+        public HmacSHA256() {
+            super("HmacSHA256");
+        }
+    }
+
+    public static final class HmacSHA384 extends PBKDF2Core {
+        public HmacSHA384() {
+            super("HmacSHA384");
+        }
+    }
+
+    public static final class HmacSHA512 extends PBKDF2Core {
+        public HmacSHA512() {
+            super("HmacSHA512");
+        }
+    }
+
+    public static final class HmacSHA512_224 extends PBKDF2Core {
+        public HmacSHA512_224() {
+            super("HmacSHA512/224");
+        }
+    }
+
+    public static final class HmacSHA512_256 extends PBKDF2Core {
+        public HmacSHA512_256() {
+            super("HmacSHA512/256");
+        }
+    }
+}
+
+```
+
+```java
+SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLen);
+```
+
+PKCS #8 — Private Key Information
+What it defines
+Standard format for private keys
+```sh
+BEGIN PRIVATE KEY
+BEGIN ENCRYPTED PRIVATE KEY
+```
+
+```java
+PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
+KeyFactory.getInstance("RSA").generatePrivate(spec);
+```
+
+PKCS #10 — Certificate Signing Requests
+What it defines
+CSR format sent to a CA
+```sh
+BEGIN CERTIFICATE REQUEST
+```
+
+PKCS #11 — Cryptographic Token Interface 
+What it defines
+API for talking to HSMs, smart cards, tokens
+SunPKCS11 provider
+
+PKCS #12 — Personal Information Exchange
+
+```java
+KeyStore ks = KeyStore.getInstance("PKCS12");
+ks.load(inputStream, password);
+```
+
+```java
+//PBKDF = how you turn a password into a key
+//PBE = how you use that derived key to encrypt / MAC data
+public class PBEKeySpec implements KeySpec {
+}
+
+public interface PBEKey extends javax.crypto.SecretKey 
+/**
+ * This class represents a PBE key derived using PBKDF2 defined
+ * in PKCS#5 v2.0. meaning that
+ * 1) the password must consist of characters which will be converted
+ *    to bytes using UTF-8 character encoding.
+ * 2) salt, iteration count, and to be derived key length are supplied
+ *
+ *
+ *
+ */
+final class PBKDF2KeyImpl implements javax.crypto.interfaces.PBEKey 
+
+/**
+ * This class represents password-based encryption as defined by the PKCS #5
+ * standard.
+ * These algorithms implement PBE with HmacSHA1/HmacSHA2-family and AES-CBC.
+ * Padding is done as described in PKCS #5.
+ *
+ * @see javax.crypto.Cipher
+ */
+abstract class PBES2Core extends CipherSpi {
+if (cipherAlgo.equals("AES")) {} //only AES PBEWithHmacSHA256AndAES_256
+}
+```
+
+PKCS#12 reuses PKCS#5’s password-based crypto (PBE + PBKDF) to protect the contents of a PKCS#12 file.
+
+PKCS#12 uses PKCS#5 in two places:
+1. Encrypting private keys & bags
+Example algorithms you’ll see:
+PBEWithHmacSHA256AndAES_256
+PBES2
+PBKDF2WithHmacSHA256
+2. Deriving keys from the password
+PKCS#12 files are password-protected.
+
+
+```java
+/**
+ * This class specifies a Diffie-Hellman private key with its associated
+ * parameters.
+ *
+ * <p>Note that this class does not perform any validation on specified
+ * parameters. Thus, the specified values are returned directly even
+ * if they are null.
+ *
+ * @see DHPublicKeySpec
+ * @since 1.4
+ */
+public class DHPrivateKeySpec implements java.security.spec.KeySpec 
+
+/**
+ * This class specifies a Diffie-Hellman public key with its associated
+ * parameters.
+ *
+ * <p>Note that this class does not perform any validation on specified
+ * parameters. Thus, the specified values are returned directly even
+ * if they are null.
+ *
+ *
+ * @see DHPrivateKeySpec
+ * @since 1.4
+ */
+public class DHPublicKeySpec implements java.security.spec.KeySpec
+
+
+/**
+ * This class specifies a DES-EDE ("triple-DES") key.
+ *
+ *
+ * @since 1.4
+ */
+public class DESedeKeySpec implements java.security.spec.KeySpec
+
+/**
+ * This class specifies a DES key.
+ *
+ *
+ * @since 1.4
+ */
+public class DESKeySpec implements java.security.spec.KeySpec 
+
+/**
+ * This class specifies a secret key in a provider-independent fashion.
+ *
+ * <p>It can be used to construct a <code>SecretKey</code> from a byte array,
+ * without having to go through a (provider-based)
+ * <code>SecretKeyFactory</code>.
+ *
+ * <p>This class is only useful for raw secret keys that can be represented as
+ * a byte array and have no key parameters associated with them, e.g., DES or
+ * Triple DES keys.
+ *
+ * @see javax.crypto.SecretKey
+ * @see javax.crypto.SecretKeyFactory
+ * @since 1.4
+ */
+public class SecretKeySpec implements KeySpec, SecretKey 
+
+
+public class PBEKeySpec implements KeySpec 
+
+/**
+ * A class representing elliptic curve public keys as defined in RFC 7748,
+ * including the curve and other algorithm parameters. The public key is a
+ * particular point on the curve, which is represented using only its
+ * u-coordinate. A u-coordinate is an element of the field of integers modulo
+ * some value that is determined by the algorithm parameters. This field
+ * element is represented by a BigInteger which may hold any value. That is,
+ * the BigInteger is not restricted to the range of canonical field elements.
+ *
+ * @since 11
+ */
+public class XECPublicKeySpec implements KeySpec 
+
+
+/**
+ * This class represents the ASN.1 encoding of a private key,
+ * encoded according to the ASN.1 type {@code PrivateKeyInfo}.
+ * The {@code PrivateKeyInfo} syntax is defined in the PKCS#8 standard
+ * as follows:
+ *
+ * <pre>
+ * PrivateKeyInfo ::= SEQUENCE {
+ *   version Version,
+ *   privateKeyAlgorithm PrivateKeyAlgorithmIdentifier,
+ *   privateKey PrivateKey,
+ *   attributes [0] IMPLICIT Attributes OPTIONAL }
+ *
+ * Version ::= INTEGER
+ *
+ * PrivateKeyAlgorithmIdentifier ::= AlgorithmIdentifier
+ *
+ * PrivateKey ::= OCTET STRING
+ *
+ * Attributes ::= SET OF Attribute
+ * </pre>
+ */
+public class PKCS8EncodedKeySpec extends EncodedKeySpec 
+/**
+ * This class represents the ASN.1 encoding of a public key,
+ * encoded according to the ASN.1 type {@code SubjectPublicKeyInfo}.
+ * The {@code SubjectPublicKeyInfo} syntax is defined in the X.509
+ * standard as follows:
+ *
+ * <pre>
+ * SubjectPublicKeyInfo ::= SEQUENCE {
+ *   algorithm AlgorithmIdentifier,
+ *   subjectPublicKey BIT STRING }
+ * </pre>
+ */
+public class X509EncodedKeySpec extends EncodedKeySpec 
+```
+
+The Attacker Model aims to clearly define security goals and identify the potential attacker types FAPI 2.0 needs to protect against. The document is written so the other profiles can easily reference the attackers and goals to ensure the documents fulfill them. The other purpose is to use the Attacker Model within a formal security analysis of an API platform
+
+In FAPI 1.0, the `id_token` acts as a detached signature, making it possible to validate that the response is for the correct request and that the parameters received belong together. Using PKCE and the Code Flow means that tokens are delivered in the backchannel over TLS, so we know where the response comes from. Only the code is in the response, and using PKCE means it's possible to verify that the two requests come from the same source, giving some CSRF protection
+
+Sender-Constrained Tokens
+
+Sender-constrained tokens are mandatory, and FAPI 2.0 allows for the use of Demonstration of Proof-of-Possession (DPoP) in addition to mutual TLS (mTLS). Worthy of note is that the use of the server `nonce` functionality of DPoP is encouraged. This functionality introduced in the specification quite recently protects against clock drift between client and server
+
+While mTLS has been the gold standard for years, it can be a nightmare to manage at the infrastructure layer (handling certificates at the load balancer/WAF). That's why DPoP (Demonstration of Proof-of-Possession) is such a game-changer.
+
+With OAuth 2, no two implementations are compatcible with each other. With FAPI, we define a profile that you can really test against..So there is a conformance test suites.If a product is FAPI compliant, then you know what feature it has and how it is going to implement that..So compactility, interoperability and security.. thaat is the core of FAPI
+
+![](image-13.png)
+
+
+![](image-14.png)
+
+
+
+![](image-15.png)
+
+
+![](image-16.png)
+
+To signal that the app wants an identity, the client includes scope=openid
+
+[authentication](https://oauth.net/articles/authentication/)
+
+the user is delegating access to their identity to the application they're trying to log in to.
+
+In a standard OAuth 2.0 flow, the user is delegating access to a resource (like photos)
+
+"Identity as a Resource" Concept
+
+The user consents to let the Authorization Server disclose identity information about them to the client.
+So identity becomes:
+1. ust another protected resource
+2. exposed via:
+- an identity API (e.g. UserInfo)
+- or a signed identity assertion (ID Token)
+
+
+Different protocols for every potential identity provider
+
+One of the biggest problems with OAuth-based identity APIs is that even when using a fully standards-compliant OAuth mechanism, different providers will inevitably implement the details of the actual identity API differently. For example, a user's identifier might be found in a user_id field in one provider but in the subject field in another provider. Even though these are semantically equivalent, they would require two separate code paths to process. In other words, while the authorization may happen the same way at each provider, the conveyance of the authentication information could be different. This problem can be mitigated by providers using a standard authentication protocol built on top of OAuth so that no matter where the identity information is coming from, it is transmitted in the same way.
+
+This problem occurs because the mechanisms for conveying authentication information discussed here are explicitly left out of scope for OAuth. OAuth defines no specific token format, defines no common set of scopes for the access token, and does not at all address how a protected resource validates an access token.
+
+A standard for user authentication using OAuth: OpenID Connect
+
+OpenID Connect is an open standard published in early 2014 that defines an interoperable way to use OAuth 2.0 to perform user authentication. In essence, it is a widely published recipe for chocolate fudge that has been tried and tested by a wide number and variety of experts. Instead of building a different protocol to each potential identity provider, an application can speak one protocol to as many providers as they want to work with. Since it's an open standard, OpenID Connect can be implemented by anyone without restriction or intellectual property concerns.
+
+OpenID Connect is built directly on OAuth 2.0 and in most cases is deployed right along with (or on top of) an OAuth infrastructure. OpenID Connect also uses the JSON Object Signing And Encryption (JOSE) suite of specifications for carrying signed and encrypted information around in different places. In fact, an OAuth 2.0 deployment with JOSE capabilities is already a long way to defining a fully compliant OpenID Connect system, and the delta between the two is relatively small. But that delta makes a big difference, and OpenID Connect manages to avoid many of the pitfalls discussed above by adding several key components to the OAuth base:
+ID Tokens
+
+The OpenID Connect ID Token is a signed JSON Web Token (JWT) that is given to the client application along side the regular OAuth access token. The ID Token contains a set of claims about the authentication session, including an identifier for the user (sub), the identifier for the identity provider who issued the token (iss), and the identifier of the client for which this token was created (aud). Additionally, the ID Token contains information about the token's valid (and usually short) lifetime as well as any information about the authentication context to be conveyed to the client, such as how long ago the user was presented with a primary authentication mechanism. Since the format of the ID Token is known by the client, it is able to parse the content of the token directly and obtain this information without relying on an external service to do so. Furthermore, it is issued in addition to (and not in lieu of) an access token, allowing the access token to remain opaque to the client as it is defined in regular OAuth. Finally, the token itself is signed by the identity provider's private key, adding an additional layer of protection to the claims inside of it in addition to the TLS transport protection that was used to get the token in the first place, preventing a class of impersonation attacks. By applying a few simple checks to this ID token, a client can protect itself from a large number of common attacks.
+
+Since the ID Token is signed by the authorization server, it also provides a location to add detached signatures over the authorization code (`c_hash`) and access token (`at_hash`). These hashes can be validated by the client while still keeping the authorization code and access token content opaque to the client, preventing a whole class of injection attacks.
+
+interoperability: Take the US with more than 4000 banks, can you imagine as a fintech if you had to configure your OAuth stack individually for 4000 different banks? it does not allow any ecosystem to scale. FAPI by reducing optionality makes things interoperable and scalable

@@ -3,6 +3,8 @@ package http.routes
 import cats.effect.kernel.Concurrent
 import cats.syntax.flatMap.toFlatMapOps
 
+import authlete.models.AuthorizationFailRequest
+import authlete.models.AuthorizationIssueRequest
 import authlete.JsonSupport.{*, given}
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
@@ -14,4 +16,11 @@ import sttp.client4.Backend
   */
 abstract class AuthorizationDecisionRoutes[F[*]: Concurrent](
     backend: Backend[F]
-) extends Http4sDsl[F] {}
+) extends Http4sDsl[F] {
+
+  private def processAuthorizationFailResponse(body: AuthorizationFailRequest): F[Response[F]] = ???
+
+  private def processAuthorizationIssueResponse(body: AuthorizationIssueRequest): F[Response[F]] =
+    ???
+
+}

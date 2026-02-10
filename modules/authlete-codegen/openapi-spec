@@ -4,12 +4,12 @@ info:
   description: |
     Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the 
     platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to 
-    build powerful OAuth 2.0 and OpenID Connect servers. 🚀
+    build powerful OAuth 2.0 and OpenID Connect servers.
 
     At a high level, the Authlete API is grouped into two categories:
 
-    - **Management APIs**: Enable you to manage services and clients. 🔧
-    - **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers. 🔐
+    - **Management APIs**: Enable you to manage services and clients.
+    - **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers.
 
     ## 🌐 API Servers
 
@@ -71,8 +71,8 @@ info:
 
     If you're new to Authlete or want to see sample implementations, these resources will help you get started:
 
-    - [🚀 Getting Started with Authlete](https://www.authlete.com/developers/getting_started/)
-    - [🔑 From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)
+    - [Getting Started with Authlete](https://www.authlete.com/developers/getting_started/)
+    - [From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)
 
     ## 🛠 Contact Us
 
@@ -306,7 +306,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/service/get \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -486,7 +486,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/9503564192/service/get/list?start=0\&end=5 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -559,7 +559,15 @@ paths:
               $ref: '#/components/schemas/service'
       responses:
         '200':
-          description: ''
+          description: Service created successfully (legacy compatibility)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/service'
+              example:
+                accessTokenDuration: 3600
+        '201':
+          description: Service created successfully
           content:
             application/json:
               schema:
@@ -671,7 +679,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/service/create \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "serviceName": "My Service", ... }'
         - lang: java
           label: java
@@ -914,7 +922,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/service/update \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "serviceName": "My updated service", ... }'
         - lang: java
           label: java
@@ -974,7 +982,7 @@ paths:
           label: curl
           source: |
             curl -v -X DELETE https://us.authlete.com/api/9503564192/service/delete/21653835348762 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -1074,7 +1082,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/client/get/26478243745571 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -1215,7 +1223,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/client/get/list?developer=john\&start=0\&end=5 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -1281,7 +1289,16 @@ paths:
                   value: attribute2-value
       responses:
         '200':
-          description: ''
+          description: Client created successfully (legacy compatibility)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client'
+              example:
+                applicationType: WEB
+                clientId: 26478243745571
+        '201':
+          description: Client created successfully
           content:
             application/json:
               schema:
@@ -1342,7 +1359,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/create \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "developer": "john", "clientName": "My Client", ... }'
         - lang: java
           label: java
@@ -1485,6 +1502,8 @@ paths:
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '404':
+          description: The client was not found.
         '500':
           $ref: '#/components/responses/500'
       operationId: client_update_api
@@ -1494,7 +1513,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/update/26478243745571 \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "clientName": "My updated client", ... }'
         - lang: java
           label: java
@@ -1552,6 +1571,8 @@ paths:
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '404':
+          description: The client was not found.
         '500':
           $ref: '#/components/responses/500'
       operationId: client_delete_api
@@ -1560,7 +1581,7 @@ paths:
           label: curl
           source: |
             curl -v -X DELETE https://us.authlete.com/api/21653835348762/client/delete/26478243745571 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -1675,7 +1696,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/client/secret/refresh/26478243745571 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -1755,7 +1776,7 @@ paths:
           source: |
             curl -v https://us.authlete.com/api/21653835348762/client/secret/update/26478243745571 \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "clientSecret": "..." }'
         - lang: java
           label: java
@@ -1778,13 +1799,13 @@ paths:
             api.updateClientSecret(clientIdentifier, clientSecret)
       tags:
         - Client Management
-  /api/{serviceId}/client/authorization/get/list/{subject}:
+  /api/{serviceId}/client/authorization/get/list:
     get:
       summary: Get Authorized Applications
       description: |
         Get a list of client applications that an end-user has authorized.
 
-        The subject parameter is required and can be provided either in the path or as a query parameter.
+        The subject parameter is required and can be provided as a query parameter.
       parameters:
         - in: path
           name: serviceId
@@ -1792,13 +1813,6 @@ paths:
           required: true
           schema:
             type: string
-        - in: path
-          name: subject
-          schema:
-            type: string
-          required: true
-          description: |
-            Unique user ID of an end-user.
         - in: query
           name: subject
           schema:
@@ -1856,35 +1870,135 @@ paths:
         '500':
           $ref: '#/components/responses/500'
       operationId: client_authorization_get_list_api
-      x-code-samples:
-        - lang: shell
-          label: curl
-          source: |
-            curl -v https://us.authlete.com/api/client/authorization/get/list/john?start=0\&end=5 \
-            -u '21653835348762:uE4NgqeIpuSV_XejQ7Ds3jsgA1yXhjR1MXJ1LbPuyls'
-        - lang: java
-          label: java
-          source: |
-            AuthleteConfiguration conf = ...;
-            AuthleteApi api = AuthleteApiFactory.create(conf);
+      tags:
+        - Client Management
+    post:
+      summary: Get Authorized Applications
+      description: |
+        Get a list of client applications that an end-user has authorized.
 
-            ClientAuthorizationGetListRequest req = new ClientAuthorizationGetListRequest();
-            req.setSubject("john");
-            req.setStart(0);
-            req.setEnd(5);
+        The subject parameter is required.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/client_authorization_get_list_request'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/client_authorization_get_list_request'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_authorization_get_list_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: client_authorization_get_list_api_post
+      tags:
+        - Client Management
+    x-code-samples:
+      - lang: shell
+        label: curl
+        source: |
+          curl -v https://us.authlete.com/api/client/authorization/get/list?subject=john\&start=0\&end=5 \
+          -u '21653835348762:uE4NgqeIpuSV_XejQ7Ds3jsgA1yXhjR1MXJ1LbPuyls'
+      - lang: java
+        label: java
+        source: |
+          AuthleteConfiguration conf = ...;
+          AuthleteApi api = AuthleteApiFactory.create(conf);
 
-            api.getClientAuthorizationList(req);
-        - lang: python
-          source: |
-            conf = ...
-            api = AuthleteApiImpl(conf)
+          ClientAuthorizationGetListRequest req = new ClientAuthorizationGetListRequest();
+          req.setSubject("john");
+          req.setStart(0);
+          req.setEnd(5);
 
-            req = ClientAuthorizationGetListRequest()
-            req.subject = 'john'
-            req.start = 0
-            req.end = 5
+          api.getClientAuthorizationList(req);
+      - lang: python
+        source: |
+          conf = ...
+          api = AuthleteApiImpl(conf)
 
-            api.getClientAuthorizationList(req)
+          req = ClientAuthorizationGetListRequest()
+          req.subject = 'john'
+          req.start = 0
+          req.end = 5
+
+          api.getClientAuthorizationList(req)
+  /api/{serviceId}/client/authorization/get/list/{subject}:
+    get:
+      summary: Get Authorized Applications (by Subject)
+      description: |
+        Get a list of client applications that an end-user has authorized.
+        In this variant, the subject is provided in the path.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: subject
+          schema:
+            type: string
+          required: true
+          description: |
+            Unique user ID of an end-user.
+        - in: query
+          name: developer
+          schema:
+            type: string
+          required: false
+          description: |
+            Unique ID of a client developer.
+        - in: query
+          name: start
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Start index of search results (inclusive). The default value is 0.
+        - in: query
+          name: end
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: |
+            End index of search results (exclusive). The default value is 5.
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_authorization_get_list_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: client_authorization_get_list_by_subject_api
       tags:
         - Client Management
   /api/{serviceId}/client/authorization/update/{clientId}:
@@ -1935,6 +2049,8 @@ paths:
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '404':
+          description: The client was not found.
         '500':
           $ref: '#/components/responses/500'
       operationId: client_authorization_update_api
@@ -1944,7 +2060,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/authorization/update/26478243745571 \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "subject": "john", "scopes": [ "history.read" ] }'
         - lang: java
           label: java
@@ -1973,13 +2089,13 @@ paths:
             api.updateClientAuthorization(clientId, req)
       tags:
         - Client Management
-  /api/{serviceId}/client/authorization/delete/{clientId}/{subject}:
+  /api/{serviceId}/client/authorization/delete/{clientId}:
     delete:
       summary: Delete Client Tokens
       description: |
         Delete all existing access tokens issued to a client application by an end-user.
 
-        The subject parameter is required and can be provided either in the path or as a query parameter.
+        The subject parameter is required and must be provided as a query parameter.
       parameters:
         - in: path
           name: serviceId
@@ -1994,13 +2110,6 @@ paths:
           required: true
           description: |
             A client ID.
-        - in: path
-          name: subject
-          schema:
-            type: string
-          required: true
-          description: |
-            Unique user ID of an end-user.
         - in: query
           name: subject
           schema:
@@ -2027,34 +2136,130 @@ paths:
         '500':
           $ref: '#/components/responses/500'
       operationId: client_authorization_delete_api
-      x-code-samples:
-        - lang: shell
-          label: curl
-          source: |
-            curl -v -X DELETE https://us.authlete.com/api/21653835348762/client/authorization/delete/26478243745571/john \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
-        - lang: java
-          label: java
-          source: |
-            AuthleteConfiguration conf = ...;
-            AuthleteApi api = AuthleteApiFactory.create(conf);
-
-            long clientId = ...;
-            String subject = "john";
-
-            api.deleteClientAuthorization(clientId, subject);
-        - lang: python
-          source: |
-            conf = ...
-            api = AuthleteApiImpl(conf)
-
-            clientId = ...
-            subject = 'john'
-
-            api.deleteClientAuthorization(clientId, subject)
       tags:
         - Client Management
-  /api/{serviceId}/client/granted_scopes/get/{clientId}/{subject}:
+    post:
+      summary: Delete Client Tokens
+      description: |
+        Delete all existing access tokens issued to a client application by an end-user.
+
+        The subject parameter is required.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: clientId
+          schema:
+            type: string
+          required: true
+          description: |
+            A client ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: Unique user ID of an end-user.
+              required:
+                - subject
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: Unique user ID of an end-user.
+              required:
+                - subject
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_authorization_delete_response'
+      operationId: client_authorization_delete_api_post
+      tags:
+        - Client Management
+    x-code-samples:
+      - lang: shell
+        label: curl
+        source: |
+          curl -v -X DELETE https://us.authlete.com/api/21653835348762/client/authorization/delete/26478243745571?subject=john \
+          -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+      - lang: java
+        label: java
+        source: |
+          AuthleteConfiguration conf = ...;
+          AuthleteApi api = AuthleteApiFactory.create(conf);
+
+          long clientId = ...;
+          String subject = "john";
+
+          api.deleteClientAuthorization(clientId, subject);
+      - lang: python
+        source: |
+          conf = ...
+          api = AuthleteApiImpl(conf)
+
+          clientId = ...
+          subject = 'john'
+
+          api.deleteClientAuthorization(clientId, subject)
+  /api/{serviceId}/client/authorization/delete/{clientId}/{subject}:
+    delete:
+      summary: Delete Client Tokens (by Subject)
+      description: |
+        Delete all existing access tokens issued to a client application by an end-user.
+        In this variant, the subject is provided in the path.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: clientId
+          schema:
+            type: string
+          required: true
+          description: |
+            A client ID.
+        - in: path
+          name: subject
+          schema:
+            type: string
+          required: true
+          description: |
+            Unique user ID of an end-user.
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_authorization_delete_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: client_authorization_delete_by_subject_api
+      tags:
+        - Client Management
+  /api/{serviceId}/client/granted_scopes/get/{clientId}:
     get:
       summary: Get Granted Scopes
       description: |
@@ -2071,7 +2276,7 @@ paths:
         The user has granted authorization to the client application in the past and some scopes are associated
         with the authorization. These scopes are returned.
         Example: `[ "profile", "email" ]`
-        The subject parameter is required and can be provided either in the path or as a query parameter.
+        The subject parameter is required and must be provided as a query parameter.
       parameters:
         - in: path
           name: serviceId
@@ -2088,13 +2293,6 @@ paths:
           description: |
             A client ID.
           example: '1140735077'
-        - in: path
-          name: subject
-          schema:
-            type: string
-          required: true
-          description: |
-            Unique user ID of an end-user.
         - in: query
           name: subject
           schema:
@@ -2128,42 +2326,90 @@ paths:
         '500':
           $ref: '#/components/responses/500'
       operationId: client_granted_scopes_get_api
-      x-code-samples:
-        - lang: shell
-          label: curl
-          source: |
-            curl -v https://us.authlete.com/api/21653835348762/client/granted_scopes/get/26478243745571/john \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
-        - lang: java
-          label: java
-          source: |
-            AuthleteConfiguration conf = ...;
-            AuthleteApi api = AuthleteApiFactory.create(conf);
-
-            long clientId  = 26478243745571;
-            String subject = "john";
-
-            api.getGrantedScopes(clientId, subject);
-        - lang: python
-          source: |
-            conf = ...
-            api = AuthleteApiImpl(conf)
-
-            clientId = 26478243745571
-            subject = 'john'
-
-            api.getGrantedScopes(clientId, subject)
       tags:
         - Client Management
-  /api/{serviceId}/client/granted_scopes/delete/{clientId}/{subject}:
-    delete:
-      summary: Delete Granted Scopes
+    post:
+      summary: Get Granted Scopes
       description: |
-        Delete the set of scopes that an end-user has granted to a client application.
-        ### Description
-        Even if records about granted scopes are deleted by calling this API, existing access tokens are
-        not deleted and scopes of existing access tokens are not changed.
-        The subject parameter is required and can be provided either in the path or as a query parameter.
+        Get the set of scopes that a user has granted to a client application.
+
+        The subject parameter is required.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: clientId
+          schema:
+            type: string
+          required: true
+          description: |
+            A client ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: Unique user ID of an end-user.
+              required:
+                - subject
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: Unique user ID of an end-user.
+              required:
+                - subject
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_authorization_delete_response'
+      operationId: client_granted_scopes_get_api_post
+      tags:
+        - Client Management
+    x-code-samples:
+      - lang: shell
+        label: curl
+        source: |
+          curl -v https://us.authlete.com/api/21653835348762/client/granted_scopes/get/26478243745571?subject=john \
+          -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+      - lang: java
+        label: java
+        source: |
+          AuthleteConfiguration conf = ...;
+          AuthleteApi api = AuthleteApiFactory.create(conf);
+
+          long clientId  = 26478243745571;
+          String subject = "john";
+
+          api.getGrantedScopes(clientId, subject);
+      - lang: python
+        source: |
+          conf = ...
+          api = AuthleteApiImpl(conf)
+
+          clientId = 26478243745571
+          subject = 'john'
+
+          api.getGrantedScopes(clientId, subject)
+  /api/{serviceId}/client/granted_scopes/get/{clientId}/{subject}:
+    get:
+      summary: Get Granted Scopes (by Subject)
+      description: |
+        Get the set of scopes that a user has granted to a client application.
+        In this variant, the subject is provided in the path.
       parameters:
         - in: path
           name: serviceId
@@ -2185,6 +2431,47 @@ paths:
           required: true
           description: |
             Unique user ID of an end-user.
+      responses:
+        '200':
+          description: Successfully retrieved granted scopes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_authorization_delete_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: client_granted_scopes_get_by_subject_api
+      tags:
+        - Client Management
+  /api/{serviceId}/client/granted_scopes/delete/{clientId}:
+    delete:
+      summary: Delete Granted Scopes
+      description: |
+        Delete the set of scopes that an end-user has granted to a client application.
+        ### Description
+        Even if records about granted scopes are deleted by calling this API, existing access tokens are
+        not deleted and scopes of existing access tokens are not changed.
+        The subject parameter is required and must be provided as a query parameter.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: clientId
+          schema:
+            type: string
+          required: true
+          description: |
+            A client ID.
         - in: query
           name: subject
           schema:
@@ -2212,8 +2499,8 @@ paths:
         - lang: shell
           label: curl
           source: |
-            curl -v -X DELETE https://us.authlete.com/api/21653835348762/client/granted_scopes/delete/26478243745571/john \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            curl -v -X DELETE https://us.authlete.com/api/21653835348762/client/granted_scopes/delete/26478243745571?subject=john \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -2232,7 +2519,52 @@ paths:
             clientId = ...
             subject = 'john'
 
-            api.deleteGrantedScopes(clientId, subject)
+            api.deleteClientAuthorization(clientId, subject)
+      tags:
+        - Client Management
+  /api/{serviceId}/client/granted_scopes/delete/{clientId}/{subject}:
+    delete:
+      summary: Delete Granted Scopes (by Subject)
+      description: |
+        Delete the set of scopes that an end-user has granted to a client application.
+        In this variant, the subject is provided in the path.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: clientId
+          schema:
+            type: string
+          required: true
+          description: |
+            A client ID.
+        - in: path
+          name: subject
+          schema:
+            type: string
+          required: true
+          description: |
+            Unique user ID of an end-user.
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_granted_scopes_delete_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: client_granted_scopes_delete_by_subject_api
       tags:
         - Client Management
   /api/{serviceId}/auth/authorization:
@@ -2719,7 +3051,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/authorization \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters": "response_type=code&client_id=26478243745571&redirect_uri=https%3A%2F%2Fmy-client.example.com%2Fcb1&scope=timeline.read+history.read&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=S256" }'
         - lang: java
           label: java
@@ -2871,7 +3203,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/authorization/fail \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "c4iy3TWGn74UMO7ihRl0ZS8OEUzV9axBlBbJbqxH-9Q", "reason": "NOT_AUTHENTICATED" }'
         - lang: java
           label: java
@@ -3032,7 +3364,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/authorization/issue \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "FFgB9gwb_WXh6g1u-UQ8ZI-d_k4B-o-cm7RkVzI8Vnc", "subject": "john" }'
         - lang: java
           label: java
@@ -3114,7 +3446,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/pushed_auth_req \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters": "response_type=code%20id_token&client_id=5921531358155430&redirect_uri=https%3A%2F%2Fserver.example.com%2Fcb&state=SOME_VALUE_ABLE_TO_PREVENT_CSRF&scope=openid&nonce=SOME_VALUE_ABLE_TO_PREVENT_REPLAY_ATTACK&code_challenge=5ZWDQJiryK3eaLtSeFV8y1XySMCWtyITxICLaTwvK8g&code_challenge_method=S256", "clientId": "5921531358155430", "clientSecret" : "P_FouxWlI7zcOep_9vBwR9qMAVJQiCiUiK1HrAP4GziOyezHQpqY0f5dHXK4JT4tnvI51OkbWVoEM9GnOyJViA"}'
         - lang: java
           label: java
@@ -3571,7 +3903,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/token \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters": "grant_type=authorization_code&code=Xv_su944auuBgc5mfUnxXayiiQU9Z4-T_Yae_UfExmo&redirect_uri=https%3A%2F%2Fmy-client.example.com%2Fcb1&code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk", "clientId": "57297408867", "clientSecret": "J_3C7P0nDTP7CwCg_HyPQh7bTQ1696CC8GWot-EjesZmdBiU5Gsidq5Ve3tMaN2x2_VcKV1UE1U3ZdGKRuTs7A" }'
         - lang: java
           label: java
@@ -3694,7 +4026,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/token/fail \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "83BNqKIhGMyrkvop_7jQjv2Z1612LNdGSQKkvkrf47c", "reason": "INVALID_RESOURCE_OWNER_CREDENTIALS" }'
         - lang: java
           label: java
@@ -3835,7 +4167,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/token/issue \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "p7SXQ9JFjng7KFOZdCMBKcoR3ift7B54l1LGIgQXqEM", "subject": "john" }'
         - lang: java
           label: java
@@ -4057,7 +4389,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/introspection \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "token": "VFGsNK-5sXiqterdaR7b5QbRX9VTwVCQB87jbr2_xAI", "scopes": [ "history.read", "timeline.read" ] }'
         - lang: java
           label: java
@@ -4196,7 +4528,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/introspection/standard \
             -H "Content-Type:application/json" \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters":"token=VFGsNK-5sXiqterdaR7b5QbRX9VTwVCQB87jbr2_xAI&token_type_hint=access_token" }'
         - lang: java
           label: java
@@ -4363,7 +4695,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/revocation \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters": "token=VFGsNK-5sXiqterdaR7b5QbRX9VTwVCQB87jbr2_xAI&token_type_hint=access_token", "clientId": "26478243745571", "clientSecret": "gXz97ISgLs4HuXwOZWch8GEmgL4YMvUJwu3er_kDVVGcA0UOhA9avLPbEmoeZdagi9yC_-tEiT2BdRyH9dbrQQ" }'
         - lang: java
           label: java
@@ -4547,7 +4879,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/userinfo \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "token": "Ntm9MDb8WXQAevqrBkd84KTTHbYHVQrTjgUZCOWqEUI" }'
         - lang: java
           label: java
@@ -4729,7 +5061,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/userinfo/issue \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "token": "Ntm9MDb8WXQAevqrBkd84KTTHbYHVQrTjgUZCOWqEUI" }'
         - lang: java
           label: java
@@ -4895,6 +5227,8 @@ paths:
                     'y': j80Y3leZHHnxC_gN-Ols_l_VfEBQkfGDFFDG5LNJKMl
                     x: xAdEkaExYWGGAC1xYjwxzvqcaCyDloylZk04yiE9_OF
                     kid: ec256-enc-001
+        '204':
+          description: No JWK Set available for this service
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -4909,7 +5243,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/service/jwks/get?pretty=true \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -4968,6 +5302,7 @@ paths:
             application/json:
               schema:
                 type: object
+                additionalProperties: true
                 description: |
                   An object representing OpenID Provider configuration information. See [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata) and [OpenID Provider Configuration Response](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse) for more details.
               example:
@@ -5263,7 +5598,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/service/configuration?pretty=true \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -5409,7 +5744,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/registration \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "json": "{ \"client_name\": \"My Dynamic Client\" }" }'
         - lang: java
           label: java
@@ -5583,7 +5918,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/registration/get \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "clientId": "26837717140341", "token": "qs4Tu5TV7qqDYT93bFs6ISyhTByMF9o-54GY4JU5vTA" }'
         - lang: java
           label: java
@@ -5761,7 +6096,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/registration/update \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "clientId": "26837717140341", "token": "qs4Tu5TV7qqDYT93bFs6ISyhTByMF9o-54GY4JU5vTA", "json": "..." }'
         - lang: java
           label: java
@@ -5911,7 +6246,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/client/registration/delete \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "clientId": "26837717140341", "token": "qs4Tu5TV7qqDYT93bFs6ISyhTByMF9o-54GY4JU5vTA"}'
         - lang: java
           label: java
@@ -6239,7 +6574,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/backchannel/authentication \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters": "login_hint=john&scope=openid&client_notification_token=my-client-notification-token&user_code=my-user-code", "clientId": "26862190133482", "clientSecret":"8J9pAEX6IQw7lYtYGsc_s9N4jlEz_DfkoCHIswJjFjfgKZX-nC4EvKtaHXcP9mHBfS7IU4jytjSZZpaK9UJ77A" }'
         - lang: java
           label: java
@@ -6382,7 +6717,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/backchannel/authentication/issue \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "NFIHGx_btVrWmtAD093D-87JxvT4DAtuijEkLVHbS4Q" }'
         - lang: java
           label: java
@@ -6475,7 +6810,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/backchannel/authentication/fail \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "holsZhINBhum6j6MYE4yZefHuQN_kd609veKCst31p0", "reason": "ACCESS_DENIED" }'
         - lang: java
           label: java
@@ -6645,7 +6980,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/backchannel/authentication/complete \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "ticket": "NFIHGx_btVrWmtAD093D-87JxvT4DAtuijEkLVHbS4Q", "result": "AUTHORIZED", "subject": "john" }'
         - lang: java
           label: java
@@ -6810,7 +7145,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/device/authorization \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "parameters": "client_id=26888344961664&scope=history.read", "clientId": "26888344961664", "clientSecret":"SfnYOLkJdofrb_66mTd6q03_SDoDEUnpXtvqFaE4k6L6UcpZzbdVJi2GpBj48AvGeDDllwsTruC62WYqQ_LGog" }'
         - lang: java
           label: java
@@ -6924,7 +7259,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/device/verification \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "userCode": "XWWKPBWVXQ" }'
         - lang: java
           label: java
@@ -7046,7 +7381,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/device/complete \
             -H 'Content-Type: application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "userCode": "XWWKPBWVXQ", "result": "AUTHORIZED", "subject": "john" }'
         - lang: java
           label: java
@@ -7182,7 +7517,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/auth/token/get/list/?clientIdentifier=26888344961664\&subject=john\&start=0\&end=3 \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -7273,7 +7608,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/token/create \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "grantType": "AUTHORIZATION_CODE", "clientId": 26888344961664, "subject": "john", "scopes": [ "history.read", "timeline.read" ] }'
         - lang: java
           label: java
@@ -7300,6 +7635,88 @@ paths:
             req.scopes = [ 'history.read', 'timeline.read' ]
 
             api.tokenCreate(req)
+      tags:
+        - Token Operations
+  /api/{serviceId}/auth/token/create/batch:
+    post:
+      summary: Create Access Tokens in Batch
+      description: |
+        Create access tokens in batch.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: dryRun
+          description: |
+            If `true`, the request is processed but access tokens are not actually created.
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/token_create_request'
+      responses:
+        '200':
+          description: Batch request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/token_create_batch_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: auth_token_create_batch_api
+      tags:
+        - Token Operations
+  /api/{serviceId}/auth/token/create/batch/status/{tokenBatchRequestId}:
+    get:
+      summary: Get Batch Token Creation Status
+      description: |
+        Get the status of a batch token creation request.
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: tokenBatchRequestId
+          description: |
+            A token batch request ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved the status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/token_create_batch_status_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: auth_token_create_batch_status_api
       tags:
         - Token Operations
   /api/{serviceId}/auth/token/update:
@@ -7361,7 +7778,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/token/update \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "accessToken": "Z5a40U6dWvw2gMoCOAFbZcM85q4HC0Z--0YKD9-Nf6Q", "scopes": [ "history.read" ] }'
         - lang: java
           label: java
@@ -7425,7 +7842,7 @@ paths:
           source: |
             curl -v -X DELETE https://us.authlete.com/api/21653835348762/auth/token/delete/Bk1QneTxkoLKw_RRB8ToVL25Plt075RvPK68N9cWWtg \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -7490,6 +7907,8 @@ paths:
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
       operationId: auth_token_revoke_api
@@ -7499,7 +7918,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/auth/token/revoke \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "accessToken": "Z5a40U6dWvw2gMoCOAFbZcM85q4HC0Z--0YKD9-Nf6Q", "scopes": [ "history.read" ] }'
         - lang: java
           label: java
@@ -7581,7 +8000,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/jose/verify \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d jose=eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE1NTk4MTE3NTAsImlzcyI6IjU3Mjk3NDA4ODY3In0K.csmdholMVcmjqHe59YWgLGNvm7I5Whp4phQCoGxyrlRGMnTgsfxtwyxBgMXQqEPD5q5k9FaEWNk37K8uAtSwrA \
             -d clockSkew=100 \
             -d signedByClient=true \
@@ -7712,7 +8131,7 @@ paths:
           label: curl
           source: |
             curl -v https://us.authlete.com/api/21653835348762/federation/configuration \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F'
         - lang: java
           label: java
           source: |
@@ -7789,6 +8208,7 @@ paths:
         - Federation Endpoint
   /api/info:
     get:
+      security: []
       summary: Get Server Metadata
       description: |
         get the server version and enabled features
@@ -7860,6 +8280,48 @@ paths:
       tags:
         - Client Management
   /api/{serviceId}/client/extension/requestable_scopes/update/{clientId}:
+    post:
+      summary: Update Requestable Scopes
+      description: |
+        Update requestable scopes of a client
+      parameters:
+        - in: path
+          name: serviceId
+          description: A service ID.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: clientId
+          schema:
+            type: string
+          required: true
+          description: |
+            A client ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/client_extension_requestable_scopes_update_request'
+      responses:
+        '200':
+          description: Requestable scopes updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_extension_requestable_scopes_update_response'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: client_extension_requestables_scopes_update_api_post
+      tags:
+        - Client Management
     put:
       summary: Update Requestable Scopes
       description: |
@@ -8431,6 +8893,36 @@ paths:
       operationId: vci_batch_issue_api
       tags:
         - Verifiable Credential Issuer
+  /api/lifecycle/healthcheck:
+    get:
+      summary: Health Check
+      security: []
+      description: |
+        Perform a health check of the server.
+      parameters:
+        - in: query
+          name: extended
+          description: |
+            If `true`, perform extended health checks (e.g. database connectivity).
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: OK
+        '500':
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                type: string
+      tags:
+        - Lifecycle
   /api/{serviceId}/vci/deferred/parse:
     post:
       summary: Parse Deferred Credential
@@ -8684,7 +9176,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/nativesso \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "accessToken": "_kh1aygxZ5NKLYKCJRM8M_AYvDg2wCWoprQDjfO87ZWq", "refreshToken": "kHUGSt_d3LSgiCQzH7wa5TpwIHWgjAZGw14zZV7hRqw", "deviceSecret": "my-ds", "claims": "{\"given_name\":\"John\",\"family_name\":\"Brown\",\"email\":\"test@example.com\"}" }'
         - lang: java
           label: java
@@ -8771,7 +9263,7 @@ paths:
           source: |
             curl -v -X POST https://us.authlete.com/api/21653835348762/nativesso/logout \
             -H 'Content-Type:application/json' \
-            -u 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
+            -H 'Authorization: Bearer V5a40R6dWvw2gMkCOBFdZcM95q4HC0Z-T0YKD9-nR6F' \
             -d '{ "sessionId": "my-sid" }'
         - lang: java
           label: java
@@ -8965,6 +9457,7 @@ components:
         - PRIVATE_KEY_JWT
         - TLS_CLIENT_AUTH
         - SELF_SIGNED_TLS_CLIENT_AUTH
+        - ATTEST_JWT_CLIENT_AUTH
     client_extension:
       type: object
       properties:
@@ -9034,6 +9527,7 @@ components:
             permission to make token exchange requests ([RFC 8693][https://www.rfc-editor.org/rfc/rfc8693.html])
     client:
       type: object
+      additionalProperties: true
       example:
         number: 1140735077
         serviceNumber: 715948317
@@ -9157,6 +9651,10 @@ components:
 
             This property corresponds to the `software_id metadata` defined in [2. Client Metadata](https://datatracker.ietf.org/doc/html/rfc7591#section-2)
             of [RFC 7591](https://datatracker.ietf.org/doc/html/rfc7591).
+        developer:
+          type: string
+          description: |
+            The unique identifier of the developer who created this client application.
         softwareVersion:
           type: string
           description: |
@@ -9404,10 +9902,13 @@ components:
             This property corresponds to `jwks_uri` in [OpenID Connect Dynamic Client Registration 1.0, 2.
             Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata).
         userInfoSignAlg:
+          nullable: true
           $ref: '#/components/schemas/jws_alg'
         userInfoEncryptionAlg:
+          nullable: true
           $ref: '#/components/schemas/jwe_alg'
         userInfoEncryptionEnc:
+          nullable: true
           $ref: '#/components/schemas/jwe_enc'
         loginUri:
           type: string
@@ -9745,6 +10246,40 @@ components:
 
             This property corresponds to the `use_mtls_endpoint_aliases` client metadata that is defined in
             [FAPI 2.0 Security Profile, 8.1.1. use_mtls_endpoint_aliases](https://openid.bitbucket.io/fapi/fapi-2_0-security-profile.html#section-8.1.1).
+        inScopeForTokenMigration:
+          type: boolean
+          description: |
+            The flag indicating whether this client is in scope for token migration 
+            operations.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            Location of the Client ID Metadata Document that was used for this client.
+        metadataDocumentExpiresAt:
+          type: integer
+          format: int64
+          description: |
+            Expiration time of the metadata document (UNIX time in milliseconds).
+        metadataDocumentUpdatedAt:
+          type: integer
+          format: int64
+          description: |
+            Last-updated time of the metadata document (UNIX time in milliseconds).
+        discoveredByMetadataDocument:
+          type: boolean
+          description: |
+            Indicates whether this client was discovered via a Client ID Metadata Document.
+        clientSource:
+          type: string
+          description: |
+            Source of this client record.
+          enum:
+            - DYNAMIC_REGISTRATION
+            - AUTOMATIC_REGISTRATION
+            - EXPLICIT_REGISTRATION
+            - METADATA_DOCUMENT
+            - STATIC_REGISTRATION
     delivery_mode:
       type: string
       enum:
@@ -9791,8 +10326,10 @@ components:
         - DEVICE_CODE
         - TOKEN_EXCHANGE
         - JWT_BEARER
+        - PRE_AUTHORIZED_CODE
     jwe_alg:
       type: string
+      nullable: true
       description: |
         this is the 'alg' header value for encrypted JWT tokens.
         Depending upon the context, this refers to key transport scheme to be used by the client and by the server. For instance:
@@ -9821,6 +10358,7 @@ components:
         - PBES2_HS512_A256KW
     jwe_enc:
       type: string
+      nullable: true
       description: |
         This is the encryption algorithm to be used when encrypting a JWT on client or server side.
         Depending upon the context, this refers to encryption done by the client or by the server. For instance:
@@ -9836,6 +10374,7 @@ components:
         - A256GCM
     jws_alg:
       type: string
+      nullable: true
       description: |
         The signature algorithm for JWT. This value is represented on 'alg' attribute
         of the header of JWT.
@@ -9890,6 +10429,7 @@ components:
         - LOGIN
         - CONSENT
         - SELECT_ACCOUNT
+        - CREATE
     property:
       type: object
       properties:
@@ -9983,6 +10523,67 @@ components:
           format: int64
           readOnly: true
           description: The service ID used in Authlete API calls. The value of this property is assigned by Authlete.
+        apiSecret:
+          type: string
+          readOnly: true
+          description: |
+            The API secret of this service. This value is assigned by Authlete and 
+            is used for service authentication in API calls.
+        tokenBatchNotificationEndpoint:
+          type: string
+          format: uri
+          description: |
+            The endpoint for batch token notifications. This endpoint is called when 
+            multiple tokens are issued or revoked in a batch operation.
+        clientAssertionAudRestrictedToIssuer:
+          type: boolean
+          description: |
+            The flag indicating whether the audience of client assertion JWTs must 
+            match the issuer identifier of this service.
+        serviceOwnerNumber:
+          type: integer
+          format: int32
+          readOnly: true
+          description: |
+            The number of the organization that owns this service. This value is 
+            assigned by Authlete.
+        clientsPerDeveloper:
+          type: integer
+          format: int32
+          description: |
+            The maximum number of client applications that a developer can have.
+        developerAuthenticationCallbackEndpoint:
+          type: string
+          format: uri
+          description: |
+            The endpoint for developer authentication callbacks. This is used when 
+            developers log into the developer portal.
+        developerAuthenticationCallbackApiKey:
+          type: string
+          description: |
+            The API key for basic authentication at the developer authentication 
+            callback endpoint.
+        developerAuthenticationCallbackApiSecret:
+          type: string
+          description: |
+            The API secret for basic authentication at the developer authentication 
+            callback endpoint.
+        supportedSnses:
+          type: array
+          items:
+            type: string
+            enum:
+              - FACEBOOK
+          description: |
+            Social login services (SNS) that this service supports for end-user 
+            authentication.
+        snsCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/sns_credentials'
+          description: |
+            The credentials for social login services (SNS) that are used for 
+            end-user authentication.
         clientIdAliasEnabled:
           type: boolean
           description: Deprecated. Always `true`.
@@ -11394,6 +11995,56 @@ components:
             * `"1.0"` or `"1.0-Final"` → Final 1.0 specification.
 
             Choose the value that matches the OID4VCI behaviour your service should expose. See the OID4VCI documentation for details.
+        cimdMetadataPolicyEnabled:
+          type: boolean
+          description: |
+            Flag that controls whether the CIMD metadata policy is applied to client
+            metadata obtained through the Client ID Metadata Document (CIMD)
+            mechanism.
+        clientIdMetadataDocumentSupported:
+          type: boolean
+          description: |
+            Indicates whether the Client ID Metadata Document (CIMD) mechanism is
+            supported. When `true`, the service will attempt to retrieve client
+            metadata via CIMD where applicable.
+        cimdAllowlistEnabled:
+          type: boolean
+          description: |
+            Enables the allowlist for CIMD. When `true`, only CIMD endpoints that are
+            on the allowlist are used.
+        cimdAllowlist:
+          type: array
+          items:
+            type: string
+          description: |
+            The allowlist of CIMD endpoints (hosts/URIs) that may be used when
+            retrieving client metadata via Client ID Metadata Documents.
+        cimdAlwaysRetrieved:
+          type: boolean
+          description: |
+            If `true`, CIMD retrieval is always attempted for clients, regardless of
+            other conditions.
+        cimdHttpPermitted:
+          type: boolean
+          description: |
+            Allows CIMD retrieval over plain HTTP. When `false`, only HTTPS CIMD
+            endpoints are allowed.
+        cimdQueryPermitted:
+          type: boolean
+          description: |
+            Allows the use of query parameters when retrieving CIMD metadata. When
+            `false`, query parameters are disallowed for CIMD requests.
+        cimdMetadataPolicy:
+          type: string
+          description: |
+            The metadata policy applied to client metadata obtained through the CIMD
+            mechanism. The value must follow the metadata policy grammar defined in
+            [OpenID Federation 1.0 §6.1 Metadata Policy](https://openid.net/specs/openid-federation-1_0.html#name-metadata-policy).
+        httpAliasProhibited:
+          type: boolean
+          description: |
+            When `true`, client ID aliases starting with `https://` or `http://` are
+            prohibited.
     sns_credentials:
       type: object
       properties:
@@ -11629,18 +12280,22 @@ components:
           type: string
           description: The identifier of a credential request.
         credentialEndpoint:
-          type: boolean
+          type: string
+          format: uri
           description: The URL of the credential endpoint of the credential issuer.
         batchCredentialEndpoint:
-          type: integer
-          format: int64
+          type: string
+          format: uri
           description: The URL of the batch credential endpoint of the credential issuer.
         deferredCredentialEndpoint:
           type: string
           description: The URL of the deferred credential endpoint of the credential issuer.
         credentialsSupported:
-          type: boolean
-          description: A JSON array describing supported credentials.
+          type: string
+          description: |
+            A JSON object describing supported credential configurations.
+            This property corresponds to the credential_configurations_supported metadata.
+            Note: Due to a breaking change in December 2023, this was changed from a JSON array to a JSON object.
         credentialResponseEncryptionAlgValuesSupported:
           type: array
           items:
@@ -11919,6 +12574,25 @@ components:
             $ref: '#/components/schemas/client_limited'
           description: |
             An array of clients.
+    client_authorization_get_list_request:
+      type: object
+      properties:
+        subject:
+          type: string
+          description: Unique user ID of an end-user.
+        developer:
+          type: string
+          description: Unique ID of a client developer.
+        start:
+          type: integer
+          format: int32
+          description: Start index of search results (inclusive).
+        end:
+          type: integer
+          format: int32
+          description: End index of search results (exclusive).
+      required:
+        - subject
     client_authorization_update_request:
       type: object
       required:
@@ -12000,6 +12674,45 @@ components:
         resultMessage:
           type: string
           description: A short message which explains the result of the API call.
+    cimd_options:
+      type: object
+      description: |
+        Options for [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD).
+
+        These options allow per-request control over CIMD behavior, taking precedence over service-level configuration when provided.
+      properties:
+        alwaysRetrieved:
+          type: boolean
+          description: |
+            Whether to always retrieve client metadata in the CIMD context regardless of the cache's validity.
+
+            Under normal circumstances, client metadata retrieved from the location referenced by the client ID is stored in the database with an expiration time calculated using HTTP caching mechanisms (see [RFC 9111 HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111.html)). Until that expiration time is reached, Authlete does not attempt to retrieve the client metadata again.
+
+            When this flag is set to `true`, Authlete retrieves the client metadata regardless of the cache's validity.
+
+            If this flag is included in an Authlete API call and its value is `true`, it takes precedence over the corresponding service configuration (see `Service.cimdAlwaysRetrieved`).
+
+            This flag is effective only when the service supports CIMD (see `Service.clientIdMetadataDocumentSupported`) and CIMD is actually used to resolve client metadata. For example, if the client ID in a request does not appear to be a valid URI, CIMD will not be used even if the service is configured to support it. In such cases, this flag has no effect.
+
+            Client metadata retrieval is performed only in the initiating request of an authorization flow, and not in any subsequent requests. For example, in the authorization code flow, metadata may be retrieved during the authorization request, but not during the subsequent token request. In contrast, in the client credentials flow, metadata retrieval may occur because the token request itself is the initiating request in the flow.
+        httpPermitted:
+          type: boolean
+          description: |
+            Whether to allow the `http` scheme in client IDs in the CIMD context.
+
+            The specification requires the `https` scheme, but if this flag is set to `true`, Authlete also allows the `http` scheme. The main purpose of this option is to make development easier for developers who run CIMD-enabled servers and a web server publishing client metadata on their local machines without TLS.
+
+            Given this purpose, it is not recommended to enable this option in production environments unless an allowlist is used (see `Service.cimdAllowlistEnabled`).
+
+            If this flag is included in an Authlete API call and its value is `true`, it takes precedence over the corresponding service configuration (see `Service.cimdHttpPermitted`).
+        queryPermitted:
+          type: boolean
+          description: |
+            Whether to allow a query component in client IDs in the CIMD context.
+
+            Although the specification states that a client ID "SHOULD NOT include a query string component," it does technically allow it. However, query components are prone to misuse. Therefore, Authlete does not allow them by default. Setting this flag to `true` relaxes that restriction.
+
+            If this flag is included in an Authlete API call and its value is `true`, it takes precedence over the corresponding service configuration (see `Service.cimdQueryPermitted`).
     authorization_request:
       type: object
       required:
@@ -12024,6 +12737,12 @@ components:
             by the `/auth/authorization/ticket/update` API.
 
             The text will be compressed and encrypted when it is saved in the Authlete database.
+        cimdOptions:
+          $ref: '#/components/schemas/cimd_options'
+          description: |
+            Options for [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD).
+
+            These options allow per-request control over CIMD behavior, taking precedence over service-level configuration when provided.
     client_limited_authorization:
       type: object
       properties:
@@ -12114,6 +12833,240 @@ components:
           description: |
             URLs of policy pages with language tags.
             If the client application has different policy pages for different languages, this property can be used to register the URLs.
+        serviceNumber:
+          type: integer
+          format: int32
+          readOnly: true
+          description: |
+            The sequential number of the service of the client application. The value of this property is
+            assigned by Authlete.
+        defaultMaxAge:
+          type: integer
+          format: int32
+          description: |
+            The default maximum authentication age in seconds. This value is used when an authorization request from the client application does not have `max_age` request parameter.
+
+            This property corresponds to `default_max_age` in
+            [OpenID Connect Dynamic Client Registration 1.0, 2. Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata).
+        authTimeRequired:
+          type: boolean
+          description: |
+            The flag to indicate whether this client requires `auth_time` claim to be embedded in the ID token.
+
+            This property corresponds to `require_auth_time` in
+            [OpenID Connect Dynamic Client Registration 1.0, 2. Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata).
+        createdAt:
+          type: integer
+          format: int64
+          readOnly: true
+          description: The time at which this client was created. The value is represented as milliseconds since the UNIX epoch (1970-01-01).
+        modifiedAt:
+          type: integer
+          format: int64
+          readOnly: true
+          description: The time at which this client was last modified. The value is represented as milliseconds since the UNIX epoch (1970-01-01).
+        tlsClientCertificateBoundAccessTokens:
+          type: boolean
+          description: |
+            The flag to indicate whether this client use TLS client certificate bound access tokens.
+        bcUserCodeRequired:
+          type: boolean
+          description: |
+            The boolean flag to indicate whether a user code is required when this client makes a backchannel
+            authentication request.
+
+            This property corresponds to the `backchannel_user_code_parameter` metadata.
+        dynamicallyRegistered:
+          type: boolean
+          readOnly: true
+          description: |
+            The flag to indicate whether this client has been registered dynamically.
+            For more details, see [RFC 7591](https://datatracker.ietf.org/doc/html/rfc7591).
+        parRequired:
+          type: boolean
+          description: |
+            The flag to indicate whether this client is required to use the pushed authorization request endpoint.
+            This property corresponds to the `require_pushed_authorization_requests` client metadata defined
+            in "OAuth 2.0 Pushed Authorization Requests".
+        requestObjectRequired:
+          type: boolean
+          description: |
+            The flag to indicate whether authorization requests from this client are always required to
+            utilize a request object by using either `request` or `request_uri` request parameter.
+
+            If this flag is set to `true` and the service's `traditionalRequestObjectProcessingApplied` is
+            set to `false`, authorization requests from this client are processed as if `require_signed_request_object`
+            client metadata of this client is `true`. The metadata is defined in "JAR (JWT Secured Authorization Request)".
+        frontChannelRequestObjectEncryptionRequired:
+          type: boolean
+          description: |
+            The flag indicating whether encryption of request object is required when the request object
+            is passed through the front channel.
+
+            This flag does not affect the processing of request objects at the Pushed Authorization Request
+            Endpoint, which is defined in [OAuth 2.0 Pushed Authorization Requests](https://datatracker.ietf.org/doc/rfc9126/).
+            Unecrypted request objects are accepted at the endpoint even if this flag is `true`.
+
+            This flag does not indicate whether a request object is always required. There is a different
+            flag, `requestObjectRequired`, for the purpose.
+
+            Even if this flag is `false`, encryption of request object is required if the `frontChannelRequestObjectEncryptionRequired`
+            flag of the service is `true`.
+        requestObjectEncryptionAlgMatchRequired:
+          type: boolean
+          description: |
+            The flag indicating whether the JWE alg of encrypted request object must match the `request_object_encryption_alg`
+            client metadata.
+
+            The `request_object_encryption_alg` client metadata itself is defined in [OpenID Connect Dynamic
+            Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html) as follows.
+
+            > request_object_encryption_alg
+            >
+            > OPTIONAL. JWE [JWE] alg algorithm [JWA] the RP is declaring that it may use for encrypting Request
+              Objects sent to the OP. This parameter SHOULD be included when symmetric encryption will be used,
+              since this signals to the OP that a client_secret value needs to be returned from which the
+              symmetric key will be derived, that might not otherwise be returned. The RP MAY still use other
+              supported encryption algorithms or send unencrypted Request Objects, even when this parameter
+              is present. If both signing and encryption are requested, the Request Object will be signed
+              then encrypted, with the result being a Nested JWT, as defined in [JWT]. The default, if omitted,
+              is that the RP is not declaring whether it might encrypt any Request Objects.
+
+            The point here is "The RP MAY still use other supported encryption algorithms or send unencrypted
+            Request Objects, even when this parameter is present."
+
+            The property that represents the client metadata is `requestEncryptionAlg`. See the description
+            of `requestEncryptionAlg` for details.
+
+            Even if this flag is `false`, the match is required if the `requestObjectEncryptionAlgMatchRequired`
+            flag of the service is `true`.
+        requestObjectEncryptionEncMatchRequired:
+          type: boolean
+          description: |
+            The flag indicating whether the JWE enc of encrypted request object must match the `request_object_encryption_enc`
+            client metadata.
+
+            The `request_object_encryption_enc` client metadata itself is defined in [OpenID Connect Dynamic
+            Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html) as follows.
+
+            > request_object_encryption_enc
+            >
+            > OPTIONAL. JWE enc algorithm [JWA] the RP is declaring that it may use for encrypting Request
+              Objects sent to the OP. If request_object_encryption_alg is specified, the default for this
+              value is A128CBC-HS256. When request_object_encryption_enc is included, request_object_encryption_alg
+              MUST also be provided.
+
+            The property that represents the client metadata is `requestEncryptionEnc`. See the description
+            of `requestEncryptionEnc`  for details.
+
+            Even if this flag is `false`, the match is required if the `requestObjectEncryptionEncMatchRequired`
+            flag of the service is `true`.
+        singleAccessTokenPerSubject:
+          type: boolean
+          description: |
+            If `Enabled` is selected, an attempt to issue a new access token invalidates existing access tokens that are associated with the same combination of subject and client.
+
+            Note that, however, attempts by Client Credentials Flow do not invalidate existing access tokens because access tokens issued by Client Credentials Flow are not associated with any end-user's subject.
+
+            Even if `Disabled` is selected here, single access token per subject is effective if `singleAccessTokenPerSubject` of the `Service` this client belongs to is Enabled.
+        pkceRequired:
+          type: boolean
+          description: |
+            The flag to indicate whether the use of Proof Key for Code Exchange (PKCE) is always required for authorization requests by Authorization Code Flow.
+
+            If `true`, `code_challenge` request parameter is always required for authorization requests using Authorization Code Flow.
+
+            See [RFC 7636](https://tools.ietf.org/html/rfc7636) (Proof Key for Code Exchange by OAuth Public Clients) for details about `code_challenge` request parameter.
+        pkceS256Required:
+          type: boolean
+          description: |
+            The flag to indicate whether `S256` is always required as the code challenge method whenever [PKCE (RFC 7636)](https://tools.ietf.org/html/rfc7636) is used.
+
+            If this flag is set to `true`, `code_challenge_method=S256` must be included in the authorization request
+            whenever it includes the `code_challenge` request parameter.
+            Neither omission of the `code_challenge_method` request parameter nor use of plain (`code_challenge_method=plain`) is allowed.
+        rsRequestSigned:
+          type: boolean
+          description: |
+            The flag indicating whether this service signs responses from the resource server.
+        dpopRequired:
+          type: boolean
+          description: |
+            If the DPoP is required for this client
+        locked:
+          type: boolean
+          description: |
+            The flag which indicates whether this client is locked.
+        mtlsEndpointAliasesUsed:
+          type: boolean
+          description: |
+            The flag indicating whether the client intends to prefer mutual TLS endpoints over non-MTLS endpoints.
+
+            This property corresponds to the `use_mtls_endpoint_aliases` client metadata that is defined in
+            [FAPI 2.0 Security Profile, 8.1.1. use_mtls_endpoint_aliases](https://openid.bitbucket.io/fapi/fapi-2_0-security-profile.html#section-8.1.1).
+        inScopeForTokenMigration:
+          type: boolean
+          description: |
+            The flag indicating whether this client is in scope for token migration 
+            operations.
+        trustChainExpiresAt:
+          type: integer
+          format: int64
+          description: |
+            the expiration time of the trust chain that was used when this client was registered or updated by the mechanism
+            defined in OpenID Connect Federation 1.0. The value is represented as milliseconds elapsed since the Unix epoch (1970-01-01).
+        trustChainUpdatedAt:
+          type: integer
+          format: int64
+          description: |
+            the time at which the trust chain was updated by the mechanism defined in OpenID Connect Federation 1.0
+        automaticallyRegistered:
+          type: boolean
+          description: |
+            The flag indicating whether this client was registered by the
+            "automatic" client registration of OIDC Federation.
+        explicitlyRegistered:
+          type: boolean
+          description: |
+            The flag indicating whether this client was registered by the
+            "explicit" client registration of OIDC Federation.
+        credentialResponseEncryptionRequired:
+          type: boolean
+          description: True if credential responses to this client must be always encrypted.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            Location of the Client ID Metadata Document that was used for this client.
+            This property is set when client metadata was retrieved via the OAuth Client ID Metadata Document (CIMD) mechanism.
+        metadataDocumentExpiresAt:
+          type: integer
+          format: int64
+          description: |
+            Expiration time of the metadata document (UNIX time in milliseconds).
+        metadataDocumentUpdatedAt:
+          type: integer
+          format: int64
+          description: |
+            Last-updated time of the metadata document (UNIX time in milliseconds).
+        discoveredByMetadataDocument:
+          type: boolean
+          description: |
+            Indicates whether this client was discovered via a Client ID Metadata Document.
+        clientSource:
+          type: string
+          description: |
+            Source of this client record.
+          enum:
+            - DYNAMIC_REGISTRATION
+            - AUTOMATIC_REGISTRATION
+            - EXPLICIT_REGISTRATION
+            - METADATA_DOCUMENT
+            - STATIC_REGISTRATION
+        entityId:
+          type: string
+          description: |
+            the entity ID of this client.
     grant_management_action:
       type: string
       description: |
@@ -12564,6 +13517,12 @@ components:
 
             NOTE: If this property is set to `true`, the `sessionId` request parameter must be provided
             to the `/auth/authorization/issue` API.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     authorization_fail_request:
       type: object
       required:
@@ -12723,7 +13682,9 @@ components:
 
             This request parameter takes precedence over the `idTokenAudType` property of the service.
         verifiedClaimsForTx:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             Values of verified claims requested indirectly by "transformed claims".
 
@@ -12786,6 +13747,13 @@ components:
               "{\"nationalities\":[\"DEU\",\"USA\"]}"
             ]
             ```
+    authorization_ticket_info:
+      type: object
+      properties:
+        context:
+          type: string
+          description: |
+            The arbitrary text attached to the ticket.
     authorization_issue_response:
       type: object
       properties:
@@ -12840,7 +13808,7 @@ components:
             The newly issued access token in JWT format. If the service is not configured to issue JWT-based access tokens,
             this property is always set to `null`.
         ticketInfo:
-          type: string
+          $ref: '#/components/schemas/authorization_ticket_info'
           description: |
             The information about the ticket.
     pushed_authorization_request:
@@ -12867,7 +13835,9 @@ components:
           type: string
           description: The client certificate from the MTLS connection to pushed authorization endpoint from the client application.
         clientCertificatePath:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             The certificate path presented by the client during client authentication. These certificates are strings in PEM format.
         dpop:
@@ -12941,6 +13911,7 @@ components:
             - PRIVATE_KEY_JWT
             - TLS_CLIENT_AUTH
             - SELF_SIGNED_TLS_CLIENT_AUTH
+            - ATTEST_JWT_CLIENT_AUTH
         dpopNonce:
           type: string
           description: |
@@ -12979,7 +13950,9 @@ components:
           type: string
           description: The client certificate from the MTLS of the token request from the client application.
         clientCertificatePath:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             The certificate path presented by the client during client authentication. These certificates are strings in PEM format.
         properties:
@@ -13054,17 +14027,25 @@ components:
             the service's `dpopNonceRequired` property is `false`, calling the `/auth/token` API with this
             `dpopNonceRequired` parameter `true` will force the Authlete API to check whether the DPoP proof
             JWT includes the expected `nonce` value.
+        cimdOptions:
+          $ref: '#/components/schemas/cimd_options'
+          description: |
+            Options for [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD).
+
+            These options allow per-request control over CIMD behavior, taking precedence over service-level configuration when provided.
     token_type:
       type: string
       description: |
-        The grant type of the access token when the access token was created.
+        The token type identifier used in OAuth 2.0 Token Exchange (RFC 8693).
+        The API returns short codes (enum constant names) in response fields.
       enum:
-        - urn:ietf:params:oauth:token-type:jwt
-        - urn:ietf:params:oauth:token-type:access_token
-        - urn:ietf:params:oauth:token-type:refresh_token
-        - urn:ietf:params:oauth:token-type:id_token
-        - urn:ietf:params:oauth:token-type:saml1
-        - urn:ietf:params:oauth:token-type:saml2
+        - JWT
+        - ACCESS_TOKEN
+        - REFRESH_TOKEN
+        - ID_TOKEN
+        - SAML1
+        - SAML2
+        - DEVICE_SECRET
         - DEVICE_CODE
         - TOKEN_EXCHANGE
         - JWT_BEARER
@@ -13086,7 +14067,7 @@ components:
         scopes:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/scope'
           description: The scopes granted on the token
         expiresAt:
           type: integer
@@ -13111,6 +14092,19 @@ components:
           type: boolean
           description: |
             Flag which indicates whether the entity ID of the client was used when the request for the access token was made.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     token_response:
       type: object
       properties:
@@ -13130,6 +14124,8 @@ components:
             - OK
             - TOKEN_EXCHANGE
             - JWT_BEARER
+            - NATIVE_SSO
+            - ID_TOKEN_REISSUABLE
           description: The next action that the authorization server implementation should take.
         responseContent:
           type: string
@@ -13247,6 +14243,10 @@ components:
             The target resources of the access token being issued. See "Resource Indicators for OAuth 2.0" for details.
         authorizationDetails:
           $ref: '#/components/schemas/authz_details'
+        additionalClaims:
+          type: string
+          description: |
+            Additional claims to be embedded in an ID token.
         serviceAttributes:
           type: array
           items:
@@ -13370,6 +14370,19 @@ components:
             it with base64url. Note that this hash computation logic is not a rule defined in the Native SSO
             specification; rather, it is Authlete-specific fallback logic used when the `deviceSecretHash`
             parameter is omitted.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     token_fail_request:
       type: object
       required:
@@ -13577,6 +14590,19 @@ components:
             type: string
           description: |
             The scopes associated with the refresh token. May be null.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     introspection_request:
       type: object
       required:
@@ -13908,6 +14934,19 @@ components:
 
             When this response parameter is `true`, the HTTP response from the protected resource endpoint
             must include the `Signature` and `Signature-Input` HTTP fields.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     standard_introspection_request:
       type: object
       required:
@@ -13925,7 +14964,7 @@ components:
             in the `application/x-www-form-urlencoded` format. It is the entity body of the request that
             Authlete's  `/api/auth/introspection/standard` API expects as the value of `parameters`.
         withHiddenProperties:
-          type: string
+          type: boolean
           description: |
             Flag indicating whether to include hidden properties in the output.
 
@@ -14018,6 +15057,7 @@ components:
             - INTERNAL_SERVER_ERROR
             - BAD_REQUEST
             - OK
+            - JWT
           description: The next action that the authorization server implementation should take.
         responseContent:
           type: string
@@ -14059,7 +15099,9 @@ components:
           description: |
             The client certificate used in the TLS connection between the client application and the revocation endpoint.
         clientCertificatePath:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             The certificate path presented by the client during client authentication.
         oauthClientAttestation:
@@ -14408,6 +15450,19 @@ components:
           description: |
             The expected nonce value for DPoP proof JWT, which should be used
             as the value of the `DPoP-Nonce` HTTP header.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     userinfo_issue_request:
       type: object
       required:
@@ -14443,7 +15498,9 @@ components:
             HTTP headers to be included in processing the signature. If this is a signed request, this must include the
             Signature and Signature-Input headers, as well as any additional headers covered by the signature.
         verifiedClaimsForTx:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             Values of verified claims requested indirectly by "transformed claims".
 
@@ -14710,6 +15767,7 @@ components:
           type: array
           items:
             type: object
+            additionalProperties: true
             description: |
               An object representing JWK. See [RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517) for more details.
           description: An array of [JWK](https://datatracker.ietf.org/doc/html/rfc7517)s.
@@ -14796,7 +15854,9 @@ components:
             The client certification used in the TLS connection between the client application and the
             backchannel authentication endpoint of the OpenID provider.
         clientCertificatePath:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             The client certificate path presented by the client during client authentication. Each element
             is a string in PEM format.
@@ -14810,6 +15870,12 @@ components:
           description: |
             The value of the `OAuth-Client-Attestation-PoP` HTTP header, which is defined in the specification
             of [OAuth 2.0 Attestation-Based Client Authentication](https://datatracker.ietf.org/doc/draft-ietf-oauth-attestation-based-client-auth/).
+        cimdOptions:
+          $ref: '#/components/schemas/cimd_options'
+          description: |
+            Options for [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD).
+
+            These options allow per-request control over CIMD behavior, taking precedence over service-level configuration when provided.
     backchannel_authentication_response:
       type: object
       properties:
@@ -15019,6 +16085,19 @@ components:
           type: boolean
           description: |
             Flag which indicates whether the entity ID of the client was used when the request for the access token was made.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     backchannel_authentication_issue_request:
       type: object
       required:
@@ -15368,6 +16447,19 @@ components:
           type: boolean
           description: |
             Flag which indicates whether the entity ID of the client was used when the request for the access token was made.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     device_authorization_request:
       type: object
       required:
@@ -15407,7 +16499,9 @@ components:
             The client certificate used in the TLS connection between the client application and the device
             authorization endpoint of the authorization server.
         clientCertificatePath:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             The client certificate path presented by the client during client authentication. Each element
             is a string in PEM format.
@@ -15421,6 +16515,12 @@ components:
           description: |
             The value of the `OAuth-Client-Attestation-PoP` HTTP header, which is defined in the specification
             of [OAuth 2.0 Attestation-Based Client Authentication](https://datatracker.ietf.org/doc/draft-ietf-oauth-attestation-based-client-auth/).
+        cimdOptions:
+          $ref: '#/components/schemas/cimd_options'
+          description: |
+            Options for [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD).
+
+            These options allow per-request control over CIMD behavior, taking precedence over service-level configuration when provided.
     device_authorization_response:
       type: object
       properties:
@@ -15608,6 +16708,19 @@ components:
           type: boolean
           description: |
             Flag which indicates whether the entity ID of the client was used when the request for the access token was made.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     device_verification_request:
       type: object
       required:
@@ -15754,6 +16867,19 @@ components:
           type: boolean
           description: |
             Flag which indicates whether the entity ID of the client was used when the request for the access token was made.
+        metadataDocumentLocation:
+          type: string
+          format: uri
+          description: |
+            The location of the client's metadata document that was used to resolve client metadata.
+
+            This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.
     device_complete_request:
       type: object
       required:
@@ -16073,6 +17199,12 @@ components:
           description: |
             The session ID, which is the ID of the user's authentication session, associated with a newly
             created access token.
+        metadataDocumentUsed:
+          type: boolean
+          description: |
+            Flag indicating whether a metadata document was used to resolve client metadata for this request.
+
+            When `true`, the client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism rather than from the Authlete database.
     token_create_response:
       type: object
       properties:
@@ -16172,6 +17304,70 @@ components:
             NOTE: A refresh token must be associated with a session ID, which is the ID of the user's authentication
             session, in order to be used to obtain a [Native SSO](https://openid.net/specs/openid-connect-native-sso-1_0.html)-compliant
             ID token in the refresh token flow.
+    token_create_batch_response:
+      type: object
+      description: |
+        Response from a token create batch request.
+      properties:
+        resultCode:
+          type: string
+          description: The result code of the request.
+        resultMessage:
+          type: string
+          description: The result message of the request.
+        requestId:
+          type: string
+          description: The ID of the issued token batch request.
+    token_batch_status:
+      type: object
+      description: |
+        Status of a token batch operation.
+      properties:
+        batchKind:
+          type: string
+          enum:
+            - CREATE
+          description: The kind of batch operation.
+        requestId:
+          type: string
+          description: The request ID.
+        result:
+          type: string
+          enum:
+            - SUCCEEDED
+            - FAILED
+          description: The result of the batch operation.
+        errorCode:
+          type: string
+          description: The error code if the operation failed.
+        errorDescription:
+          type: string
+          description: The error description if the operation failed.
+        tokenCount:
+          type: integer
+          format: int64
+          description: The number of tokens processed.
+        createdAt:
+          type: integer
+          format: int64
+          description: The time at which the batch operation was created (timestamp).
+        modifiedAt:
+          type: integer
+          format: int64
+          description: The time at which the batch operation was last modified (timestamp).
+    token_create_batch_status_response:
+      type: object
+      description: |
+        Response from a token create batch status request.
+      properties:
+        resultCode:
+          type: string
+          description: The result code of the request.
+        resultMessage:
+          type: string
+          description: The result message of the request.
+        status:
+          $ref: '#/components/schemas/token_batch_status'
     token_update_request:
       type: object
       required:
@@ -16375,7 +17571,9 @@ components:
           description: |
             A JOSE object.
         mandatoryClaims:
-          type: string
+          type: array
+          items:
+            type: string
           description: |
             Mandatory claims that are required to be included in the JOSE object.
         clockSkew:
@@ -16498,13 +17696,53 @@ components:
           items:
             type: string
           description: the features that the server supports.
+        configuration:
+          type: object
+          additionalProperties:
+            type: string
+          description: Server configuration properties as key-value pairs.
+        serviceTokenCache:
+          type: object
+          description: Cache statistics for service tokens.
+          properties:
+            hitCount:
+              type: integer
+              format: int64
+              description: The number of cache hits.
+            missCount:
+              type: integer
+              format: int64
+              description: The number of cache misses.
+            loadSuccessCount:
+              type: integer
+              format: int64
+              description: The number of successful loads.
+            loadFailureCount:
+              type: integer
+              format: int64
+              description: The number of failed loads.
+            totalLoadTime:
+              type: integer
+              format: int64
+              description: The total load time in nanoseconds.
+            evictionCount:
+              type: integer
+              format: int64
+              description: The number of evictions.
+            evictionWeight:
+              type: integer
+              format: int64
+              description: The weight of evicted entries.
     client_extension_requestable_scopes_get_response:
       type: object
       properties:
         requestableScopes:
           type: array
+          nullable: true
           items:
             type: string
+          description: |
+            The requestable scopes for this client. This is null if the Requestable Scopes per Client feature is not enabled for this client.
     client_extension_requestable_scopes_update_request:
       type: object
       properties:
@@ -17143,7 +18381,7 @@ components:
       type: object
       properties:
         info:
-          type: string
+          $ref: '#/components/schemas/authorization_ticket_info'
           description: Information about the ticket.
         action:
           type: string
@@ -17175,7 +18413,7 @@ components:
       type: object
       properties:
         info:
-          type: string
+          $ref: '#/components/schemas/authorization_ticket_info'
           description: Information about the ticket.
         action:
           type: string
@@ -17487,6 +18725,15 @@ components:
           example:
             resultCode: A001215
             resultMessage: '[A001215] /auth/authorization, The client (ID = 26837717140341) is locked.'
+    '404':
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/result'
+          example:
+            resultCode: 404
+            resultMessage: ''
     '500':
       description: ''
       content:

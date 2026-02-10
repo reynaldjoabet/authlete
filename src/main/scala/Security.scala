@@ -1,11 +1,4 @@
 import java.io.FileInputStream
-import java.security.cert.CertPathBuilder
-import java.security.AlgorithmParameters
-import java.security.KeyFactory
-import java.security.KeyPairGenerator
-import java.security.KeyStore
-import java.security.MessageDigest
-import java.security.Signature
 import java.security.cert.CRL
 import java.security.cert.CRLException
 import java.security.cert.CRLReason
@@ -52,11 +45,93 @@ import java.security.cert.X509CRLSelector
 import java.security.cert.X509CertSelector
 import java.security.cert.X509Certificate
 import java.security.cert.X509Extension
+import java.security.spec.AlgorithmParameterSpec
+import java.security.spec.DSAGenParameterSpec
+import java.security.spec.DSAParameterSpec
+import java.security.spec.DSAPrivateKeySpec
+import java.security.spec.DSAPublicKeySpec
+import java.security.spec.ECField
+import java.security.spec.ECFieldF2m
+import java.security.spec.ECFieldFp
+import java.security.spec.ECGenParameterSpec
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPoint
+import java.security.spec.ECPublicKeySpec
+import java.security.spec.EdDSAParameterSpec
+import java.security.spec.EdECPoint
+import java.security.spec.EdECPrivateKeySpec
+import java.security.spec.EdECPublicKeySpec
+import java.security.spec.EllipticCurve
+import java.security.spec.EncodedKeySpec
+import java.security.spec.InvalidKeySpecException
+import java.security.spec.KeySpec
+import java.security.spec.MGF1ParameterSpec
+import java.security.spec.NamedParameterSpec
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.PSSParameterSpec
+import java.security.spec.RSAKeyGenParameterSpec
+import java.security.spec.RSAMultiPrimePrivateCrtKeySpec
+import java.security.spec.RSAPrivateCrtKeySpec
+import java.security.spec.RSAPrivateKeySpec
+import java.security.spec.RSAPublicKeySpec
+import java.security.spec.X509EncodedKeySpec
+import java.security.spec.XECPrivateKeySpec
+import java.security.spec.XECPublicKeySpec
+import java.security.AlgorithmParameters
+import java.security.KeyFactory
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.MessageDigest
+import java.security.Signature
 
-import apple.security
-import jdk.security.jarsigner
-import jdk.security.jarsigner.JarSigner
-import sun.security.x509.X509Key
+import com.sun.crypto.provider.AESCipher
+import com.sun.crypto.provider.AESKeyGenerator
+import com.sun.crypto.provider.AESParameters
+import com.sun.crypto.provider.ARCFOURCipher
+import com.sun.crypto.provider.BlowfishCipher
+import com.sun.crypto.provider.BlowfishKeyGenerator
+import com.sun.crypto.provider.BlowfishParameters
+import com.sun.crypto.provider.ChaCha20Cipher
+import com.sun.crypto.provider.ChaCha20Poly1305Parameters
+import com.sun.crypto.provider.DESCipher
+import com.sun.crypto.provider.DESKeyFactory
+import com.sun.crypto.provider.DESKeyGenerator
+import com.sun.crypto.provider.DESParameters
+import com.sun.crypto.provider.DESedeCipher
+import com.sun.crypto.provider.DESedeWrapCipher
+import com.sun.crypto.provider.DHKEM
+import com.sun.crypto.provider.DHKeyAgreement
+import com.sun.crypto.provider.DHKeyFactory
+import com.sun.crypto.provider.DHKeyPairGenerator
+import com.sun.crypto.provider.DHParameterGenerator
+import com.sun.crypto.provider.DHParameters
+import com.sun.crypto.provider.GCM
+import com.sun.crypto.provider.GCMParameters
+import com.sun.crypto.provider.GaloisCounterMode
+import com.sun.crypto.provider.HmacCore
+import com.sun.crypto.provider.HmacMD5
+import com.sun.crypto.provider.HmacPKCS12PBECore
+import com.sun.crypto.provider.HmacSHA1KeyGenerator
+import com.sun.crypto.provider.JceKeyStore
+import com.sun.crypto.provider.KeyGeneratorCore
+import com.sun.crypto.provider.KeyWrapCipher
+import com.sun.crypto.provider.OAEPParameters
+import com.sun.crypto.provider.PBEKeyFactory
+import com.sun.crypto.provider.PBEParameters
+import com.sun.crypto.provider.PBES2Core
+import com.sun.crypto.provider.PBEWithMD5AndDESCipher
+import com.sun.crypto.provider.PBEWithMD5AndTripleDESCipher
+import com.sun.crypto.provider.PBKDF2Core
+import com.sun.crypto.provider.PKCS12PBECipherCore
+import com.sun.crypto.provider.RC2Cipher
+import com.sun.crypto.provider.RC2Parameters
+import com.sun.crypto.provider.RSACipher
+//import com.sun.crypto.provider.SslMacCore
+import com.sun.crypto.provider.SunJCE
+import com.sun.crypto.provider.TlsKeyMaterialGenerator
+import com.sun.crypto.provider.TlsMasterSecretGenerator
+import com.sun.crypto.provider.TlsPrfGenerator
+import com.sun.crypto.provider.TlsRsaPremasterSecretGenerator
 import javax.crypto.spec.ChaCha20ParameterSpec
 import javax.crypto.spec.DESKeySpec
 import javax.crypto.spec.DESedeKeySpec
@@ -82,16 +157,29 @@ import javax.crypto.SecretKeyFactory
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
-
-import com.sun.crypto.provider.AESCipher
-import sun.security.pkcs11.SunPKCS11
+import jdk.security.jarsigner
+import jdk.security.jarsigner.JarSigner
+import sun.security.action
+import sun.security.ec
+import sun.security.jca
+import sun.security.jgss
+import sun.security.krb5
+import sun.security.pkcs.ContentInfo
+import sun.security.pkcs.EncryptedPrivateKeyInfo
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs.PKCS8Key
+import sun.security.pkcs.PKCS9Attribute
+import sun.security.pkcs.PKCS9Attributes
+import sun.security.pkcs.SignerInfo
+import sun.security.pkcs10.PKCS10
+import sun.security.pkcs10.PKCS10Attribute
+import sun.security.pkcs10.PKCS10Attributes
 import sun.security.pkcs11.wrapper.PKCS11
-import sun.security.pkcs11.P11TlsMasterSecretGenerator
 import sun.security.pkcs11.P11TlsMasterSecretGenerator
 import sun.security.pkcs11.P11Util
 import sun.security.pkcs11.Secmod
+import sun.security.pkcs11.SunPKCS11
 import sun.security.pkcs12
-import sun.security.pkcs12.PKCS12KeyStore
 import sun.security.pkcs12.PKCS12KeyStore
 import sun.security.provider
 import sun.security.rsa
@@ -101,65 +189,44 @@ import sun.security.timestamp
 import sun.security.util
 import sun.security.validator
 import sun.security.x509
-import sun.security.pkcs10.PKCS10
-import sun.security.pkcs10.PKCS10Attribute
-import sun.security.pkcs10.PKCS10Attributes
-import sun.security.pkcs.ContentInfo
-import sun.security.pkcs.EncryptedPrivateKeyInfo
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs.PKCS8Key
-import sun.security.pkcs.PKCS9Attribute
-import sun.security.pkcs.PKCS9Attributes
-import sun.security.pkcs.SignerInfo
-import sun.security.krb5
-import sun.security.jgss
-import sun.security.jca
-import sun.security.ec
-import sun.security.action
 import sun.security.x509.AlgIdDSA
 import sun.security.x509.AlgorithmId
 import sun.security.x509.AuthorityInfoAccessExtension
+import sun.security.x509.AuthorityKeyIdentifierExtension
+import sun.security.x509.BasicConstraintsExtension
+import sun.security.x509.CRLDistributionPointsExtension
 import sun.security.x509.CertificateAlgorithmId
 import sun.security.x509.CertificateExtensions
-import sun.security.x509.CertificateSerialNumber
-import sun.security.x509.CertificateSubjectName
-import sun.security.x509.CertificateValidity
-import sun.security.x509.CertificateVersion
-import sun.security.x509.X500Name
-import sun.security.x509.X509Key
-import sun.security.x509.X509CertInfo
-import sun.security.x509.X509CertImpl
-import sun.security.x509.X509CRLImpl
-import sun.security.x509.X509CRLImpl
-import sun.security.x509.X509CRLEntryImpl
-import sun.security.x509.X500Name
-import sun.security.x509.X400Address
-import sun.security.x509.UniqueIdentity
-import sun.security.x509.URIName
-import sun.security.x509.SubjectKeyIdentifierExtension
-import sun.security.x509.SubjectInfoAccessExtension
-import sun.security.x509.SubjectAlternativeNameExtension
-import sun.security.x509.SerialNumber
-import sun.security.x509.ReasonFlags
-import sun.security.x509.RFC822Name
-import sun.security.x509.RDN
-import sun.security.x509.PrivateKeyUsageExtension
-import sun.security.x509.PolicyConstraintsExtension
-import sun.security.x509.PolicyInformation
-import sun.security.x509.KeyUsageExtension
-import sun.security.x509.ExtendedKeyUsageExtension
-import sun.security.x509.NetscapeCertTypeExtension
-import sun.security.x509.BasicConstraintsExtension
-import sun.security.x509.AuthorityKeyIdentifierExtension
-import sun.security.x509.CRLDistributionPointsExtension
 import sun.security.x509.CertificatePoliciesExtension
-import sun.security.x509.DNSName
-import sun.security.x509.IPAddressName
 import sun.security.x509.CertificateSerialNumber
 import sun.security.x509.CertificateSubjectName
 import sun.security.x509.CertificateValidity
 import sun.security.x509.CertificateVersion
 import sun.security.x509.CertificateX509Key
+import sun.security.x509.DNSName
+import sun.security.x509.ExtendedKeyUsageExtension
+import sun.security.x509.IPAddressName
+import sun.security.x509.KeyUsageExtension
+import sun.security.x509.NetscapeCertTypeExtension
+import sun.security.x509.PolicyConstraintsExtension
+import sun.security.x509.PolicyInformation
+import sun.security.x509.PrivateKeyUsageExtension
+import sun.security.x509.RDN
+import sun.security.x509.RFC822Name
+import sun.security.x509.ReasonFlags
+import sun.security.x509.SerialNumber
+import sun.security.x509.SubjectAlternativeNameExtension
+import sun.security.x509.SubjectInfoAccessExtension
+import sun.security.x509.SubjectKeyIdentifierExtension
+import sun.security.x509.URIName
+import sun.security.x509.UniqueIdentity
+import sun.security.x509.X400Address
+import sun.security.x509.X500Name
+import sun.security.x509.X509CRLEntryImpl
+import sun.security.x509.X509CRLImpl
+import sun.security.x509.X509CertImpl
+import sun.security.x509.X509CertInfo
+import sun.security.x509.X509Key
 
 object Security {
 
@@ -238,8 +305,6 @@ object Security {
 
   signature.sign()
 
-
-
 //Using the Apple Provider for Keychain signatures
 // This uses the "Apple" provider to perform a SHA256 with ECDSA signature
   val appleSigner = Signature.getInstance("SHA256withECDSA", "Apple")
@@ -256,6 +321,19 @@ object Security {
   verifier.initVerify(publicKey)
 
   val v = MessageDigest.getInstance("SHA3-256")
+
+  val skf =
+    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+
+  val spec = new PBEKeySpec("password".toCharArray(), "salt".getBytes("UTF-8"), 65536, 256)
+  val key  = skf.generateSecret(spec)
+
+  Cipher.getInstance("AES/GCM/NoPadding")
+  Cipher.getInstance("ChaCha20-Poly1305")
+
+  val kf    = KeyFactory.getInstance("RSA")
+  val bytes = Array[Byte]( /* byte array representing the private key in PKCS#8 format */ )
+  val pk    = kf.generatePrivate(new PKCS8EncodedKeySpec(bytes))
 
 }
 

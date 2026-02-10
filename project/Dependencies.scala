@@ -79,4 +79,12 @@ object Dependencies {
 
   lazy val fs2 = "co.fs2" %% "fs2-core" % Version.fs2
 
+  lazy val nimbusdsJoseJwt =
+    "com.nimbusds" % "nimbus-jose-jwt" % "10.7"
+
+  lazy val nimbusdsOauth2OidcSdk =
+    "com.nimbusds" % "oauth2-oidc-sdk" % "11.32"
+
+  lazy val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % "11.0.3"
+
 }

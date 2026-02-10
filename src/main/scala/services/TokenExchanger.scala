@@ -1,216 +1,392 @@
-// package services
+package services
 
-// import java.net.URI
+import java.net.URI
 
-// import scala.util.Try
+import scala.util.Try
 
-// import cats.syntax.all.*
-// import cats.Monad
+import cats.data.EitherT
+import cats.effect.Concurrent
+import cats.syntax.all.*
 
-// import common.models.*
-// import com.nimbusds.jwt.EncryptedJWT
-// import com.nimbusds.jwt.JWTParser
-// import org.http4s.dsl.Http4sDsl
-// import org.http4s.Response
-// import org.http4s.Status
+import authlete.api.TokenOperations
+import authlete.models.{
+  GrantType,
+  TokenCreateRequest,
+  TokenCreateResponse,
+  TokenCreateResponseEnums,
+  TokenInfo,
+  TokenResponse,
+  TokenResponseEnums,
+  TokenType
+}
+import com.github.plokhotnyuk.jsoniter_scala.core.*
+import com.github.plokhotnyuk.jsoniter_scala.macros.*
+import org.http4s.{MediaType, Response, Status}
+import org.http4s.headers.`Content-Type`
+import sttp.client4.Backend
 
-// object TokenExchanger {
+/**
+  * Token Exchange Service implementing RFC 8693.
+  *
+  * This service handles OAuth 2.0 Token Exchange requests, allowing clients to exchange one token
+  * for another with different characteristics (scopes, audiences, etc.).
+  *
+  * @see
+  *   https://datatracker.ietf.org/doc/html/rfc8693
+  */
+trait TokenExchanger[F[_]] {
 
-//   private def determineClientId(resp: TokenResponse) = {
-//     // The client ID of the client that made the token exchange request.
-//     val clientId = resp.clientId
+  /**
+    * Process a token exchange request and create a new access token.
+    *
+    * @param tokenResponse
+    *   The response from Authlete's /auth/token API with TOKEN_EXCHANGE action
+    * @return
+    *   Either an error or a successful token exchange response
+    */
+  def exchange(tokenResponse: TokenResponse): F[Either[TokenExchangeError, TokenExchangeResult]]
+}
 
-//     // If 'Service.tokenExchangeByIdentifiableClientsOnly' is false,
-//     // token exchange requests that contain no client identifier are not
-//     // rejected. In that case, 'clientId' here becomes 0.
-//     //
-//     // However, this authorization server implementation does not allow
-//     // unidentifiable clients to make token exchange requests regardless
-//     // of whether 'Service.tokenExchangeByIdentifiableClientsOnly' is
-//     // true or false.
+object TokenExchanger {
 
-//     clientId
-//     .toRight[Exception](
-//       new Exception(
-//         "This authorization server does not allow unidentifiable " +
-//           "clients to make token exchange requests."
-//       )
-//     ).ensure(
-//       new Exception(
-//         "This authorization server does not allow unidentifiable " +
-//           "clients to make token exchange requests."
-//       )
-//     )(clientId => clientId != 0)
+  // ============================================================================
+  // Domain Models
+  // ============================================================================
 
-//     Either.cond(
-//       clientId == 0,
-//       clientId,
-//       new Exception(
-//         "This authorization server does not allow unidentifiable " +
-//           "clients to make token exchange requests."
-//       )
-//     ) // InvalidArgumentException
+  /**
+    * Configuration for the token exchanger.
+    */
+  final case class Config(
+      serviceId: String,
+      baseUrl: String = "https://us.authlete.com",
+      serviceAccessToken: String,
+      allowUnidentifiableClients: Boolean = false,
+      supportedTokenTypes: Set[TokenType] = Set(
+        TokenType.ACCESS_TOKEN,
+        TokenType.REFRESH_TOKEN,
+        TokenType.JWT,
+        TokenType.ID_TOKEN
+      )
+  )
 
-//     // This simple implementation uses the client ID of the client
-//     // that made the token exchange request.
+  /**
+    * Create a new TokenExchanger instance.
+    */
+  def apply[F[_]: Concurrent](
+      config: Config,
+      backend: Backend[F]
+  ): TokenExchanger[F] = new TokenExchangerImpl[F](config, backend)
 
-//   }
+  // ============================================================================
+  // Implementation
+  // ============================================================================
 
-//   def createResponse[F[_]: Monad](
-//       resp: TokenResponse,
-//       authleteService: AuthleteService[F]
-//   ): Either[Exception, F[Response[F]]] = {
-//     val dsl = Http4sDsl[F]
-//     import dsl.*
-//     // This sample implementation creates an access token.
+  private class TokenExchangerImpl[F[_]: Concurrent](
+      config: Config,
+      backend: Backend[F]
+  ) extends TokenExchanger[F] {
 
-//     // Client ID to assign.
-//     val clientId = determineClientId(resp)
-//     // Subject to assign.
-//     val subject = determineSubject(resp)
+    private val tokenOps =
+      TokenOperations.withBearerTokenAuth(config.baseUrl, config.serviceAccessToken)
 
-//     (determineClientId(resp), determineSubject(resp)).mapN { (clientId, subject) =>
-//       // Scopes to assign.
-//       val scopes = determineScopes(resp)
+    override def exchange(
+        tokenResponse: TokenResponse
+    ): F[Either[TokenExchangeError, TokenExchangeResult]] =
+      (for {
+        clientId <- EitherT.fromEither[F](determineClientId(tokenResponse))
+        subject  <- EitherT.fromEither[F](determineSubject(tokenResponse))
+        scopes    = determineScopes(tokenResponse)
+        resources = determineResources(tokenResponse)
+        result   <- EitherT(createAccessToken(clientId, subject, scopes, resources))
+      } yield result).value
 
-//       // Resources to assign.
-//       val resources = determineResources(resp)
-//       // Create an access token.
-//       createAccessToken(clientId, scopes, resources, subject, authleteService).flatMap { resp =>
-//         // The content of a successful token response that conforms to
-//         // Section 2.2.1. Successful Response of RFC 8693.
-//         val content = String.format(
-//           "{\n" +
-//             "  \"access_token\":\"%s\",\n" +
-//             "  \"issued_token_type\":\"urn:ietf:params:oauth:token-type:access_token\",\n" +
-//             "  \"token_type\":\"Bearer\",\n" +
-//             "  \"expires_in\":%d,\n" +
-//             "  \"scope\":\"%s\",\n" +
-//             "  \"refresh_token\":\"%s\"\n" +
-//             "}\n",
-//           extractAccessToken(resp),
-//           resp.getExpiresIn(),
-//           resp.getScopes().mkString(" "),
-//           resp.getRefreshToken()
-//         )
-//       // json
-//       Status.Ok(content)
-//       }
-//     }
+    private def determineClientId(resp: TokenResponse): Either[TokenExchangeError, Long] =
+      resp.clientId match {
+        case Some(id) if id != 0L => Right(id)
+        case _ if config.allowUnidentifiableClients =>
+          Left(
+            TokenExchangeError.UnidentifiableClient(
+              "Client ID is required for token exchange"
+            )
+          )
+        case _ =>
+          Left(
+            TokenExchangeError.UnidentifiableClient(
+              "This authorization server does not allow unidentifiable clients to make token exchange requests"
+            )
+          )
+      }
 
-//   }
+    private def determineSubject(resp: TokenResponse): Either[TokenExchangeError, String] =
+      resp.subjectTokenType match {
+        case Some(TokenType.ACCESS_TOKEN) | Some(TokenType.REFRESH_TOKEN) =>
+          determineSubjectByTokenInfo(resp)
 
-//   private def determineScopes(resp: TokenResponse) =
-//     // This simple implementation uses the scopes specified
-//     // by the token exchange request.
-//     resp.getScopes()
+        case Some(TokenType.JWT) | Some(TokenType.ID_TOKEN) =>
+          determineSubjectByJwt(resp)
 
-//   private def determineResources(resp: TokenResponse) =
-//     // This simple implementation uses the resources specified
-//     // by the token exchange request.
-//     resp.getResources();
+        case Some(TokenType.SAML1) | Some(TokenType.SAML2) =>
+          Left(
+            TokenExchangeError.UnsupportedTokenType(
+              "SAML tokens are not supported by this authorization server"
+            )
+          )
 
-//   private def determineSubject(resp: TokenResponse) = {
-//     // The value of the "subject_token_type" request parameter.
-//     val tokenType = resp.getSubjectTokenType();
+        case Some(other) =>
+          Left(
+            TokenExchangeError.UnsupportedTokenType(
+              s"Unsupported subject token type: $other"
+            )
+          )
 
-//     // The subject to be assigned to a new access token.
+        case None =>
+          Left(
+            TokenExchangeError.InvalidRequest(
+              "Subject token type is required"
+            )
+          )
+      }
 
-//     tokenType match {
-//       case TokenType.ACCESS_TOKEN | TokenType.REFRESH_TOKEN =>
-//         // Use the subject associated with the token as the subject of
-//         // a new access token.
-//         determineSubjectByTokenInfo(resp)
+    private def determineSubjectByTokenInfo(
+        resp: TokenResponse
+    ): Either[TokenExchangeError, String] =
+      resp
+        .subjectTokenInfo
+        .flatMap(_.subject)
+        .toRight(
+          TokenExchangeError.SubjectNotFound(
+            "Could not determine the subject from the given subject token. " +
+              "This may happen when the token was created by the client credentials flow."
+          )
+        )
 
-//       case TokenType.JWT | TokenType.ID_TOKEN =>
-//         // Use the value of the "sub" claim of the JWT as the subject of
-//         // a new access token.
-//         determineSubjectByJwt(resp)
+    private def determineSubjectByJwt(resp: TokenResponse): Either[TokenExchangeError, String] =
+      resp.subjectToken match {
+        case Some(jwt) =>
+          // Basic JWT parsing to extract subject claim
+          // Note: Authlete has already validated the JWT structure
+          parseJwtSubject(jwt).toRight(
+            TokenExchangeError.SubjectNotFound(
+              "The value of the 'sub' claim could not be extracted from the subject token JWT"
+            )
+          )
+        case None =>
+          Left(TokenExchangeError.InvalidRequest("Subject token is missing"))
+      }
 
-//       case TokenType.SAML1 | TokenType.SAML2 =>
-//         Either.left[Exception, String](
-//           new Exception("This authorization server does not support the token type")
-//         )
+    private def parseJwtSubject(jwt: String): Option[String] = {
+      // JWT format: header.payload.signature
+      val parts = jwt.split('.')
+      if (parts.length != 3) return None
 
-//     }
+      Try {
+        val payloadJson = new String(
+          java.util.Base64.getUrlDecoder.decode(parts(1)),
+          java.nio.charset.StandardCharsets.UTF_8
+        )
+        // Simple extraction of "sub" claim
+        val subPattern = """"sub"\s*:\s*"([^"]+)"""".r
+        subPattern.findFirstMatchIn(payloadJson).map(_.group(1))
+      }.toOption.flatten
+    }
 
-//   }
+    private def determineScopes(resp: TokenResponse): Seq[String] =
+      resp.scopes.getOrElse(Seq.empty)
 
-//   private def determineSubjectByTokenInfo(resp: TokenResponse) = {
-//     // When the token type is "urn:ietf:params:oauth:token-type:access_token"
-//     // or "urn:ietf:params:oauth:token-type:refresh_token", Authlete returns
-//     // more information about the token.
-//     val tokenInfo = resp.getSubjectTokenInfo()
+    private def determineResources(resp: TokenResponse): Seq[URI] =
+      resp.resources.getOrElse(Seq.empty).flatMap(r => Try(URI.create(r)).toOption)
 
-//     // The subject associated with the token. If the token was created by the
-//     // client credentials flow, the value is null.
-//     Option(tokenInfo.getSubject()).toRight( // This happens (1) when an access token that was created by
-//       // the client credentials flow was given or (2) when a JWT
-//       // that does not contain the "sub" claim was given.
-//       Exception("Could not determine the subject from the given subject token.")
-//     )
-//   }
+    private def createAccessToken(
+        clientId: Long,
+        subject: String,
+        scopes: Seq[String],
+        resources: Seq[URI]
+    ): F[Either[TokenExchangeError, TokenExchangeResult]] = {
+      val request = TokenCreateRequest(
+        grantType = GrantType.TOKEN_EXCHANGE,
+        clientId = clientId,
+        subject = Some(subject),
+        scopes = if (scopes.nonEmpty) Some(scopes) else None,
+        resources = if (resources.nonEmpty) Some(resources) else None
+      )
 
-//   private def determineSubjectByJwt(resp: TokenResponse) = {
-//     // When the token type is "urn:ietf:params:oauth:token-type:jwt" or
-//     // "urn:ietf:params:oauth:token-type:id_token", the format of the
-//     // subject token is JWT.
-//     //
-//     // Basic validation on the JWT has already been done by Authlete's
-//     // /auth/token API. See the JavaDoc of the TokenResponse class for
-//     // details about the validation steps.
-//     val subjectToken = resp.getSubjectToken()
+      tokenOps
+        .tokenCreateApi(config.serviceId, request)
+        .send(backend)
+        .map { response =>
+          response.body match {
+            case Right(tcResp) =>
+              tcResp.action match {
+                case Some(TokenCreateResponseEnums.Action.OK) =>
+                  Right(
+                    TokenExchangeResult(
+                      accessToken = extractAccessToken(tcResp),
+                      tokenType = "Bearer",
+                      expiresIn = tcResp.expiresIn,
+                      scope = tcResp.scopes.map(_.mkString(" ")),
+                      refreshToken = tcResp.refreshToken,
+                      issuedTokenType = "urn:ietf:params:oauth:token-type:access_token"
+                    )
+                  )
+                case Some(TokenCreateResponseEnums.Action.BAD_REQUEST) =>
+                  Left(
+                    TokenExchangeError.InvalidRequest(
+                      tcResp.resultMessage.getOrElse("Bad request")
+                    )
+                  )
+                case Some(TokenCreateResponseEnums.Action.FORBIDDEN) =>
+                  Left(
+                    TokenExchangeError.AccessDenied(
+                      tcResp.resultMessage.getOrElse("Access denied")
+                    )
+                  )
+                case _ =>
+                  Left(
+                    TokenExchangeError.ServerError(
+                      tcResp.resultMessage.getOrElse("Internal server error")
+                    )
+                  )
+              }
+            case Left(err) =>
+              Left(
+                TokenExchangeError.ServerError(
+                  s"Failed to create access token: ${err.getMessage}"
+                )
+              )
+          }
+        }
+    }
 
-//     // Parse the subject token as JWT.
-//     Try(JWTParser.parse(subjectToken))
-//       .toEither
-//       // If the JWT is encrypted.
-//       .filterOrElse(
-//         jwt => jwt.isInstanceOf[EncryptedJWT],
-//         new Exception(
-//           "This authorization server does not accept an encrypted JWT as a subject token."
-//         )
-//       )
+    private def extractAccessToken(resp: TokenCreateResponse): String =
+      // JWT access token takes precedence if available
+      resp.jwtAccessToken.orElse(resp.accessToken).getOrElse("")
 
-//       // Get the value of the "sub" claim from the payload of the JWT.
-//       //
-//       // An ID Token must always have the "sub" claim (OIDC Core) while
-//       // a JWT does not necessarily have the "sub" claim (RFC 7519).
-//       .map(_.getJWTClaimsSet().getSubject())
-//       .leftMap(_ =>
-//         new Exception(
-//           "The value of the 'sub' claim failed to be extracted from the payload of the subject token."
-//         )
-//       )
-//   }
+  }
 
-//   private def createAccessToken[F[_]](
-//       clientId: Long,
-//       scopes: List[String],
-//       resources: List[URI],
-//       subject: String,
-//       authleteService: AuthleteService[F]
-//   ) = {
-//     // A request to Authlete's /auth/token/create API.
-//     val request = TokenCreateRequest(GrantType.TokenExchange, clientId,Some(subject), Some(scopes), resources=Some(resources.map(_.toString)) )
+}
 
-//     authleteService.tokenCreate(request)
+/**
+  * Result of a successful token exchange.
+  */
+final case class TokenExchangeResult(
+    accessToken: String,
+    tokenType: String,
+    expiresIn: Option[Long],
+    scope: Option[String],
+    refreshToken: Option[String],
+    issuedTokenType: String
+) {
 
-//   }
+  /**
+    * Convert to JSON response content per RFC 8693 Section 2.2.1.
+    */
+  def toJson: String = {
+    val sb = new StringBuilder
+    sb.append("{\n")
+    sb.append(s"""  "access_token": "$accessToken",\n""")
+    sb.append(s"""  "issued_token_type": "$issuedTokenType",\n""")
+    sb.append(s"""  "token_type": "$tokenType"""")
 
-//   private def extractAccessToken(tcResponse: TokenCreateResponse) = {
-//     // If a JWT access token has been issued, it takes precedence over
-//     // a random-string access token.
+    expiresIn.foreach { exp =>
+      sb.append(s""",\n  "expires_in": $exp""")
+    }
 
-//     // An access token in the JWT format. This response parameter holds
-//     // a non-null value when Service.accessTokenSignAlg is not null.
-//     val at = tcResponse.jwtAccessToken
+    scope.foreach { s =>
+      sb.append(s""",\n  "scope": "$s"""")
+    }
 
-//     // If an access token in the JWT format has not been issued.
-//     val accessToken = at.orElse(tcResponse.accessToken) // An access token whose format is just a random string.
+    refreshToken.foreach { rt =>
+      sb.append(s""",\n  "refresh_token": "$rt"""")
+    }
 
-//     accessToken
-//     // The newly issued access token.
-//   }
+    sb.append("\n}")
+    sb.toString
+  }
 
-// }
+  /**
+    * Build an HTTP4s Response.
+    */
+  def toResponse[F[_]: Concurrent]: Response[F] =
+    Response[F](Status.Ok)
+      .withEntity(toJson)
+      .withContentType(`Content-Type`(MediaType.application.json))
+
+}
+
+/**
+  * Token exchange errors per RFC 8693.
+  */
+sealed trait TokenExchangeError {
+
+  def code: String
+  def description: String
+
+  /**
+    * Build an error response per RFC 8693 Section 2.2.2.
+    */
+  def toJson: String =
+    s"""{"error": "$code", "error_description": "$description"}"""
+
+  def toResponse[F[_]: Concurrent]: Response[F] = {
+    val status = this match {
+      case _: TokenExchangeError.InvalidRequest       => Status.BadRequest
+      case _: TokenExchangeError.InvalidClient        => Status.Unauthorized
+      case _: TokenExchangeError.InvalidGrant         => Status.BadRequest
+      case _: TokenExchangeError.UnauthorizedClient   => Status.BadRequest
+      case _: TokenExchangeError.UnsupportedTokenType => Status.BadRequest
+      case _: TokenExchangeError.InvalidScope         => Status.BadRequest
+      case _: TokenExchangeError.AccessDenied         => Status.Forbidden
+      case _: TokenExchangeError.ServerError          => Status.InternalServerError
+      case _: TokenExchangeError.UnidentifiableClient => Status.BadRequest
+      case _: TokenExchangeError.SubjectNotFound      => Status.BadRequest
+    }
+    Response[F](status)
+      .withEntity(toJson)
+      .withContentType(`Content-Type`(MediaType.application.json))
+  }
+
+}
+
+object TokenExchangeError {
+
+  final case class InvalidRequest(description: String) extends TokenExchangeError {
+    val code = "invalid_request"
+  }
+
+  final case class InvalidClient(description: String) extends TokenExchangeError {
+    val code = "invalid_client"
+  }
+
+  final case class InvalidGrant(description: String) extends TokenExchangeError {
+    val code = "invalid_grant"
+  }
+
+  final case class UnauthorizedClient(description: String) extends TokenExchangeError {
+    val code = "unauthorized_client"
+  }
+
+  final case class UnsupportedTokenType(description: String) extends TokenExchangeError {
+    val code = "unsupported_token_type"
+  }
+
+  final case class InvalidScope(description: String) extends TokenExchangeError {
+    val code = "invalid_scope"
+  }
+
+  final case class AccessDenied(description: String) extends TokenExchangeError {
+    val code = "access_denied"
+  }
+
+  final case class ServerError(description: String) extends TokenExchangeError {
+    val code = "server_error"
+  }
+
+  final case class UnidentifiableClient(description: String) extends TokenExchangeError {
+    val code = "invalid_client"
+  }
+
+  final case class SubjectNotFound(description: String) extends TokenExchangeError {
+    val code = "invalid_grant"
+  }
+
+}
