@@ -5,6 +5,9 @@ import com.github.plokhotnyuk.jsoniter_scala.macros._
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 //import common.models.JsoniterSyntaticSugar._
+import java.security.MessageDigest
+import org.bouncycastle.jcajce.provider.symmetric.AES
+import org.bouncycastle.crypto.CipherParameters
 
 val service = """{
   "accessTokenDuration": 3600,
@@ -812,3 +815,32 @@ scopes2.length
 scopes2.head
 
 scopes2.filter(_.name.contains("billing.invoices.read"))
+
+
+val mac= MessageDigest.getInstance("SHA-256")
+
+ val mac2 = new AES.AESCMAC()
+
+ val mac3 = new AES.AESCMAC()
+
+ val mac5=AES.AESCCMMAC()
+ val mac6=AES.AESCCMMAC128()
+ val mac7=AES.AESGMAC()
+ val mac8=AES.AESCCMMAC192()
+val mac9=AES.AESCCMMAC256()
+
+val mac10=AES.Poly1305()
+
+val pbe=AES.PBEWithAESCBC()
+
+val pbe2=AES.PBEWithSHA1AESCBC128()
+
+val pbe3=AES.PBEWithSHA1AESCBC192()
+
+val pbe4=AES.PBEWithSHA1AESCBC256()
+
+val pbe5=AES.PBEWithSHA256AESCBC128()
+
+val pbe6=AES.PBEWithSHA256AESCBC192()
+
+val pbe7=AES.PBEWithSHA256AESCBC256()

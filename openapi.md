@@ -117,3 +117,18 @@ jps | grep Bloop | awk '{print $1}'
 2773
 34239
 ```
+
+```sh
+
+    [ Jawn Parser ]             [ io.circe.Decoder ]
+string -------------> Json ------------------> Case Class
+
+    [ io.circe.Encoder ]        [ Circe Printer ]
+Case Class -------------> Json -----------------> string
+
+    [ circe-jsoniter Parser ]   [ io.circe.Decoder ]
+string ---------------------> Json ------------------> Case Class
+
+    [ io.circe.Encoder ]        [ circe-jsoniter Printer ]
+Case Class -------------> Json -----------------------> string
+```

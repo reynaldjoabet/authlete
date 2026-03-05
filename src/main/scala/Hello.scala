@@ -113,3 +113,55 @@ trait Greeting {
 
 case class User(id: UUID, name: String, surname: String)
 case class ApiUser(name: String, surname: String)
+
+/**
+  * state object to pass to IDP when redirecting
+  */
+final case class RedirectState(
+    // identity provider
+    idp: String,
+    // nonce to match in the token
+    nonce: String,
+    // This needs to match what came into the account controller so we can retrieve the auth context
+    // surely stored in cache
+    returnUrl: String,
+    // get application user info after sigin OIDC
+    authenticationUrl: String,
+    // code for pkce
+    codeVerifier: String
+)
+
+final case class RedisConfig(
+    host: String,
+    port: Int,
+    password: Option[String],
+    database: String,
+    maxConnections: Int
+)
+
+final case class PostgresConfig(
+    host: String,
+    port: Int,
+    username: String,
+    password: String,
+    database: String,
+    maxPoolSize: Int
+)
+
+final case class RelyingPartyConfig(
+    id: String,
+    name: String
+)
+
+final case class TelemetryConfig(
+    serviceName: String,
+    jaegerEndpoint: String
+)
+
+final case class SmtpConfig(
+    host: String,
+    port: Int,
+    username: String,
+    password: String,
+    fromAddress: String
+)

@@ -46,6 +46,20 @@ lazy val root = (project in file("."))
       nimbusdsJoseJwt,
       nimbusdsOauth2OidcSdk,
       jwtCirce,
+      caffeine,
+      zio,
+      zioJson,
+      zioTest,
+      zioTestSbt,
+      zioConfig,
+      zioConfigMagnolia,
+      caffeine,
+      zioLogging,
+      zioLoggingSlf4j,
+      zioHttp,
+      zioJsonGolden,
+      zioSttp,
+      zioKafka,
       "qa.hedgehog" %% "hedgehog-sbt"    % "0.13.0" % Test,
       "qa.hedgehog" %% "hedgehog-core"   % "0.13.0" % Test,
       "qa.hedgehog" %% "hedgehog-runner" % "0.13.0" % Test
@@ -119,3 +133,5 @@ populateTestDB := {
 }
 
 Global / onChangedBuildSource := IgnoreSourceChanges
+
+ThisProject/dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.0"

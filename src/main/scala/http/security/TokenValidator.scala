@@ -1,3 +1,13 @@
 package middleware
 
-object TokenValidator {}
+
+// use nimbusds and zio
+
+
+abstract class TokenValidator {
+  def validate(token: String): Boolean
+}
+object TokenValidator {
+
+
+}

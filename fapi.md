@@ -944,3 +944,425 @@ The OpenID Connect ID Token is a signed JSON Web Token (JWT) that is given to th
 Since the ID Token is signed by the authorization server, it also provides a location to add detached signatures over the authorization code (`c_hash`) and access token (`at_hash`). These hashes can be validated by the client while still keeping the authorization code and access token content opaque to the client, preventing a whole class of injection attacks.
 
 interoperability: Take the US with more than 4000 banks, can you imagine as a fintech if you had to configure your OAuth stack individually for 4000 different banks? it does not allow any ecosystem to scale. FAPI by reducing optionality makes things interoperable and scalable
+
+## It Constrains the Options
+
+Standard OAuth has a lot of "Optional" features. In a high-security environment, options are dangerous because developers might choose the easier, less secure path. A Profile removes the "Optional" labels
+
+## It Ensures Interoperability
+
+If two banks in different countries both say they use "OAuth," they might still be unable to talk to each other because they configured their settings differently. If they both use the FAPI Profile, they are guaranteed to speak the same "dialect." It’s like a specialized language for a specific industry.
+OAuth 2.0 and OpenID Connect are intentionally flexible. That flexibility leads to:
+
+- Many optional features
+- Multiple valid ways to do the same thing
+- Different security levels depending on choices This is great for general use, but not ideal for high-risk domains like finance.
+
+
+Sending a "Payment Initiation" request. You sign it with your private key so the bank knows it's you, but you encrypt it with the bank's public key so no man-in-the-middle can see the payment details
+
+You can configure a DefaultJWTProcessor that rejects any token that doesn't use the exact curve or key length required by your jurisdiction (e.g., rejecting RSA keys smaller than 2048-bit).
+
+Nimbus is designed to work via the JCA (Java Cryptography Architecture), meaning you can plug in a BouncyCastle FIPS provider or a hardware HSM. This is often a hard requirement for banks to store their signing keys in a physical secure module.
+
+Message-Level Security exists alongside Transport-Level Security (HTTPS)
+
+## End-to-End vs. Hop-to-Hop
+HTTPS only secures the connection between two immediate points (a "hop").
+
+- The Problem: In a modern banking architecture, your request might go through a Load Balancer, an API Gateway (like Tyk or Kong), a Web Application Firewall (WAF), and multiple internal microservices
+- The Risk: HTTPS is often "terminated" at the Gateway. This means the message is decrypted, inspected, and then re-encrypted for the next internal hop. During that millisecond at the Gateway, the payment details are in plain text. If an internal system or a malicious insider is monitoring that Gateway, they can see/alter your payment.
+
+
+
+If you are using JWE, your token will have 5 parts instead of the usual 3 you see in a standard signed JWT (JWS).
+
+
+Anatomy of a JWE (The 5 Parts)
+
+While a signed JWT looks like Header.Payload.Signature, a JWE looks like this: Header.EncryptedKey.IV.Ciphertext.Tag
+
+- JOSE Header: Contains the encryption algorithms (e.g., RSA-OAEP for the key and A256GCM for the content).
+- JWE Encrypted Key: A one-time symmetric key used to encrypt the payload, which is itself encrypted with the recipient's public key.
+
+- JWE Initialization Vector (IV): Random data to ensure the same input doesn't result in the same output twice.
+- JWE Ciphertext: The actual encrypted "JWT Claims" (the secret data).
+- JWE Authentication Tag: Ensures the ciphertext hasn't been tampered with.
+
+Nested JWT: The "Open Banking" Standard
+
+In Fintech, you usually don't just encrypt; you Sign then Encrypt. This is called a Nested JWT.
+
+Step 1: You create a JWS (Sign the data with your private key).
+
+Step 2: You wrap that JWS inside a JWE (Encrypt the whole thing with the bank's public key).
+
+Why? If you only Encrypt (JWE), the bank knows the data is secret, but they don't know for sure who sent it. By signing first, they get both Confidentiality and Authenticity
+
+### The JWKS Endpoint
+The jwks_uri points to a public endpoint (e.g., https://auth.bank.com/jwks.json). This is a JSON Web Key Set.
+
+When your client (the browser/app) needs to encrypt a payment, it calls this URL.
+
+The bank responds with its Public Keys in JSON format.
+
+Crucially, the JSON contains a field "use": "enc", which tells your library: "Use this specific key for encryption, not for signature verification.
+
+the beauty of Hybrid Encryption: it uses the "best of both worlds" by combining asymmetric and symmetric cryptography
+
+Encryption is meant for Confidentiality. To ensure only the recipient can read a message, you use the recipient's Public Key (which anyone can have) to lock it. Only their Private Key (which only they have) can unlock it
+
+### JWE strictly forbids it
+
+The JWE specification (RFC 7516) is designed for privacy.
+If you look at the JWE algorithms (like RSA-OAEP), they are explicitly programmed to take a Public Key as input for the encryption step.
+
+If your goal is to send a message where people know it's you AND it's a secret, you use the Nested JWT approach:
+
+- Sign with YOUR Private Key (JWS): This proves the message is from you (Authenticity).
+- Encrypt with THE RECIPIENT'S Public Key (JWE): This hides the signed message from everyone else (Confidentiality).
+
+
+```java
+
+	/**
+	 * Encrypts the specified clear text of a {@link JWEObject JWE object}.
+	 *
+	 * @param header    The JSON Web Encryption (JWE) header. Must specify
+	 *                  a supported JWE algorithm and method. Must not be
+	 *                  {@code null}.
+	 * @param clearText The clear text to encrypt. Must not be {@code null}.
+	 *
+	 * @return The resulting JWE crypto parts.
+	 *
+	 * @throws JOSEException If the JWE algorithm or method is not
+	 *                       supported or if encryption failed for some
+	 *                       other internal reason.
+	 */
+	@Deprecated
+	public JWECryptoParts encrypt(final JWEHeader header, final byte[] clearText)
+		throws JOSEException {
+
+		return encrypt(header, clearText, AAD.compute(header));
+	}
+
+
+// cek is Content Encryption Key (CEK).
+	@Override
+	public JWECryptoParts encrypt(final JWEHeader header, final byte[] clearText, final byte[] aad)
+		throws JOSEException {
+
+		final JWEAlgorithm alg = JWEHeaderValidation.getAlgorithmAndEnsureNotNull(header);
+		final EncryptionMethod enc = header.getEncryptionMethod();
+		final SecretKey cek = getCEK(enc); // Generate and encrypt the CEK according to the enc method
+
+		final Base64URL encryptedKey; // The second JWE part
+
+		if (alg.equals(JWEAlgorithm.RSA1_5)) {
+			encryptedKey = Base64URL.encode(RSA1_5.encryptCEK(publicKey, cek, getJCAContext().getKeyEncryptionProvider()));
+		} else if (alg.equals(JWEAlgorithm.RSA_OAEP)) {
+			encryptedKey = Base64URL.encode(RSA_OAEP.encryptCEK(publicKey, cek, getJCAContext().getKeyEncryptionProvider()));
+		} else if (alg.equals(JWEAlgorithm.RSA_OAEP_256)) {
+			encryptedKey = Base64URL.encode(RSA_OAEP_SHA2.encryptCEK(publicKey, cek, 256, getJCAContext().getKeyEncryptionProvider()));
+		} else if (alg.equals(JWEAlgorithm.RSA_OAEP_384)) {
+			encryptedKey = Base64URL.encode(RSA_OAEP_SHA2.encryptCEK(publicKey, cek, 384, getJCAContext().getKeyEncryptionProvider()));
+		} else if (alg.equals(JWEAlgorithm.RSA_OAEP_512)) {
+			encryptedKey = Base64URL.encode(RSA_OAEP_SHA2.encryptCEK(publicKey, cek, 512, getJCAContext().getKeyEncryptionProvider()));
+		} else {
+			throw new JOSEException(AlgorithmSupportMessage.unsupportedJWEAlgorithm(alg, SUPPORTED_ALGORITHMS));
+		}
+
+		return ContentCryptoProvider.encrypt(header, clearText, aad, cek, encryptedKey, getJCAContext());
+	}
+
+  	public static byte[] encryptCEK(final RSAPublicKey pub, final SecretKey cek, final Provider provider)
+		throws JOSEException {
+
+		try {
+			Cipher cipher = CipherHelper.getInstance(RSA_OEAP_JCA_ALG, provider);
+			cipher.init(Cipher.WRAP_MODE, pub, new SecureRandom());
+			return cipher.wrap(cek);
+			
+		} catch (InvalidKeyException e) {
+			throw new JOSEException("RSA block size exception: The RSA key is too short, try a longer one", e);
+		} catch (Exception e) {
+			// java.security.NoSuchAlgorithmException
+			// java.security.NoSuchPaddingException
+			// java.security.InvalidKeyException
+			// javax.crypto.BadPaddingException
+			throw new JOSEException(e.getMessage(), e);
+		}
+	}
+
+  	/**
+	 * Returns the content encryption key (CEK) to use. Unless a CEK was
+	 * provided at construction time this will be a new internally
+	 * generated CEK.
+	 *
+	 * @param enc The encryption method. Must not be {@code null}.
+	 *
+	 * @return The content encryption key (CEK).
+	 *
+	 * @throws JOSEException If an internal exception is encountered.
+	 */
+	protected SecretKey getCEK(final EncryptionMethod enc)
+		throws JOSEException {
+
+		return (isCEKProvided() || enc == null) ? cek : ContentCryptoProvider.generateCEK(enc, jcaContext.getSecureRandom());
+	}
+```
+
+the public key is used to ecrypt the cek and the cek is used to do the final encrption. This is what's known as Hybrid Encryption.
+
+Why the Public Key isn't used for the final data:
+- Size Limits (The "Small Box" Problem): RSA Public Keys have a mathematical limit. If you have a 2048-bit RSA key, you can only encrypt about 245 bytes of data at a time. A typical JWT with claims, signatures, and headers is often 1KB or more. It literally won't fit inside the Public Key's "encryption window."
+- Performance (The "Slow Gear" Problem)
+
+JOSE (JWS/JWE), the specification (RFC 7516) creates a clear wall between two different types of keys to keep things efficient and secure:
+- The CEK (Content Encryption Key)
+- The KEK (Key Encryption Key)
+
+In Open Banking (JWE): Your code (the TPP) generates a CEK to hide the payment. You then use the Bank’s Public Key as the KEK to lock that CEK into the JWE header
+
+In KeyVault/KMS: When you ask Azure or AWS to "encrypt data," they don't actually take your 50MB file and encrypt it. They generate a CEK, encrypt your file, encrypt the CEK with their Master KEK, and send you back the "Encrypted Package." This is called Envelope Encryption.
+
+The DEK (Data Encryption Key): When you set up encryption, the OS generates a strong, random Symmetric Key (usually AES-256). This is the "Master Key" that stays in your computer's memory (or a TPM chip) and encrypts/decrypts files instantly as you read them.
+
+The KEK (Key Encryption Key): Your login password (or an RSA key) is used to encrypt that Master Key.
+
+The Storage: The encrypted Master Key is stored in a special "header" on your disk
+
+Encryption (Key Derivation): The system takes your password and runs it through a Key Derivation Function (KDF), like PBKDF2 or Argon2. This transforms your text password into a high-entropy, 256-bit Symmetric Key
+
+Encrypting a JWT for a given recipient requires their public RSA key:
+
+`JWEEncrypter encrypter = new RSAEncrypter(rsaPublicKey);`
+
+The decryption takes place with the corresponding private RSA key, which the recipient must keep secret at all times:
+
+`JWEDecrypter decrypter = new RSADecrypter(rsaPrivateKey);`
+
+A critical security requirement in public key encryption is ensuring that data is encrypted for the intended recipient – failure to do so compromises confidentiality. One common solution is a public key infrastructure (PKI), such as that based on the PKIX / X.509 standard, which underpins SSL/TLS on the Internet and other systems.
+
+Public key encryption is effectively a two-step process, due to an RSA limitation that makes it impractical to encrypt data larger than a few hundred bytes. This complexity is handled internally by the Nimbus JOSE+JWT library – you only need to provide the recipient’s public key, the RSA algorithm (alg), and the content encryption algorithm (enc) to encrypt data, such as the claims in a JWT
+
+If you’re curious about the two encryption steps involved:
+
+- A randomly generated, single-use symmetric key – called the Content Encryption Key (CEK) – is created to encrypt the JWT payload using a cipher like AES or ChaCha20. These symmetric algorithms are highly efficient and can handle plaintexts of virtually any size. The specific type and length of the CEK are determined by the JWE enc header. For example, `A128GCM` indicates that a `128-bit` AES key should be generated
+
+- The generated CEK, which is small enough to fit within RSA’s encryption limits, is then encrypted using the recipient’s public RSA key, as specified by the JWE alg header. This encrypted CEK is included as part of the final JWT.
+
+There are two standard RSA algorithm types for JSON Web Encryption (JWE), identified by the JWE `alg` header parameter
+A JWE alg can be combined with any of the following content encryption algorithms, identified by the JWE `enc` header parameter:
+
+the final encryption is performed by the Symmetric Content Encryption Key (CEK) using one of the high-speed symmetric algorithms (like AES-GCM or AES-CBC).
+
+When a JWT is both signed (with JWS) and encrypted (with JWE), it is often referred to as a Nested JWT. Nested JWTs can be used in authentication scenarios with OAuth 2.0 and OpenID Connect, when an extra layer of protection is required for sensitive data. 
+
+## Why use JWE? 
+Data security is a major challenge for modern applications, particularly when handling and transmitting sensitive information like financial details, personal data, or login credentials over the internet. JWE is invaluable when it comes to: 
+
+Ensuring data confidentiality: JWE keeps sensitive data confidential. Even if a JWE-secured message is intercepted, its contents remain unreadable without the correct decryption key.
+
+Complying with regulations: Industries like healthcare and finance operate under strict regulations that require them to protect customer data through encryption. JWE helps organizations comply with these requirements.
+
+Common use cases for JWE
+
+JWE has several practical applications.
+- Securing APIs: APIs often handle the exchange of sensitive data between clients and servers. Using JWE to encrypt API requests and responses keeps this information flow private. For instance, an authorization server may use JWE to encrypt the token and userinfo endpoint responses, adding a layer of security to OAuth 2.0-based authentication flows.
+
+- Protecting data in transit: JWE is especially useful when transferring data over potentially insecure networks.
+
+- Storing encrypted data in databases: For applications that store JWTs in databases for authentication or session management, encrypting these tokens with JWE prevents sensitive information from being exposed in the event of a database breach.
+
+JSON Web Tokens provide a standardized way to transmit information. JWTs leverage two related specifications: 
+
+- JSON Web Signature (JWS) for data integrity and authenticity
+- JSON Web Encryption (JWE) for confidentiality.
+
+![alt text](image-5.png)
+
+JSON Web Token (JWT)
+
+A JWT is a compact, URL-safe method of representing claims to be transferred between two parties. It's a widely adopted standard for authentication and authorization, often conveying details about an authenticated user (as in OpenID Connect) or the permissions granted to the client application (as in OAuth 2.0).
+
+A JWT: 
+
+- Is broadly defined by RFC 7519 as a way to represent claims to be transferred between two parties. It can be signed (using JWS) or encrypted (using JWE), or even be unsecured ("alg":"none").
+- In practice and for any secure use case, a JWT is virtually always cryptographically signed using JSON Web Signature (JWS). The signature ensures the integrity and authenticity of the data contained in the JWT. 
+- A signed JWT consists of three parts: a header, a payload (the claims), and a signature.
+- A signed JWT guarantees the data it contains hasn't been tampered with, but doesn't ensure confidentiality—anyone with the token can read its content.
+
+JSON Web Signature (JWS)
+
+JWS is a specification for digitally signing JSON data, which:
+- Guarantees data integrity and authenticity, ensuring that the signed data has not been tampered with during transit. The recipient can verify that the data has not been altered by validating the signature.
+- Leaves the data visible but tamper-proof.
+- Is the standard mechanism for signing JWTs
+
+JSON Web Encryption (JWE)
+
+JWE is a specification for representing an encrypted and integrity-protected message. 
+JWE:
+- Encrypts the data to provide confidentiality. 
+- Relies on a class of cryptographic algorithms called Authenticated Encryption with Associated Data (AEAD). These algorithms both encrypt the data and provide an integrity check.
+- Is commonly used to encrypt JWTs for authentication and authorization in sensitive environments (e.g., finance or healthcare). The signed and encrypted JWTs are known as Nested JWTs. 
+- While Nested JWTs are common, JWE allows for encrypting any arbitrary value. The plaintext encrypted by JWE doesn't have to be a full, formally structured JWT. It could simply be a JSON object containing claims (e.g., {"user_id": "123", "role": "admin"}) encrypted directly, without the JWT header and signature. 
+- Consists of five parts: header, encrypted key, initialization vector, ciphertext, and authentication tag
+
+![alt text](image-17.png)
+
+JOSE Header 
+
+The JOSE Header carries information about the encryption process and the JWE itself. It specifies the algorithms used for both key management and content encryption, along with optional additional properties. It must include the following parameters:
+
+- alg (Algorithm): specifies the Key Management Algorithm used to encrypt or determine the value of the Content Encryption Key (CEK). Common algorithms include  RSA1_5, RSA-OAEP, A128KW, A256KW, etc.
+
+- enc (Encryption Algorithm): specifies the Authenticated Encryption with Associated Data (AEAD) algorithm used to perform the actual encryption of the plaintext. This algorithm must have a specified key length and inherently provides both encryption and integrity protection. Examples include A128GCM, A256GCM (AES GCM), A128CBC-HS256, etc.
+
+```json
+{
+  "alg": "RSA-OAEP",
+  "enc": "A256GCM"
+}
+```
+This header specifies that the content encryption key is encrypted to the recipient using the RSA-OAEP algorithm, and that authenticated encryption is performed on the plaintext using AES GCM with a 256-bit key.
+
+Encrypted Key
+
+This section contains the Content Encryption Key (CEK), which is the symmetric key used to encrypt the actual content of the JWE. The alg parameter in the JOSE Header specifies how this CEK is encrypted or agreed upon.
+
+Here are examples of how CEK is managed based on the alg value:
+
+- If the alg is RSA-OAEP, the Content Encryption Key is encrypted using the RSA-OAEP algorithm with the recipient’s public key.
+- If the alg is A128KW or A256KW (AES Key Wrap), the CEK is symmetrically wrapped (encrypted) using a pre-shared symmetric key.
+- For algorithms like ECDH-ES (Elliptic-curve Diffie–Hellman), a shared secret is derived via key agreement. This derived secret is then typically used to wrap the CEK (ECDH-ES is often combined with A128KW), though it can also directly serve as the CEK.
+
+In the case of password managers, the idea is to turn the master password into a encryption key and then use something like AES to encrypt the saved passwords
+
+By default, JSON Web Tokens (JWTs) are base64url encoded JSON objects signed using a digital signing algorithm thanks to JSON Web Signatures (JWS). JWS assures integrity, authentication, and non-repudiation, but it does not provide you with confidentiality. Anyone can read the payload, which can be an issue if the token holds any sort of sensitive data
+
+```json
+{
+  "alg": "RSA-OAEP",
+  "enc": "A256CBC-HS512",
+  "kid": "18b1cf758c1d4ec6bda6589357abdd85",
+  "typ": "JWT",
+  "cty": "JWT"
+}
+```
+The type (typ) header refers to the JWE itself; in this case, it’s the default “JWT”, whereas the content type (cty) header refers to what type of data lies behind the encrypted payload. In this example, the encrypted payload contains another JWT, a Nested JWT
+
+## Hybrid encryption
+
+With JWE, the algorithm (alg) header describes the asymmetric encryption algorithm used to encrypt the Content Encryption Key (CEK), and the key ID (kid) header refers to the public key used to encrypt it.
+
+The encryption algorithm (enc) header describes the symmetric encryption algorithm used to encrypt the content itself with the CEK.
+
+This use of hybrid encryption means you use the faster symmetric encryption to encrypt the token payload, which, in theory, could be of any size, and the limited asymmetric encryption to encrypt the encryption key, which is a fixed size and relatively small. It also means you get the assurances of public-key cryptography, where many people can encrypt with the public key, but only one can decrypt with the private key. This is perfect for distributed systems and protocols such as OAuth, where there is a single token issuer and many token validators
+
+[json-web-encryption](https://www.scottbrady.io/jose/json-web-encryption)
+
+## Authenticated encryption
+
+JWE requires the use of authenticated encryption so that the message is both encrypted and integrity protected. Authenticated encryption not only defends against a whole class of attacks against encryption algorithms; it also allows you to protect additional data.
+
+Additional Authenticated Data (AAD) is data you want to protect but do not want to encrypt. Using the JWE header as the AAD protects it from being modified by a malicious party. It allows you to include it in the integrity & authentication checks of authenticated encryption without needing to encrypt it. After all, the token recipient needs to be able to read it in order to understand how to decrypt and validate the token.
+
+Using authenticated encryption produces not only the ciphertext for the message but also an authentication tag, which you use to validate the integrity of the ciphertext and the additional authenticated data
+
+`The CEK is different for each token, generated for one-time use. It must never be re-used. `
+
+## Nested JWTs
+
+JWE allows you to encrypt any arbitrary payload; however, a common use case is for the payload to be another JWT. This is known as a Nested JWT
+
+By using a Nested JWT, you gain the benefits of asymmetric encryption, where many systems can encrypt and only one can decrypt, and the benefits of asymmetric signatures, where only one system can create signatures while many can validate them
+
+This means that JWE gives you confidentiality, integrity, and authentication, while JWS gives you integrity, authentication, and non-repudiation. JWE alone does not allow you to prove that a trusted token issuer created the JWT, only that it was created by someone who knew the public key. With nested JWTs, you get the benefits of both JWE and JWS. 
+
+The server checks the Authentication Tag before it tries to decrypt the data
+
+[authenticated-encryption](https://andrea.corbellini.name/2023/03/09/authenticated-encryption/)
+
+AEAD (Authenticated Encryption with Associated Data) became the mandatory standard in TLS 1.3 because the security world realized that "encrypting then signing" (or vice versa) was too easy to get wrong.
+
+encrypting the signing provides cyphertext integrity. The recipient can verify the integrity before attempting to decrypt the data.
+
+### TLS 1.3 (The Modern Web)
+The Encrypted Data: The actual HTTP request/response (the HTML, JSON, etc.).
+The AAD: The TLS Record Header.
+The header contains the version and length of the packet. If a hacker could change the "length" field without breaking the encryption, they could potentially cause a buffer overflow or truncate the message on your server.
+
+IPSec (VPNs / Corporate Tunnels)
+The Encrypted Data: The entire IP packet being tunneled.
+The AAD: The Security Parameters Index (SPI) and Sequence Number
+
+### Database "Field-Level" Encryption
+
+The Encrypted Data: A user's Social Security Number or Credit Card.
+The AAD: The Primary Key (ID) of the row or the Table Name.
+This prevents "Row Swapping." Without AAD, a hacker with database access could copy the encrypted blob from a "Rich User's" row and paste it into their own row. If the User ID is part of the AAD, the decryption will fail because the ID in the database won't match the ID used to create the tag
+
+### Disk Encryption (FileVault / BitLocker)
+The Encrypted Data: The blocks of data on your SSD.
+The AAD: The Logical Block Address (LBA).
+
+the authentication tag is a MAC,signed using the symmetric key
+
+In the A128GCM or A256GCM branch:
+- The MAC is called GMAC (Galois Message Authentication Code).
+- It is computed at the same time the data is being encrypted.
+
+The "Traditional" MAC (HMAC)
+In the A128CBC_HS256 branch:
+The MAC is a standard HMAC (Hash-based Message Authentication Code).
+
+>>> This means that JWE gives you confidentiality, integrity, and authentication, while JWS gives you integrity, authentication, and non-repudiation. JWE alone does not allow you to prove that a trusted token issuer created the JWT, only that it was created by someone who knew the public key. With nested JWTs, you get the benefits of both JWE and JWS( Nested JWT)
+
+```sh
+Term	What it uses	Who can create it?
+Signature (JWS)	Asymmetric (Private Key)	Only one person (the owner of the private key).
+MAC / Tag (JWE)	Symmetric (Secret CEK)	Anyone who has the secret key (both sender and receiver).
+```
+
+the goal of hashing is integrity: fingerprint or hash
+
+MAC/Digital signature proves authenticity
+in digital signature, you first hash the message to get a fingerprint, then you encrypt that small hash with your private key
+
+non-repudiation with asymmetric cryptography
+
+The reason JWE cannot provide non-repudiation is because the actual encryption of the data (Part 4) and the generation of the Tag (Part 5) are done using a Symmetric Key (the CEK).
+
+Message Authentication Code (MAC), also referred to as a tag, is used to authenticate the origin and nature of a message.
+
+## ChaCha
+ChaCha20 uses a 256-bit (32-byte) key and a 96-bit (12-byte) nonce (aka Initialization Vector). Other variants exist, but that’s the IETF definition
+and is designed to provide 256-bit security.
+
+## Poly1305
+
+Again defined in RFC 8439, Poly1305 is a one-time authenticator that takes a 256-bit (32-byte), one-time key, and creates a 128-bit (16-byte) tag for a message (a Message Authentication Code (MAC)). 
+
+You can use any keyed function to pseudorandomly generate the one-time key used by Poly1305, including ChaCha20 or AES, by using the key and the nonce to generate the one-time key
+
+Unlike HMAC, Poly1305 can only use a key once, meaning the two are not interchangeable
+
+
+standard ChaCha20 uses a 96-bit nonce,if the same nonce is used twice with the same key, it breaks security
+XChaCha20 extends the nonce to 192-bits. With 192-bits, you can safely generate nonces ramdonly without worrying about a collision
+## ChaCha20-Poly1305
+
+Combine the two, and you get the ChaCha20-Poly1305 Authenticated Encryption with Associated Data (AEAD) construct. This construct produces a ciphertext that is the same length as the original plaintext, plus a 128-bit tag. 
+
+`ChaCha20` provides confidentiality(encryption) and `Poly1305` provides integrity
+
+wireguard exclusively uses this
+SSH as well
+
+## XChaCha20-Poly1305
+
+Unfortunately, ChaCha20-Poly1305’s 96-bit nonce doesn’t lend itself too well to accidental nonce reuse when you start encrypting a large number of messages with the same long-lived key.
+
+eXtended-nonce ChaCha (XChaCha) solves this by taking the existing ChaCha20 cipher suite and extends the nonce from 96-bits (12-bytes) to 192-bits (24-bytes), while also defining an algorithm for calculating a subkey from the nonce and key using HChaCha20, further reducing the security implications of nonce reuse
