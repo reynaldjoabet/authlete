@@ -117,10 +117,9 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     },
     libraryDependencies ++= Seq(
       sttpJsoniter,
-      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % Version.jsoniter,
-      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % Version
-        .jsoniter                              % "provided",
-      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-circe"  % Version.jsoniter
+      jsoniter,
+      jsoniterMacros,
+      jsoniterCirce
     )
   )
 

@@ -204,7 +204,7 @@ object TokenExchanger {
     ): F[Either[TokenExchangeError, TokenExchangeResult]] = {
       val request = TokenCreateRequest(
         grantType = GrantType.TOKEN_EXCHANGE,
-        clientId = clientId,
+        clientId = Some(clientId),
         subject = Some(subject),
         scopes = if (scopes.nonEmpty) Some(scopes) else None,
         resources = if (resources.nonEmpty) Some(resources) else None

@@ -210,8 +210,6 @@ Class | Method | HTTP request | Description
 *TokenEndpoint* | **tokenFailApi** | **POST** /api/${serviceIdPathParam}/auth/token/fail | Fail Token Request
 *TokenEndpoint* | **tokenIssueApi** | **POST** /api/${serviceIdPathParam}/auth/token/issue | Issue Token Response
 *TokenOperations* | **tokenCreateApi** | **POST** /api/${serviceIdPathParam}/auth/token/create | Create Access Token
-*TokenOperations* | **tokenCreateBatchApi** | **POST** /api/${serviceIdPathParam}/auth/token/create/batch | Create Access Tokens in Batch
-*TokenOperations* | **tokenCreateBatchStatusApi** | **GET** /api/${serviceIdPathParam}/auth/token/create/batch/status/${tokenBatchRequestIdPathParam} | Get Batch Token Creation Status
 *TokenOperations* | **tokenDeleteApi** | **DELETE** /api/${serviceIdPathParam}/auth/token/delete/${accessTokenIdentifierPathParam} | Delete Access Token
 *TokenOperations* | **tokenGetListApi** | **GET** /api/${serviceIdPathParam}/auth/token/get/list | List Issued Tokens
 *TokenOperations* | **tokenRevokeApi** | **POST** /api/${serviceIdPathParam}/auth/token/revoke | Revoke Access Token
@@ -354,9 +352,6 @@ Class | Method | HTTP request | Description
  - [StandardIntrospectionResponse](StandardIntrospectionResponse.md)
  - [SubjectType](SubjectType.md)
  - [TaggedValue](TaggedValue.md)
- - [TokenBatchStatus](TokenBatchStatus.md)
- - [TokenCreateBatchResponse](TokenCreateBatchResponse.md)
- - [TokenCreateBatchStatusResponse](TokenCreateBatchStatusResponse.md)
  - [TokenCreateRequest](TokenCreateRequest.md)
  - [TokenCreateResponse](TokenCreateResponse.md)
  - [TokenFailRequest](TokenFailRequest.md)
