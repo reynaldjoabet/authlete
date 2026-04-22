@@ -12,22 +12,21 @@ import cats.effect.*
 import cats.implicits.*
 
 import com.nimbusds.jose.{Header => _, Option => _, _}
-import com.nimbusds.jose.crypto._
-import com.nimbusds.jose.jwk.source.JWKSource
-import com.nimbusds.jose.EncryptionMethod
-import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.crypto
+import com.nimbusds.jose.crypto._
 import com.nimbusds.jose.jca
 import com.nimbusds.jose.jwk
-import com.nimbusds.jose.mint
-import com.nimbusds.jose.proc
-import com.nimbusds.jose.produce
-import com.nimbusds.jose.util
-
+import com.nimbusds.jose.jwk.source.JWKSource
 //import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder
+import com.nimbusds.jose.mint
+import com.nimbusds.jose.proc
 import com.nimbusds.jose.proc.SecurityContext
+import com.nimbusds.jose.produce
+import com.nimbusds.jose.util
 import com.nimbusds.jose.util.DefaultResourceRetriever
+import com.nimbusds.jose.EncryptionMethod
+import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jwt.{JWTClaimNames, JWTClaimsSet, SignedJWT}
 import com.nimbusds.jwt.proc.{BadJWTException, DefaultJWTClaimsVerifier}
 import org.http4s.*

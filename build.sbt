@@ -1,9 +1,10 @@
-import Dependencies._
+import Dependencies.*
 
-ThisBuild / scalaVersion := "3.3.7"
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+// Common settings – applied to all subprojects in sbt 2.x, root-only in sbt 1.x
+scalaVersion := "3.3.7"
+version      := "0.1.0-SNAPSHOT"
 
-ThisBuild / scalacOptions ++= Seq(
+scalacOptions ++= Seq(
   "-deprecation", // Warns about deprecated APIs
   "-feature",     // Warns about advanced language features
   "-unchecked",
@@ -53,7 +54,6 @@ lazy val root = (project in file("."))
       zioTestSbt,
       zioConfig,
       zioConfigMagnolia,
-      caffeine,
       zioLogging,
       zioLoggingSlf4j,
       zioHttp,
@@ -82,7 +82,8 @@ lazy val root = (project in file("."))
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
   .settings(
-    name := "authlete-codegen",
+    name         := "authlete-codegen",
+    scalaVersion := "3.3.7",
     // openApiInputSpec := "src/main/resources/swagger.json",
     // openApiGeneratorName := "sclala-sttp-client4",
     openApiModelNamePrefix         := "",
@@ -106,6 +107,8 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // (Compile/compile) := ((compile in Compile) dependsOn openApiGenerate).value
 
     // Define the simple generate command to generate full client codes
+    // NOTE: When migrating to sbt 2.x, wrap this in Def.uncached { Def.task { ... } }.value
+    // to prevent sbt 2's task cache from skipping the side-effectful file generation.
     generate := {
       val _ = openApiGenerate.value
 
@@ -133,4 +136,4 @@ populateTestDB := {
 
 Global / onChangedBuildSource := IgnoreSourceChanges
 
-ThisProject/dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.0"
+ThisProject / dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.0"
