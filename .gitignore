@@ -35,3 +35,6 @@ metals.sbt
 /.scala-build
 
 /modules/authlete-codegen/src/main/scala/authlete/
+
+.claude/
+.mcp.json
