@@ -3,6 +3,7 @@ package http.routes
 import cats.effect.kernel.Concurrent
 
 import authlete.JsonSupport.{*, given}
+import config.AuthleteConfig
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
@@ -18,7 +19,10 @@ import sttp.client4.Backend
   *   <a href="http://openid.net/specs/openid-connect-core-1_0.html#HybridTokenEndpoint" >OpenID
   *   Connect Core 1.0, 3.3.3. Token Endpoint</a>
   */
-abstract class TokenRoutes[F[*]: Concurrent](backend: Backend[F]) extends Http4sDsl[F] {
+abstract class TokenRoutes[F[*]: Concurrent](
+    config: AuthleteConfig,
+    backend: Backend[F]
+) extends Http4sDsl[F] {
 
   def routes[U]: AuthedRoutes[U, F] = AuthedRoutes.of {
 

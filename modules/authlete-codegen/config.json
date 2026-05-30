@@ -26,7 +26,6 @@
     "artifactVersion": "1.0.0",
     "sourceFolder": "",
     "apiNameSuffix": "",
-    "dateLibrary": "java8",
     "hideGenerationTimestamp": "true"
   }
 }

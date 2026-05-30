@@ -5,7 +5,8 @@ import cats.syntax.flatMap.toFlatMapOps
 
 import authlete.models.AuthorizationFailRequest
 import authlete.models.AuthorizationIssueRequest
-import authlete.JsonSupport.{*, given}
+import authlete.JsonSupport
+import config.AuthleteConfig
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
@@ -15,6 +16,7 @@ import sttp.client4.Backend
   * The endpoint that receives a request from the form in the authorization page.
   */
 abstract class AuthorizationDecisionRoutes[F[*]: Concurrent](
+    config: AuthleteConfig,
     backend: Backend[F]
 ) extends Http4sDsl[F] {
 

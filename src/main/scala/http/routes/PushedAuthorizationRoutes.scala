@@ -2,7 +2,8 @@ package http.routes
 
 import cats.effect.kernel.Concurrent
 
-import authlete.JsonSupport.{*, given}
+import authlete.JsonSupport
+import config.AuthleteConfig
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
@@ -15,7 +16,10 @@ import sttp.client4.Backend
   *   <a href="https://tools.ietf.org/html/draft-lodderstedt-oauth-par" >OAuth 2.0 Pushed
   *   Authorization Requests</a>
   */
-abstract class PushedAuthorizationRoutes[F[*]: Concurrent](backend: Backend[F])
+abstract class PushedAuthorizationRoutes[F[*]: Concurrent](
+    config: AuthleteConfig,
+    backend: Backend[F]
+)
     extends Http4sDsl[F] {
 
   def routes[U] = AuthedRoutes.of[U, F] {
