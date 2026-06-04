@@ -60,6 +60,7 @@ lazy val root = (project in file("."))
       zioJsonGolden,
       zioSttp,
       zioKafka,
+      circeParser,
       "qa.hedgehog" %% "hedgehog-sbt"    % "0.13.0" % Test,
       "qa.hedgehog" %% "hedgehog-core"   % "0.13.0" % Test,
       "qa.hedgehog" %% "hedgehog-runner" % "0.13.0" % Test

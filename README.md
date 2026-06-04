@@ -1854,3 +1854,21 @@ object ConnectionType {
   case object Tcp extends ConnectionType
 }
 ```
+
+[](./authz-pipeline.svg)
+The band people most often miss is the last check before execution: resource-level authorization. Scopes are coarse — `payments.transactions.refund` says this caller may refund some payment, never that they may refund this specific payment belonging to this customer or tenant. That object-level decision — ownership, tenant isolation, ABAC — lives in your handler/service using the `Principal`'s subject and tenant, not in the scope system. Skipping it is how you get a valid token with the right scope reading or mutating another tenant's data. A failure is 403, or 404 if you'd rather not reveal the resource exists. Only after all of that does the business logic run.
+
+![alt text](image-18.png)
+
+use cases for distributed cache like redis
+- cache
+- background job queue
+- leaderboard
+- session store
+- autocomplete
+- feature flags
+- real time analytics
+- api throttling
+- distributed lock management etc
+
+![alt text](image-19.png)
