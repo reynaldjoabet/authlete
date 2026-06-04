@@ -7,19 +7,20 @@ object Dependencies {
     // --- ZIO ecosystem ---
     val zio = "2.1.26"
     val zioJson = "0.9.2"
-    val zioHttp = "3.11.1"
+    val zioHttp = "3.11.2"
     val zioLogging = "2.5.3"
     val zioConfig = "4.0.7"
     val zioSchema = "1.8.5"
-    val zioKafka = "3.4.0"
+    val zioKafka = "3.6.0"
 
     // --- HTTP ---
     val http4s = "0.23.34"
-    val sttp4 = "4.0.23"
+    val sttp4 = "4.0.25"
     val tapir = "1.13.18"
+    val jsonRpc = "0.2.0"
 
     // --- JSON ---
-    val jsoniter = "2.38.12"
+    val jsoniter = "2.38.14"
     val circe = "0.14.15"
 
     // --- FP ---
@@ -30,7 +31,7 @@ object Dependencies {
     val iron = "3.3.1"
     val hedgehog = "0.13.0"
     val scalacheck = "1.19.0"
-    val munit = "1.3.0"
+    val munit = "1.3.1"
     val munitCatsEffect = "2.2.0"
 
     // --- DB ---
@@ -38,7 +39,7 @@ object Dependencies {
     val magnum = "2.0.0-M3"
     val skunk = "1.1.0-RC1"
     val hikaricp = "7.0.2"
-    val flyway = "12.6.1"
+    val flyway = "12.8.0"
     val postgres = "42.7.11"
 
     // --- Security ---
@@ -46,14 +47,14 @@ object Dependencies {
     val bouncycastle = "1.84"
     val password4j = "1.8.4"
     val auth0 = "4.5.2"
-    val nimbusJoseJwt = "10.9"
-    val nimbusOauth2Oidc = "11.37.1"
+    val nimbusJoseJwt = "10.9.1"
+    val nimbusOauth2Oidc = "11.37.2"
     val vault = "5.1.0"
 
     // --- Logging ---
     val scribe = "3.19.0"
     val slf4j = "2.0.18"
-    val logback = "1.5.32"
+    val logback = "1.5.34"
 
     // --- Cache ---
     val caffeine = "3.2.4"
@@ -141,6 +142,9 @@ object Dependencies {
   lazy val tapirJsoniterScala = tapir("jsoniter-scala")
   lazy val tapirOpenAPIDocs = tapir("openapi-docs")
   lazy val tapirSwagger = tapir("swagger-ui-bundle")
+  lazy val tapirIron = tapir("iron")
+
+  lazy val jsonRpc = "tech.neander" %% "jsonrpclib-fs2" % Version.jsonRpc
 
   // JSON
   lazy val jsoniter =
@@ -191,7 +195,7 @@ object Dependencies {
   // Security
   lazy val jwtZioJson =
     "com.github.jwt-scala" %% "jwt-zio-json" % Version.jwtScala
-  lazy val jwtCirce="com.github.jwt-scala" %% "jwt-circe" %  Version.jwtScala
+  lazy val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % Version.jwtScala
   lazy val auth0 = "com.auth0" % "java-jwt" % Version.auth0
   lazy val password4j =
     "com.password4j" % "password4j" % Version.password4j
@@ -222,7 +226,9 @@ object Dependencies {
 
   // Observability
   lazy val datadog =
-    "com.datadoghq" % "datadog-api-client" % Version.datadog classifier "shaded-jar"
+    ("com.datadoghq" % "datadog-api-client" % Version.datadog).classifier(
+      "shaded-jar"
+    )
 
   lazy val kamon =
     "io.kamon" %% "kamon-bundle" % Version.kamon
