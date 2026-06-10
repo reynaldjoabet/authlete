@@ -25,6 +25,10 @@ import org.http4s.{MediaType, Response, Status}
 import org.http4s.headers.`Content-Type`
 import sttp.client4.Backend
 
+given CanEqual[TokenType, TokenType]                                             = CanEqual.derived
+given CanEqual[GrantType, GrantType]                                             = CanEqual.derived
+given CanEqual[TokenCreateResponseEnums.Action, TokenCreateResponseEnums.Action] = CanEqual.derived
+
 /**
   * Token Exchange Service implementing RFC 8693.
   *

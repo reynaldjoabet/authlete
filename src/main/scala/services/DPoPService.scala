@@ -39,6 +39,8 @@ import com.nimbusds.jwt.SignedJWT
 import org.http4s.Request
 import org.typelevel.ci.*
 
+given CanEqual[Curve, Curve] = CanEqual.derived
+
 /**
   * DPoP (Demonstration of Proof-of-Possession) Service.
   *

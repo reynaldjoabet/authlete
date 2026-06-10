@@ -12,6 +12,7 @@ import cats.syntax.all._
 
 import com.github.plokhotnyuk.jsoniter_scala.circe.JsoniterScalaCodec._
 import com.github.plokhotnyuk.jsoniter_scala.core._
+import http.given
 import io.circe._
 import io.circe.syntax._
 import org.http4s._

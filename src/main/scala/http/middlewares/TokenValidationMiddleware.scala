@@ -16,6 +16,11 @@ import org.http4s.server.{AuthMiddleware => Http4sAuthMiddleware}
 import org.typelevel.ci.*
 import sttp.client4.Backend
 
+given CanEqual[IntrospectionResponseEnums.Action, IntrospectionResponseEnums.Action] =
+  CanEqual.derived
+
+given CanEqual[CIString, CIString] = CanEqual.derived
+
 /**
   * token validation middleware for OAuth 2.0 access token introspection.
   *
@@ -329,13 +334,8 @@ object TokenValidationMiddleware {
   // Circuit Breaker
   // ============================================================================
 
-  sealed private trait CircuitState
-  private object CircuitState {
-
-    case object Closed   extends CircuitState
-    case object Open     extends CircuitState
-    case object HalfOpen extends CircuitState
-
+  private enum CircuitState derives CanEqual {
+    case Closed, Open, HalfOpen
   }
 
   final private case class CircuitBreakerState(

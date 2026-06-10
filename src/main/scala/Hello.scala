@@ -10,6 +10,7 @@ import cats.effect.IO
 import authlete.api.*
 import authlete.api.AuthorizationEndpoint
 import authlete.models.*
+import http.given
 import io.scalaland.chimney.dsl.*
 import io.scalaland.chimney.Transformer
 import org.http4s.Method

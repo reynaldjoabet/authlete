@@ -5,6 +5,7 @@ import cats.syntax.flatMap.toFlatMapOps
 
 import authlete.JsonSupport
 import config.AuthleteConfig
+import http.given
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router

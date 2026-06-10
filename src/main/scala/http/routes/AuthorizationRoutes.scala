@@ -10,6 +10,7 @@ import authlete.models.AuthorizationResponse
 import authlete.models.AuthorizationResponseEnums.Action
 import authlete.JsonSupport
 import config.AuthleteConfig
+import http.given
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.headers.{`Content-Type`, `WWW-Authenticate`, Location}
@@ -18,6 +19,8 @@ import sttp.client4.{basicRequest, Backend}
 import sttp.client4.http4s.Http4sBackend
 import sttp.model.HeaderNames
 import sttp.model.Uri
+
+given CanEqual[Action, Action] = CanEqual.derived
 
 /**
   * An implementation of OAuth 2.0 authorization endpoint with OpenID Connect support.

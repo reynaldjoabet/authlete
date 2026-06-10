@@ -1,8 +1,8 @@
 import Dependencies.*
 
 // Common settings – applied to all subprojects in sbt 2.x, root-only in sbt 1.x
-ThisBuild/scalaVersion := "3.3.8"
-version      := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion := "3.3.8"
+version                  := "0.1.0-SNAPSHOT"
 
 scalacOptions ++= Seq(
   "-deprecation", // Warns about deprecated APIs
@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
   //   "-Wunused:implicits",
   //   "-Wunused:params",
   //   "-Wvalue-discard",
-  //"-language:strictEquality",
+  "-language:strictEquality",
   "-Xmax-inlines:100000"
 )
 
@@ -83,7 +83,7 @@ lazy val root = (project in file("."))
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
   .settings(
-    name         := "authlete-codegen",
+    name := "authlete-codegen",
     // openApiInputSpec := "src/main/resources/swagger.json",
     // openApiGeneratorName := "sclala-sttp-client4",
     openApiModelNamePrefix         := "",

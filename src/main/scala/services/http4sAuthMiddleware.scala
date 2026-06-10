@@ -29,12 +29,15 @@ import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jwt.{JWTClaimNames, JWTClaimsSet, SignedJWT}
 import com.nimbusds.jwt.proc.{BadJWTException, DefaultJWTClaimsVerifier}
+import http.given
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.Authorization
 import org.http4s.server.AuthMiddleware
 import org.http4s.Credentials
 import org.typelevel.ci.CIStringSyntax
+
+given CanEqual[JOSEObjectType, JOSEObjectType] = CanEqual.derived
 
 final case class Principal4(
     clientType: String,
