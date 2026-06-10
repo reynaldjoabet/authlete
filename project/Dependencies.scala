@@ -31,7 +31,7 @@ object Dependencies {
     val iron = "3.3.1"
     val hedgehog = "0.13.0"
     val scalacheck = "1.19.0"
-    val munit = "1.3.1"
+    val munit = "1.3.3"
     val munitCatsEffect = "2.2.0"
 
     // --- DB ---
@@ -39,7 +39,7 @@ object Dependencies {
     val magnum = "2.0.0-M3"
     val skunk = "1.1.0-RC1"
     val hikaricp = "7.0.2"
-    val flyway = "12.8.0"
+    val flyway = "12.8.1"
     val postgres = "42.7.11"
 
     // --- Security ---

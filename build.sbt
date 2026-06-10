@@ -1,7 +1,7 @@
 import Dependencies.*
 
 // Common settings – applied to all subprojects in sbt 2.x, root-only in sbt 1.x
-scalaVersion := "3.3.7"
+ThisBuild/scalaVersion := "3.3.8"
 version      := "0.1.0-SNAPSHOT"
 
 scalacOptions ++= Seq(
@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
   //   "-Wunused:implicits",
   //   "-Wunused:params",
   //   "-Wvalue-discard",
-  // "-language:strictEquality",
+  //"-language:strictEquality",
   "-Xmax-inlines:100000"
 )
 
@@ -84,7 +84,6 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
   .settings(
     name         := "authlete-codegen",
-    scalaVersion := "3.3.7",
     // openApiInputSpec := "src/main/resources/swagger.json",
     // openApiGeneratorName := "sclala-sttp-client4",
     openApiModelNamePrefix         := "",

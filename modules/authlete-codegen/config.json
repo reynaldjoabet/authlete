@@ -20,8 +20,8 @@
   "enumUnknownDefaultCase": "true",
   "disallowAdditionalPropertiesIfNotPresent": "false",
   "separateErrorChannel": "true",
-  "sttpClientVersion": "4.0.13",
-  "jsoniterVersion": "2.38.6",
+  "sttpClientVersion": "4.0.25",
+  "jsoniterVersion": "2.38.14",
   "additionalProperties": {
     "artifactVersion": "1.0.0",
     "sourceFolder": "",
