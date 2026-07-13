@@ -1,24 +1,57 @@
-name: ci
+name: Scala CI Build
+
 on:
-  push: { branches: [ main ] }
+  push:
+    branches: [main]
   pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build Java ${{ matrix.java }} (${{ matrix.distribution }}) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [21]
+        distribution: [temurin, corretto]
+        os: [ubuntu-latest]
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v5
+      - name: Set up Java ${{ matrix.java }} (${{ matrix.distribution }})
+        uses: actions/setup-java@v5
         with:
-          distribution: temurin
-          java-version: "21"
-          cache: sbt
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.java }}
+          cache: 'sbt'
+          check-latest: false
+          cache-dependency-path: |
+            **/*.sbt
+            **/project/build.properties
+            **/project/*.scala
+            **/project/**/*.scala
 
-      - name: Set up Sbt    
+      - name: Set up sbt
         uses: sbt/setup-sbt@v1
-      
-      - name: Compile Project
-        run: sbt -v +compile
 
-      - name: Run Tests
-        run: sbt +test
+      - name: Lint, compile, and test
+        run: sbt -v --server "scalafmtSbtCheck; scalafmtCheckAll; Test/compile; test"
+
+      # Alternatively, run as separate steps:
+      # - name: Check formatting
+      #   run: sbt -v --server "scalafmtSbtCheck; scalafmtCheckAll"
+      #
+      # - name: Compile and test
+      #   run: sbt -v --server "Test/compile; test"

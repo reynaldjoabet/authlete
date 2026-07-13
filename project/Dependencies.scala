@@ -7,70 +7,70 @@ object Dependencies {
     // --- ZIO ecosystem ---
     val zio        = "2.1.26"
     val zioJson    = "0.9.2"
-    val zioHttp    = "3.11.2"
+    val zioHttp    = "3.11.3"
     val zioLogging = "2.5.3"
     val zioConfig  = "4.0.7"
     val zioSchema  = "1.8.5"
-    val zioKafka   = "3.6.0"
+    val zioKafka   = "3.7.0"
 
     // --- HTTP ---
-    val http4s  = "0.23.34"
-    val sttp4   = "4.0.25"
-    val tapir   = "1.13.18"
+    val http4s  = "0.23.36"
+    val sttp4   = "4.0.26"
+    val tapir   = "1.13.27"
     val jsonRpc = "0.2.0"
 
     // --- JSON ---
-    val jsoniter = "2.38.14"
-    val circe    = "0.14.15"
+    val jsoniter = "2.39.1"
+    val circe    = "0.14.16"
 
     // --- FP ---
     val catsEffect      = "3.7.0"
     val fs2             = "3.13.0"
     val fs2Kafka        = "4.0.0"
-    val chimney         = "1.10.0"
-    val iron            = "3.3.1"
-    val hedgehog        = "0.13.0"
+    val chimney         = "1.11.0"
+    val iron            = "3.3.2"
+    val hedgehog        = "0.13.1"
     val scalacheck      = "1.19.0"
-    val munit           = "1.3.3"
+    val munit           = "1.3.4"
     val munitCatsEffect = "2.2.0"
 
     // --- DB ---
     val quill    = "4.8.6"
     val magnum   = "2.0.0-M3"
     val skunk    = "1.1.0-RC1"
-    val hikaricp = "7.0.2"
-    val flyway   = "12.8.1"
-    val postgres = "42.7.11"
+    val hikaricp = "7.1.0"
+    val flyway   = "12.11.0"
+    val postgres = "42.7.13"
 
     // --- Security ---
     val jwtScala         = "11.0.4"
-    val bouncycastle     = "1.84"
+    val bouncycastle     = "1.85"
     val password4j       = "1.8.4"
     val auth0            = "4.5.2"
     val nimbusJoseJwt    = "10.9.1"
-    val nimbusOauth2Oidc = "11.37.2"
+    val nimbusOauth2Oidc = "11.38.1"
     val vault            = "5.1.0"
 
     // --- Logging ---
     val scribe  = "3.19.0"
     val slf4j   = "2.0.18"
-    val logback = "1.5.34"
+    val logback = "1.5.38"
 
     // --- Cache ---
     val caffeine = "3.2.4"
 
     // --- Observability ---
-    val datadog = "2.35.0"
-    val kamon   = "2.7.7"
-    val otel4s  = "1.0.0"
+    val datadog = "2.56.0"
+    val kamon   = "2.8.1"
+    val otel4s  = "1.0.1"
 
     // --- Config ---
     val pureconfig = "0.17.10"
 
     // --- Cloud ---
-    val awsV2         = "2.26.15"
-    val azureIdentity = "1.17.0"
-    val azureKv       = "4.9.4"
+    val awsV2         = "2.47.5"
+    val azureIdentity = "1.18.4"
+    val azureKv       = "4.11.1"
 
   }
 
