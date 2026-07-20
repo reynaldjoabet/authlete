@@ -1,29 +1,31 @@
 import Dependencies.*
 
-// Common settings – applied to all subprojects in sbt 2.x, root-only in sbt 1.x
 ThisBuild / scalaVersion := "3.3.8"
 version                  := "0.1.0-SNAPSHOT"
-
-scalacOptions ++= Seq(
-  "-deprecation", // Warns about deprecated APIs
-  "-feature",     // Warns about advanced language features
-  "-unchecked",
-  // "-Wunused:imports",
-  //   "-Wunused:privates",
-  //   "-Wunused:locals",
-  //   "-Wunused:explicits",
-  //   "-Wunused:implicits",
-  //   "-Wunused:params",
-  //   "-Wvalue-discard",
-  "-language:strictEquality",
-  "-Xmax-inlines:100000"
-)
 
 val generate = taskKey[Unit]("generate code from APIs")
 
 lazy val root = (project in file("."))
   .settings(
     name := "authlete",
+    // Scoped to root only: authlete-codegen's generated sources don't carry
+    // CanEqual givens for their enums, so -language:strictEquality would fail
+    // there. (Top-level scalacOptions apply to every subproject in sbt 2.x,
+    // unlike sbt 1.x where they were root-only, so this must stay scoped here.)
+    scalacOptions ++= Seq(
+      "-deprecation", // Warns about deprecated APIs
+      "-feature",     // Warns about advanced language features
+      "-unchecked",
+      // "-Wunused:imports",
+      //   "-Wunused:privates",
+      //   "-Wunused:locals",
+      //   "-Wunused:explicits",
+      //   "-Wunused:implicits",
+      //   "-Wunused:params",
+      //   "-Wvalue-discard",
+      "-language:strictEquality",
+      "-Xmax-inlines:100000"
+    ),
     libraryDependencies ++= Seq(
       sttpCore,
       sttpJsoniter,
@@ -103,20 +105,26 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // Fail fast on bad specs (optional but recommended)
     openApiValidateSpec := Some(true),
     // Compile / sourceGenerators += openApiGenerate.taskValue,
-    (Compile / compile) := (Compile / compile).dependsOn(generate).value,
+    (Compile / compile) := Def.uncached {
+      (Compile / compile).dependsOn(generate).value
+    },
     // (Compile/compile) := ((compile in Compile) dependsOn openApiGenerate).value
 
-    // Define the simple generate command to generate full client codes
-    // NOTE: When migrating to sbt 2.x, wrap this in Def.uncached { Def.task { ... } }.value
-    // to prevent sbt 2's task cache from skipping the side-effectful file generation.
-    generate := {
-      val _ = openApiGenerate.value
+    // Define the simple generate command to generate full client codes.
+    // Wrapped in Def.uncached so sbt 2's task cache never skips this
+    // side-effectful file generation.
+    generate := Def.uncached {
+      Def
+        .task {
+          val _ = openApiGenerate.value
 
-      // Delete the generated build.sbt file so that it is not used for our sbt config
-      val buildSbtFile = file(openApiOutputDir.value) / "build.sbt"
-      if (buildSbtFile.exists()) {
-        buildSbtFile.delete()
-      }
+          // Delete the generated build.sbt file so that it is not used for our sbt config
+          val buildSbtFile = file(openApiOutputDir.value) / "build.sbt"
+          if (buildSbtFile.exists()) {
+            buildSbtFile.delete()
+          }
+        }
+        .value
     },
     libraryDependencies ++= Seq(
       sttpJsoniter,
@@ -129,9 +137,13 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
 lazy val populateTestDB =
   taskKey[Unit]("Run PopulateTestDatabase main class from the test folder")
 
-populateTestDB := {
-  val log = streams.value.log
-  (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
+populateTestDB := Def.uncached {
+  Def
+    .task {
+      val log = streams.value.log
+      (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
+    }
+    .value
 }
 
 Global / onChangedBuildSource := IgnoreSourceChanges
