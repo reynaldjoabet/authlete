@@ -294,6 +294,9 @@ object Dependencies {
   lazy val hedgehogSbt =
     "qa.hedgehog" %% "hedgehog-sbt" % Version.hedgehog % Test
 
+  lazy val hedgehogRunner =
+    "qa.hedgehog" %% "hedgehog-runner" % Version.hedgehog % Test
+
   lazy val scalacheck =
     "org.scalacheck" %% "scalacheck" % Version.scalacheck % Test
 

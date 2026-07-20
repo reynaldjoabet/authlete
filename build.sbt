@@ -1,7 +1,7 @@
 import Dependencies.*
 
 ThisBuild / scalaVersion := "3.3.8"
-version                  := "0.1.0-SNAPSHOT"
+ThisBuild / version      := "0.1.0-SNAPSHOT"
 
 val generate = taskKey[Unit]("generate code from APIs")
 
@@ -63,9 +63,9 @@ lazy val root = (project in file("."))
       zioSttp,
       zioKafka,
       circeParser,
-      "qa.hedgehog" %% "hedgehog-sbt"    % "0.13.0" % Test,
-      "qa.hedgehog" %% "hedgehog-core"   % "0.13.0" % Test,
-      "qa.hedgehog" %% "hedgehog-runner" % "0.13.0" % Test
+      hedgehog,
+      hedgehogSbt,
+      hedgehogRunner
     )
   )
   .dependsOn(`authlete-codegen` % "compile->compile")
@@ -97,34 +97,47 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     openApiConfigFile         := ((Compile / baseDirectory).value / "config.json").getPath,
     openApiIgnoreFileOverride := s"${baseDirectory.value.getPath}/openapi-ignore-file",
 
-    // Put generated sources where SBT expects managed sources
+    // Generated code lands under src/main/scala/authlete (see config.json,
+    // shared with the CLI so both stay in sync).
     openApiOutputDir          := ((Compile / baseDirectory).value / "src/main/scala").getAbsolutePath,
     openApiGenerateModelTests := SettingDisabled,
     openApiGenerateApiTests   := SettingDisabled,
-    openApiValidateSpec       := SettingDisabled,
     // Fail fast on bad specs (optional but recommended)
     openApiValidateSpec := Some(true),
-    // Compile / sourceGenerators += openApiGenerate.taskValue,
-    (Compile / compile) := Def.uncached {
-      (Compile / compile).dependsOn(generate).value
-    },
-    // (Compile/compile) := ((compile in Compile) dependsOn openApiGenerate).value
 
-    // Define the simple generate command to generate full client codes.
-    // Wrapped in Def.uncached so sbt 2's task cache never skips this
-    // side-effectful file generation.
+    // Feed the generated sources into compilation via sourceGenerators rather
+    // than `compile.dependsOn(generate)`: the latter only orders generation
+    // before compile's body, not before sbt discovers sources, so a clean build
+    // (e.g. CI) could compile codegen with an empty source list and leave the
+    // authlete.* packages off the classpath. sourceGenerators makes generation
+    // a proper input to `sources`, so sbt always runs it first.
+    Compile / sourceGenerators += Def
+      .task {
+        generate.value
+        (file(openApiOutputDir.value) ** "*.scala").get()
+      }
+      .taskValue,
+    // All of codegen's Scala is generated (under authlete/); drop the unmanaged
+    // source dir so the generated files are compiled once, via the generator
+    // above, instead of also being globbed as unmanaged sources.
+    Compile / unmanagedSourceDirectories := Seq.empty,
+
+    // Manual entry point to (re)generate the client without a full compile.
+    //
+    // Must stay uncached. sbt 2 caches `:=` task results by default, but the
+    // cache key is built from the task's `.value` inputs, and nothing here
+    // hashes the OpenAPI spec's *contents* -- sbt's own file-input keys
+    // (allInputFiles / changedInputFiles) are @transient, i.e. deliberately
+    // excluded from cache input. A Def.cachedTask would therefore keep serving
+    // a stale client whenever the spec changed, so we always regenerate.
     generate := Def.uncached {
-      Def
-        .task {
-          val _ = openApiGenerate.value
+      val _ = openApiGenerate.value
 
-          // Delete the generated build.sbt file so that it is not used for our sbt config
-          val buildSbtFile = file(openApiOutputDir.value) / "build.sbt"
-          if (buildSbtFile.exists()) {
-            buildSbtFile.delete()
-          }
-        }
-        .value
+      // Delete the generated build.sbt file so that it is not used for our sbt config
+      val buildSbtFile = file(openApiOutputDir.value) / "build.sbt"
+      if (buildSbtFile.exists()) {
+        buildSbtFile.delete()
+      }
     },
     libraryDependencies ++= Seq(
       sttpJsoniter,
@@ -138,14 +151,10 @@ lazy val populateTestDB =
   taskKey[Unit]("Run PopulateTestDatabase main class from the test folder")
 
 populateTestDB := Def.uncached {
-  Def
-    .task {
-      val log = streams.value.log
-      (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
-    }
-    .value
+  val log = streams.value.log
+  (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
 }
 
 Global / onChangedBuildSource := IgnoreSourceChanges
 
-ThisProject / dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.0"
+ThisProject / dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.2"
