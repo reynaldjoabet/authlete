@@ -94,6 +94,13 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // Use the same JSON so CLI and SBT stay in sync
     openApiConfigFile := ((Compile / baseDirectory).value / "config.json").getPath,
 
+    // Suppress the non-source supporting files (build.sbt, project/, README.md,
+    // .scalafmt.conf) so the generator emits only .scala. The generator matches
+    // ignore patterns relative to the ignore file's own directory; this one sits
+    // at the module root while files land under src/main/scala, so the patterns
+    // are written as **/... to match at any depth.
+    openApiIgnoreFileOverride := (baseDirectory.value / ".openapi-generator-ignore").getPath,
+
     // Generated code lands under src/main/scala/authlete (see config.json,
     // shared with the CLI so both stay in sync).
     openApiOutputDir          := ((Compile / baseDirectory).value / "src/main/scala").getAbsolutePath,
@@ -112,16 +119,11 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // the glob always finds them, which is why it failed in CI but not locally.
     // A sourceGenerator feeds `sources` directly, so sbt has to run it first.
     //
-    // `generate` returns exactly the files openApiGenerate wrote, so we reuse
-    // that list rather than re-globbing the output dir. It must be filtered to
-    // .scala: the generator also drops non-source supporting files (README.md,
-    // .scalafmt.conf, build.sbt, project/*) into the output dir, and handing
-    // those to the Scala compiler as sources fails to parse them.
-    Compile / sourceGenerators += Def
-      .task {
-        generate.value.filter(_.getName.endsWith(".scala"))
-      }
-      .taskValue,
+    // `generate` returns exactly the files openApiGenerate wrote, and thanks to
+    // the .openapi-generator-ignore above that is only .scala (the non-source
+    // supporting files are suppressed), so the list can feed sourceGenerators
+    // directly.
+    Compile / sourceGenerators += generate.taskValue,
     // openApiOutputDir *is* src/main/scala, so the generator above already
     // covers everything sbt would otherwise pick up as unmanaged sources.
     // Dropping the unmanaged dir makes the generator the single source of truth
