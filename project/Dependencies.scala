@@ -307,6 +307,8 @@ object Dependencies {
     "org.typelevel" %% "munit-cats-effect" % Version.munitCatsEffect % Test
 
   // Tasks
-  lazy val generate = taskKey[Unit]("generate code from APIs")
+  // Seq[File] (not Unit) so it can feed Compile / sourceGenerators directly:
+  // it returns the files openApiGenerate wrote.
+  lazy val generate = taskKey[Seq[File]]("generate code from APIs")
 
 }

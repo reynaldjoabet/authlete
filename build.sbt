@@ -3,8 +3,6 @@ import Dependencies.*
 ThisBuild / scalaVersion := "3.3.8"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 
-val generate = taskKey[Unit]("generate code from APIs")
-
 lazy val root = (project in file("."))
   .settings(
     name := "authlete",
@@ -94,8 +92,7 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     openApiRemoveOperationIdPrefix := Some(true),
     openApiGenerateMetadata        := SettingDisabled,
     // Use the same JSON so CLI and SBT stay in sync
-    openApiConfigFile         := ((Compile / baseDirectory).value / "config.json").getPath,
-    openApiIgnoreFileOverride := s"${baseDirectory.value.getPath}/openapi-ignore-file",
+    openApiConfigFile := ((Compile / baseDirectory).value / "config.json").getPath,
 
     // Generated code lands under src/main/scala/authlete (see config.json,
     // shared with the CLI so both stay in sync).
@@ -105,39 +102,44 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // Fail fast on bad specs (optional but recommended)
     openApiValidateSpec := Some(true),
 
-    // Feed the generated sources into compilation via sourceGenerators rather
-    // than `compile.dependsOn(generate)`: the latter only orders generation
-    // before compile's body, not before sbt discovers sources, so a clean build
-    // (e.g. CI) could compile codegen with an empty source list and leave the
-    // authlete.* packages off the classpath. sourceGenerators makes generation
-    // a proper input to `sources`, so sbt always runs it first.
+    // Wired in as a sourceGenerator, NOT as `compile.dependsOn(generate)`.
+    // sbt collects `sources` by globbing src/main/scala in a task separate from
+    // `compile`, and dependsOn only sequences generate ahead of `compile` -- not
+    // ahead of that glob. So on a clean checkout the glob ran first, found
+    // nothing, and codegen compiled 0 sources, leaving authlete.api/models off
+    // the classpath and failing every downstream import. This only surfaces on
+    // a clean checkout -- locally the previous run's files are still on disk, so
+    // the glob always finds them, which is why it failed in CI but not locally.
+    // A sourceGenerator feeds `sources` directly, so sbt has to run it first.
+    //
+    // `generate` returns exactly the files openApiGenerate wrote, so we reuse
+    // that list rather than re-globbing the output dir. It must be filtered to
+    // .scala: the generator also drops non-source supporting files (README.md,
+    // .scalafmt.conf, build.sbt, project/*) into the output dir, and handing
+    // those to the Scala compiler as sources fails to parse them.
     Compile / sourceGenerators += Def
       .task {
-        generate.value
-        (file(openApiOutputDir.value) ** "*.scala").get()
+        generate.value.filter(_.getName.endsWith(".scala"))
       }
       .taskValue,
-    // All of codegen's Scala is generated (under authlete/); drop the unmanaged
-    // source dir so the generated files are compiled once, via the generator
-    // above, instead of also being globbed as unmanaged sources.
+    // openApiOutputDir *is* src/main/scala, so the generator above already
+    // covers everything sbt would otherwise pick up as unmanaged sources.
+    // Dropping the unmanaged dir makes the generator the single source of truth
+    // instead of having sbt separately glob a directory that is empty on a clean
+    // checkout. Not required for correctness: `sources` is
+    // (unmanaged ++ managed).distinct, so the overlap would dedupe either way.
     Compile / unmanagedSourceDirectories := Seq.empty,
 
     // Manual entry point to (re)generate the client without a full compile.
     //
-    // Must stay uncached. sbt 2 caches `:=` task results by default, but the
-    // cache key is built from the task's `.value` inputs, and nothing here
-    // hashes the OpenAPI spec's *contents* -- sbt's own file-input keys
-    // (allInputFiles / changedInputFiles) are @transient, i.e. deliberately
-    // excluded from cache input. A Def.cachedTask would therefore keep serving
-    // a stale client whenever the spec changed, so we always regenerate.
+    // Kept uncached: this task exists for its side effect (writing files), and
+    // sbt 2 caches `:=` results by default, which can skip that work. The cache
+    // key is built from the task's `.value` inputs, which cover setting values
+    // like the spec's path but not the spec's contents -- so a cached variant
+    // risks skipping regeneration after a spec edit. Always regenerating costs
+    // a few seconds and avoids having to reason about it.
     generate := Def.uncached {
-      val _ = openApiGenerate.value
-
-      // Delete the generated build.sbt file so that it is not used for our sbt config
-      val buildSbtFile = file(openApiOutputDir.value) / "build.sbt"
-      if (buildSbtFile.exists()) {
-        buildSbtFile.delete()
-      }
+      openApiGenerate.value
     },
     libraryDependencies ++= Seq(
       sttpJsoniter,
@@ -155,6 +157,6 @@ populateTestDB := Def.uncached {
   (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
 }
 
-Global / onChangedBuildSource := IgnoreSourceChanges
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisProject / dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.2"
