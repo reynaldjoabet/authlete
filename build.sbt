@@ -111,18 +111,17 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
 
     // Wired in as a sourceGenerator, NOT as `compile.dependsOn(generate)`.
     // sbt collects `sources` by globbing src/main/scala in a task separate from
-    // `compile`, and dependsOn only sequences generate ahead of `compile` -- not
-    // ahead of that glob. So on a clean checkout the glob ran first, found
-    // nothing, and codegen compiled 0 sources, leaving authlete.api/models off
-    // the classpath and failing every downstream import. This only surfaces on
-    // a clean checkout -- locally the previous run's files are still on disk, so
-    // the glob always finds them, which is why it failed in CI but not locally.
-    // A sourceGenerator feeds `sources` directly, so sbt has to run it first.
+    // `compile`, and dependsOn only sequences generate ahead of `compile` --
+    // not ahead of that glob. So on a clean checkout the glob would run first,
+    // find nothing, and the module would compile 0 sources, leaving its
+    // api/models off the classpath and failing every downstream import that
+    // depends on it -- and locally you'd never notice, since the previous run's
+    // files are still on disk and the glob always finds those. A sourceGenerator
+    // feeds `sources` directly, so sbt has to run it first.
     //
-    // `generate` returns exactly the files openApiGenerate wrote, and thanks to
-    // the .openapi-generator-ignore above that is only .scala (the non-source
-    // supporting files are suppressed), so the list can feed sourceGenerators
-    // directly.
+    // No separate glob needed: generate is typed Seq[File] (see
+    // Dependencies.scala), so its own return value -- the exact file list
+    // openApiGenerate just wrote -- IS what sourceGenerators needs.
     Compile / sourceGenerators += generate.taskValue,
     // openApiOutputDir *is* src/main/scala, so the generator above already
     // covers everything sbt would otherwise pick up as unmanaged sources.
