@@ -14,13 +14,6 @@ lazy val root = (project in file("."))
       "-deprecation", // Warns about deprecated APIs
       "-feature",     // Warns about advanced language features
       "-unchecked",
-      // "-Wunused:imports",
-      //   "-Wunused:privates",
-      //   "-Wunused:locals",
-      //   "-Wunused:explicits",
-      //   "-Wunused:implicits",
-      //   "-Wunused:params",
-      //   "-Wvalue-discard",
       "-language:strictEquality",
       "-Xmax-inlines:100000"
     ),
@@ -83,26 +76,14 @@ lazy val root = (project in file("."))
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
   .settings(
-    name := "authlete-codegen",
-    // openApiInputSpec := "src/main/resources/swagger.json",
-    // openApiGeneratorName := "sclala-sttp-client4",
+    name                           := "authlete-codegen",
     openApiModelNamePrefix         := "",
     openApiModelNameSuffix         := "",
-    openApiSkipOverwrite           := Some(false),
     openApiRemoveOperationIdPrefix := Some(true),
     openApiGenerateMetadata        := SettingDisabled,
     // Use the same JSON so CLI and SBT stay in sync
-    openApiConfigFile := ((Compile / baseDirectory).value / "config.json").getPath,
-
-    // Suppress the non-source supporting files (build.sbt, project/, README.md,
-    // .scalafmt.conf) so the generator emits only .scala. The generator matches
-    // ignore patterns relative to the ignore file's own directory; this one sits
-    // at the module root while files land under src/main/scala, so the patterns
-    // are written as **/... to match at any depth.
+    openApiConfigFile         := ((Compile / baseDirectory).value / "config.json").getPath,
     openApiIgnoreFileOverride := (baseDirectory.value / ".openapi-generator-ignore").getPath,
-
-    // Generated code lands under src/main/scala/authlete (see config.json,
-    // shared with the CLI so both stay in sync).
     openApiOutputDir          := ((Compile / baseDirectory).value / "src/main/scala").getAbsolutePath,
     openApiGenerateModelTests := SettingDisabled,
     openApiGenerateApiTests   := SettingDisabled,
