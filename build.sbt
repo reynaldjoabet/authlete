@@ -3,20 +3,38 @@ import Dependencies.*
 ThisBuild / scalaVersion := "3.3.8"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 
+ThisBuild / semanticdbEnabled := true
+
+ThisBuild / scalacOptions := Seq(
+  "-encoding",
+  "UTF-8",
+  "-no-indent",
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-source:3.3",
+  "-java-output-version:17",
+  "-Werror",
+  "-Wvalue-discard",
+  "-Wnonunit-statement",
+  "-Xlint:all",
+  "-Ysafe-init",
+  "-Xcheck-macros",
+  "-Xmax-inlines:64"
+)
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
+val generatedScalacOptions = Seq(
+  "-encoding",
+  "UTF-8",
+  "-java-output-version:17",
+  "-Xmax-inlines:64"
+)
+
 lazy val root = (project in file("."))
   .settings(
-    name := "authlete",
-    // Scoped to root only: authlete-codegen's generated sources don't carry
-    // CanEqual givens for their enums, so -language:strictEquality would fail
-    // there. (Top-level scalacOptions apply to every subproject in sbt 2.x,
-    // unlike sbt 1.x where they were root-only, so this must stay scoped here.)
-    scalacOptions ++= Seq(
-      "-deprecation", // Warns about deprecated APIs
-      "-feature",     // Warns about advanced language features
-      "-unchecked",
-      "-language:strictEquality",
-      "-Xmax-inlines:100000"
-    ),
+    name                 := "authlete",
     libraryDependencies ++= Seq(
       sttpCore,
       sttpJsoniter,
@@ -69,13 +87,13 @@ lazy val root = (project in file("."))
       sbtVersion
     ),
     buildInfoPackage := "authlete",
-    buildInfoObject  := "AuthleteBuildInfo",
-    scalacOptions   ++= Seq("-no-indent")
+    buildInfoObject  := "AuthleteBuildInfo"
   )
 
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
   .settings(
+    scalacOptions                 := generatedScalacOptions,
     name                           := "authlete-codegen",
     openApiModelNamePrefix         := "",
     openApiModelNameSuffix         := "",
@@ -112,14 +130,6 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
     // (unmanaged ++ managed).distinct, so the overlap would dedupe either way.
     Compile / unmanagedSourceDirectories := Seq.empty,
 
-    // Manual entry point to (re)generate the client without a full compile.
-    //
-    // Kept uncached: this task exists for its side effect (writing files), and
-    // sbt 2 caches `:=` results by default, which can skip that work. The cache
-    // key is built from the task's `.value` inputs, which cover setting values
-    // like the spec's path but not the spec's contents -- so a cached variant
-    // risks skipping regeneration after a spec edit. Always regenerating costs
-    // a few seconds and avoids having to reason about it.
     generate := Def.uncached {
       openApiGenerate.value
     },
@@ -138,7 +148,5 @@ populateTestDB := Def.uncached {
   val log = streams.value.log
   (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
 }
-
-Global / onChangedBuildSource := ReloadOnSourceChanges
 
 ThisProject / dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.2"
