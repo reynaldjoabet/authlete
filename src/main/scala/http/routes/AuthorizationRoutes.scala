@@ -69,13 +69,11 @@ abstract class AuthorizationRoutes[F[*]: Concurrent](
       val authorizationRequest =
         new AuthorizationRequest(parameters)
 
-      AuthorizationEndpoint()
-        .withBearerTokenAuth("your-bearer-token")
-        .authorizationApi("serviceid", authorizationRequest = authorizationRequest)
+      AuthorizationEndpoint
+        .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
+        .authorizationApi(config.serviceId, authorizationRequest = authorizationRequest)
         .send(backend)
-        .flatMap(response => processAuthorizationResponse(response))
-
-      Ok("Authorization Endpoint")
+        .flatMap(processAuthorizationResponse)
 
     /**
       * The authorization endpoint for {@code POST} method.

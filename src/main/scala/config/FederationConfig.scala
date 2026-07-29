@@ -21,6 +21,12 @@ final case class FederationConfig(
     client: ClientConfig
 )
 
-final case class AppConfig(
+/**
+  * The set of configured ID federations, i.e. the `app.federations` block.
+  *
+  * Named `AppConfig` until it collided with the actual application root config; `FederationsConfig`
+  * is what [[FederationConfig]]'s own `@see` already called it, and it describes the contents.
+  */
+final case class FederationsConfig(
     federations: List[FederationConfig]
 )

@@ -702,7 +702,7 @@ object DPoPValidator {
         config,
         clock
       ) match {
-        case Left(error) => F.pure(Left(error))
+        case Left(error)      => F.pure(Left(error))
         case Right(validated) =>
           if (config.checkReplay) checkAndRecordJti(validated.claims.jti, validated)
           else F.pure(Right(validated))
@@ -717,7 +717,7 @@ object DPoPValidator {
         expectedNonce: Option[String] = None
     ): F[Either[DPoPError, ValidatedDPoP]] =
       extractFromRequest(request) match {
-        case None => F.pure(Left(DPoPError.MissingProof))
+        case None        => F.pure(Left(DPoPError.MissingProof))
         case Some(proof) =>
           val httpMethod = request.method.name
           val httpUri    = request.uri.renderString

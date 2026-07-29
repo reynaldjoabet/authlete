@@ -57,7 +57,7 @@ object ExampleTest extends Properties {
 
   given genULID: Gen[UUID] = for {
     randomness <- Gen.bytes(Range.singleton(16))
-    time <- Gen.long(
+    time       <- Gen.long(
               Range.linear(
                 LocalDateTime.now().toLocalTime().toNanoOfDay(),
                 LocalDateTime.now().toLocalTime().toNanoOfDay()

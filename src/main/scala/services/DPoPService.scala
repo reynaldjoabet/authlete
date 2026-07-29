@@ -323,7 +323,7 @@ object DpopService {
     */
   def extractDPoPToken[F[_]](request: Request[F]): Either[DPoPError, String] =
     request.headers.get(CIString("Authorization")) match {
-      case None => Left(DPoPError.MissingProof)
+      case None          => Left(DPoPError.MissingProof)
       case Some(headers) =>
         val value = headers.head.value
         if (value.toLowerCase.startsWith("dpop ")) {
@@ -644,7 +644,7 @@ object DpopService {
     Try {
       val (alg, signer) = privateKey match {
         case ecKey: ECKey =>
-          val curve = ecKey.getCurve
+          val curve     = ecKey.getCurve
           val algorithm = curve match {
             case Curve.P_256 => JWSAlgorithm.ES256
             case Curve.P_384 => JWSAlgorithm.ES384
@@ -758,7 +758,7 @@ object DpopService {
         config,
         clock
       ) match {
-        case Left(error) => F.pure(Left(error))
+        case Left(error)  => F.pure(Left(error))
         case Right(proof) =>
           if (config.checkReplay) checkAndRecordJti(proof)
           else F.pure(Right(proof))
@@ -784,7 +784,7 @@ object DpopService {
         expectedThumbprint: Option[String]
     ): F[Either[DPoPError, ValidatedProof]] =
       extractProof(request) match {
-        case Left(error) => F.pure(Left(error))
+        case Left(error)  => F.pure(Left(error))
         case Right(proof) =>
           val httpMethod = request.method.name
           val httpUri    = request.uri.renderString
@@ -828,7 +828,7 @@ object DpopService {
         signedJwt <- parseJwt(proofJwt)
         jwk       <- extractJwk(signedJwt)
         actual     = calculateJwkThumbprint(jwk)
-        _ <- if (actual == expectedThumbprint) Right(())
+        _         <- if (actual == expectedThumbprint) Right(())
              else Left(DPoPError.ThumbprintMismatch(expectedThumbprint, actual))
       } yield ()
     }

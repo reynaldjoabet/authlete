@@ -616,7 +616,7 @@ object JwtValidator {
 
   private def parseAudience(value: Option[JsonValue]): Option[Audience] =
     value.flatMap {
-      case JsonValue.Str(s) => Some(Audience.Single(s))
+      case JsonValue.Str(s)   => Some(Audience.Single(s))
       case JsonValue.Arr(arr) =>
         val strings = arr.collect { case JsonValue.Str(s) => s }
         if (strings.nonEmpty) Some(Audience.Multiple(strings)) else None
@@ -716,14 +716,14 @@ object JwtValidator {
       if (json.charAt(idx) == '\\' && idx + 1 < json.length) {
         idx += 1
         json.charAt(idx) match {
-          case '"'  => sb.append('"')
-          case '\\' => sb.append('\\')
-          case '/'  => sb.append('/')
-          case 'b'  => sb.append('\b')
-          case 'f'  => sb.append('\f')
-          case 'n'  => sb.append('\n')
-          case 'r'  => sb.append('\r')
-          case 't'  => sb.append('\t')
+          case '"'                          => sb.append('"')
+          case '\\'                         => sb.append('\\')
+          case '/'                          => sb.append('/')
+          case 'b'                          => sb.append('\b')
+          case 'f'                          => sb.append('\f')
+          case 'n'                          => sb.append('\n')
+          case 'r'                          => sb.append('\r')
+          case 't'                          => sb.append('\t')
           case 'u' if idx + 4 < json.length =>
             val hex = json.substring(idx + 1, idx + 5)
             sb.append(Integer.parseInt(hex, 16).toChar)
@@ -895,7 +895,7 @@ object JwtValidator {
     if (!config.validateExpiration) Right(())
     else
       claims.exp match {
-        case None => Right(()) // exp is optional per RFC 7519
+        case None      => Right(()) // exp is optional per RFC 7519
         case Some(exp) =>
           val expInstant = Instant.ofEpochSecond(exp)
           if (expInstant.plus(skew).isBefore(now)) Left(JwtError.TokenExpired)
@@ -911,7 +911,7 @@ object JwtValidator {
     if (!config.validateNotBefore) Right(())
     else
       claims.nbf match {
-        case None => Right(())
+        case None      => Right(())
         case Some(nbf) =>
           val nbfInstant = Instant.ofEpochSecond(nbf)
           if (nbfInstant.minus(skew).isAfter(now)) Left(JwtError.TokenNotYetValid)
@@ -927,7 +927,7 @@ object JwtValidator {
     if (!config.validateIssuedAt) Right(())
     else
       claims.iat match {
-        case None => Right(())
+        case None      => Right(())
         case Some(iat) =>
           val iatInstant = Instant.ofEpochSecond(iat)
           if (iatInstant.minus(skew).isAfter(now)) Left(JwtError.TokenIssuedInFuture)
@@ -936,7 +936,7 @@ object JwtValidator {
 
   private def validateIssuer(claims: JwtClaims, config: Config): Either[JwtError, Unit] =
     config.requiredIssuer match {
-      case None => Right(())
+      case None           => Right(())
       case Some(expected) =>
         if (claims.iss.contains(expected)) Right(())
         else Left(JwtError.InvalidIssuer(expected, claims.iss))
@@ -944,7 +944,7 @@ object JwtValidator {
 
   private def validateAudience(claims: JwtClaims, config: Config): Either[JwtError, Unit] =
     config.requiredAudience match {
-      case None => Right(())
+      case None           => Right(())
       case Some(expected) =>
         if (claims.aud.exists(_.contains(expected))) Right(())
         else Left(JwtError.InvalidAudience(expected, claims.aud))

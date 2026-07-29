@@ -20,7 +20,7 @@ import org.http4s.dsl.io._
 import org.http4s.headers.Authorization
 import org.http4s.Credentials
 import org.typelevel.ci.CIStringSyntax
-import org.typelevel.vault.Vault
+import org.typelevel.vault.Key
 
 /**
   * Authenticated user/principal attached to request
@@ -147,7 +147,7 @@ final class JwksProvider private (
           cur <- state.get
           // double-check: maybe someone refreshed while we waited
           shouldRefresh = force || cur.forall(cs => now.isAfter(cs.freshUntil))
-          jwkSet <-
+          jwkSet       <-
             if (!shouldRefresh) IO.pure(cur.get.jwkSet)
             else
               fetchJwks
@@ -204,7 +204,7 @@ final class JwtVerifier(cfg: JwtConfig, jwks: JwksProvider) {
     IO(SignedJWT.parse(token))
       .attempt
       .flatMap {
-        case Left(e) => IO.pure(Left(AuthError.InvalidToken(s"parse error: ${e.getMessage}")))
+        case Left(e)    => IO.pure(Left(AuthError.InvalidToken(s"parse error: ${e.getMessage}")))
         case Right(jwt) =>
           val header = jwt.getHeader
           val algOk  = Option(header.getAlgorithm).exists(_.getName == allowedAlg)
@@ -214,7 +214,7 @@ final class JwtVerifier(cfg: JwtConfig, jwks: JwksProvider) {
             IO.pure(Left(AuthError.InvalidToken(s"unexpected alg (only $allowedAlg allowed)")))
           else
             kidOpt match {
-              case None => IO.pure(Left(AuthError.InvalidToken("missing kid in header")))
+              case None      => IO.pure(Left(AuthError.InvalidToken("missing kid in header")))
               case Some(kid) =>
                 jwks
                   .getKey(kid)
@@ -303,54 +303,54 @@ final class JwtVerifier(cfg: JwtConfig, jwks: JwksProvider) {
 
 }
 
-// /**
-//   * http4s middleware:
-//   *   - verifies token
-//   *   - on success attaches Principal3 to request attributes
-//   *   - on failure returns 401/403 with WWW-Authenticate
-//   */
-// object SecurityMiddleware {
+/**
+  * http4s middleware:
+  *   - verifies token
+  *   - on success attaches Principal3 to request attributes
+  *   - on failure returns 401/403 with WWW-Authenticate
+  */
+object SecurityMiddleware {
 
-//   // vault key for request-scoped principal
-//   val principalKeyF: IO[Vault.Key[Principal3]] = Vault.Key.newKey[IO, Principal3]
+  // vault key for request-scoped principal
+  val principalKeyF: IO[Key[Principal3]] = Key.newKey[IO, Principal3]
 
-//   def authenticate(
-//       verifier: JwtVerifier,
-//       key: Vault.Key[Principal3]
-//   ): HttpRoutes[IO] => HttpRoutes[IO] =
-//     (routes: HttpRoutes[IO]) =>
-//       Kleisli { (req: Request[IO]) =>
-//         OptionT {
-//           verifier
-//             .authenticate(req)
-//             .flatMap {
-//               case Left(err) =>
-//                 err.toResponse.map(Some(_))
-//               case Right(p) =>
-//                 routes(req.withAttribute(key, p)).value
-//             }
-//         }
-//       }
+  def authenticate(
+      verifier: JwtVerifier,
+      key: Key[Principal3]
+  ): HttpRoutes[IO] => HttpRoutes[IO] =
+    (routes: HttpRoutes[IO]) =>
+      Kleisli { (req: Request[IO]) =>
+        OptionT {
+          verifier
+            .authenticate(req)
+            .flatMap {
+              case Left(err) =>
+                err.toResponse.map(Some(_))
+              case Right(p) =>
+                routes(req.withAttribute(key, p)).value
+            }
+        }
+      }
 
-//   /**
-//     * Route-level authorization: require scopes (403 if missing).
-//     */
-//   def requireScopes(
-//       key: Vault.Key[Principal3],
-//       required: Set[String]
-//   ): HttpRoutes[IO] => HttpRoutes[IO] =
-//     (routes: HttpRoutes[IO]) =>
-//       Kleisli { (req: Request[IO]) =>
-//         OptionT {
-//           req.attributes.lookup(key) match {
-//             case None =>
-//               AuthError.MissingBearer.toResponse.map(Some(_))
-//             case Some(p) if required.subsetOf(p.scopes) =>
-//               routes(req).value
-//             case Some(_) =>
-//               AuthError.InsufficientScope(required).toResponse.map(Some(_))
-//           }
-//         }
-//       }
+  /**
+    * Route-level authorization: require scopes (403 if missing).
+    */
+  def requireScopes(
+      key: Key[Principal3],
+      required: Set[String]
+  ): HttpRoutes[IO] => HttpRoutes[IO] =
+    (routes: HttpRoutes[IO]) =>
+      Kleisli { (req: Request[IO]) =>
+        OptionT {
+          req.attributes.lookup(key) match {
+            case None =>
+              AuthError.MissingBearer.toResponse.map(Some(_))
+            case Some(p) if required.subsetOf(p.scopes) =>
+              routes(req).value
+            case Some(_) =>
+              AuthError.InsufficientScope(required).toResponse.map(Some(_))
+          }
+        }
+      }
 
-// }
+}

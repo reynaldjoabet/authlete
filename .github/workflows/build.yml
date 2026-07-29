@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [17,21]
+        java: [21]
         distribution: [temurin, corretto]
         os: [ubuntu-latest]
 

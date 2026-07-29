@@ -66,7 +66,7 @@ final case class JwtCfg(
 )
 
 sealed trait AuthError2 { def message: String }
-object AuthError2 {
+object AuthError2       {
 
   case object MissingBearer                      extends AuthError2 { val message = "Missing bearer token" }
   final case class InvalidToken(message: String) extends AuthError2
@@ -79,7 +79,7 @@ final class NimbusJwtVerifier[F[_]: Async](cfg: JwtCfg, keys: KeyProvider[F]) {
   private val claimsVerifier: DefaultJWTClaimsVerifier[SecurityContext] = {
     val exact    = new JWTClaimsSet.Builder().issuer(cfg.issuer).build()
     val required = Set(JWTClaimNames.SUBJECT, JWTClaimNames.EXPIRATION_TIME, "clientId").asJava
-    val v = new DefaultJWTClaimsVerifier[SecurityContext](
+    val v        = new DefaultJWTClaimsVerifier[SecurityContext](
       cfg.acceptedAudience.asJava,
       exact,
       required,
@@ -114,11 +114,11 @@ final class NimbusJwtVerifier[F[_]: Async](cfg: JwtCfg, keys: KeyProvider[F]) {
       }
       .attempt
       .flatMap {
-        case Left(_) => Async[F].pure(Left(AuthError2.InvalidToken("parse/header/claims error")))
+        case Left(_)                                         => Async[F].pure(Left(AuthError2.InvalidToken("parse/header/claims error")))
         case Right((jwt, alg, claims, clientType, clientId)) =>
           for {
             key <- keys.getKey(alg, clientType, clientId, claims)
-            ok <- Async[F]
+            ok  <- Async[F]
                     .blocking {
                       val verifier: JWSVerifier =
                         if (JWSAlgorithm.Family.RSA.contains(alg))
@@ -141,7 +141,7 @@ final class NimbusJwtVerifier[F[_]: Async](cfg: JwtCfg, keys: KeyProvider[F]) {
                          .blocking(claimsVerifier.verify(claims, null))
                          .attempt
                          .map {
-                           case Left(_) => Left(AuthError2.InvalidToken("claims rejected"))
+                           case Left(_)  => Left(AuthError2.InvalidToken("claims rejected"))
                            case Right(_) =>
                              val userId = Option(claims.getClaim("userId")).flatMap(v =>
                                scala.util.Try(UUID.fromString(v.toString)).toOption
@@ -174,7 +174,7 @@ def http4sAuthMiddleware(verifier: NimbusJwtVerifier[IO]): AuthMiddleware[IO, Pr
   }
 
   // This is the standard http4s pattern :contentReference[oaicite:18]{index=18}
-  AuthMiddleware(authUserEither, onFailure)
+  // AuthMiddleware(authUserEither, onFailure)
 
 // val timeToLive: Duration= 10.minutes
 // val refreshTimeout: Duration = 1.minute
@@ -184,7 +184,7 @@ def http4sAuthMiddleware(verifier: NimbusJwtVerifier[IO]): AuthMiddleware[IO, Pr
   val refreshAheadTime      = 1L
   val refreshAheadScheduled = true
   val jwksURL               = new java.net.URI("https://example.com/.well-known/jwks.json").toURL()
-  val resourceRetriever =
+  val resourceRetriever     =
     DefaultResourceRetriever(
       JWKSourceBuilder.DEFAULT_HTTP_CONNECT_TIMEOUT,
       JWKSourceBuilder.DEFAULT_HTTP_READ_TIMEOUT,

@@ -153,6 +153,29 @@ object CorrelationIdMiddleware {
   }
 
   /**
+    * The same enrichment, applied to a fully-assembled `HttpApp`.
+    *
+    * Needed because correlation has to be the '''outermost''' layer: anything wrapped outside it --
+    * notably the error handler and the request logger -- sees the un-enriched request and so cannot
+    * report the id, which is precisely when the id matters most. The `HttpRoutes` variant above
+    * can't be lifted there, since by that point routing has already collapsed `OptionT` away.
+    */
+  def httpApp[F[_]: Functor](config: Config)(app: HttpApp[F]): HttpApp[F] =
+    Kleisli { (request: Request[F]) =>
+      val correlationId   = extractOrGenerate(request, config)
+      val enrichedRequest = request.withAttribute(correlationIdKey, correlationId)
+
+      app
+        .run(enrichedRequest)
+        .map { response =>
+          if (config.includeInResponse)
+            response.putHeaders(correlationId.toHeader(config.responseHeader))
+          else
+            response
+        }
+    }
+
+  /**
     * Create middleware that also provides correlation ID via IOLocal for logging.
     *
     * This variant stores the correlation ID in fiber-local storage, making it accessible throughout

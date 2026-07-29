@@ -1,15 +1,47 @@
 package config
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 
+import config.Secret.given
+import pureconfig.ConfigReader
+
+/**
+  * Credentials and connection settings for the Authlete API.
+  *
+  * Optionality here is real, not cosmetic: the fields typed `Option` are the ones a correctly
+  * configured deployment may genuinely omit (v2-only credentials, DPoP, mTLS). They were previously
+  * `String` defaulted to `""`, which made "not configured" and "configured to the empty string"
+  * indistinguishable and deferred the failure to the first API call. Cross-field rules -- e.g. DPoP
+  * enabled with no key -- are enforced in [[AppConfig.validate]].
+  *
+  * @param requestTimeout
+  *   Per-request timeout for calls to the Authlete API. Bounded so a hung upstream can't pin a
+  *   request fiber indefinitely.
+  * @param serviceId
+  *   Authlete service identifier; the `{serviceId}` path segment of the v3 API.
+  * @param serviceAccessToken
+  *   v3 bearer token. Required -- v3 authenticates with a token, not a key/secret pair.
+  * @param baseUrl
+  *   Authlete API root, e.g. `https://api.authlete.com/api`.
+  * @param isDpopEnabled
+  *   Whether to present DPoP proofs to Authlete. Requires `dpopKey`.
+  * @param serviceApiKey
+  *   v2 API key. Unused on v3.
+  * @param serviceApiSecret
+  *   v2 API secret. Unused on v3.
+  * @param dpopKey
+  *   Public/private key pair used for DPoP signatures, in JWK format.
+  * @param clientCertificate
+  *   Certificate used for mTLS-bound access tokens, in PEM format.
+  */
 final case class AuthleteConfig(
-    requestTimeout: Duration,
-    serviceApiKey: String,
-    // V3 API requires an access token, not a key and secret
-    serviceAccessToken: String,              // used in version 3 with serviceApiKey
-    serviceApiSecret: Option[String] = None, // used in version 2 with serviceApiKey
-    isDpopEnabled: Boolean,
-    baseUrl: String,          // https://api.authlete.com
-    dpopKey: String,          // Get the public/private key pair used for DPoP signatures in JWK format.
-    clientCertificate: String // Get the certificate used for MTLS bound access tokens in PEM format.
-)
+    requestTimeout: FiniteDuration,
+    serviceId: String,
+    serviceAccessToken: Secret,
+    baseUrl: String,
+    isDpopEnabled: Boolean = false,
+    serviceApiKey: Option[Secret] = None,
+    serviceApiSecret: Option[Secret] = None,
+    dpopKey: Option[Secret] = None,
+    clientCertificate: Option[Secret] = None
+) derives ConfigReader

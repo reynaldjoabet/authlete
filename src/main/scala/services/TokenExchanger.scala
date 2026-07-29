@@ -106,7 +106,7 @@ object TokenExchanger {
 
     private def determineClientId(resp: TokenResponse): Either[TokenExchangeError, Long] =
       resp.clientId match {
-        case Some(id) if id != 0L => Right(id)
+        case Some(id) if id != 0L                   => Right(id)
         case _ if config.allowUnidentifiableClients =>
           Left(
             TokenExchangeError.UnidentifiableClient(

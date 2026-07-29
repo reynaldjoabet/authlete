@@ -285,7 +285,7 @@ object TokenValidationMiddleware {
           new TokenCache[F] {
             def get(token: String): F[Option[ValidatedToken]] =
               for {
-                now <- Clock[F].realTime.map(_.toMillis)
+                now    <- Clock[F].realTime.map(_.toMillis)
                 result <- ref.modify { cache =>
                             cache.get(token) match {
                               case Some(entry) if entry.expiresAt > now =>
@@ -302,7 +302,7 @@ object TokenValidationMiddleware {
             def put(token: String, validated: ValidatedToken, ttl: FiniteDuration): F[Unit] =
               for {
                 now <- Clock[F].realTime.map(_.toMillis)
-                _ <- ref.update { cache =>
+                _   <- ref.update { cache =>
                        // Simple eviction: remove expired entries when cache is full
                        val cleaned =
                          if (cache.size >= maxSize) cache.filter(_._2.expiresAt > now)
@@ -362,8 +362,8 @@ object TokenValidationMiddleware {
           new CircuitBreaker[F] {
             def protect[A](fa: F[A]): F[Either[TokenError, A]] =
               for {
-                now   <- Clock[F].realTime.map(_.toMillis)
-                state <- ref.get
+                now    <- Clock[F].realTime.map(_.toMillis)
+                state  <- ref.get
                 result <- state.state match {
                             case CircuitState.Open =>
                               state.lastFailure match {
@@ -373,7 +373,7 @@ object TokenValidationMiddleware {
                                     fa.attempt
                                       .flatMap {
                                         case Right(a) => recordSuccess.as(Right(a))
-                                        case Left(_) =>
+                                        case Left(_)  =>
                                           recordFailure.as(
                                             Left(TokenError.ServiceError("Circuit breaker open"))
                                           )
@@ -387,7 +387,7 @@ object TokenValidationMiddleware {
                               fa.attempt
                                 .flatMap {
                                   case Right(a) => recordSuccess.as(Right(a))
-                                  case Left(_) =>
+                                  case Left(_)  =>
                                     recordFailure.as(
                                       Left(TokenError.ServiceError("Service unavailable"))
                                     )
@@ -396,7 +396,7 @@ object TokenValidationMiddleware {
                               fa.attempt
                                 .flatMap {
                                   case Right(a) => Right(a).pure[F]
-                                  case Left(e) =>
+                                  case Left(e)  =>
                                     recordFailure.as(Left(TokenError.ServiceError(e.getMessage)))
                                 }
                           }
@@ -408,7 +408,7 @@ object TokenValidationMiddleware {
             def recordFailure: F[Unit] =
               for {
                 now <- Clock[F].realTime.map(_.toMillis)
-                _ <- ref.update { state =>
+                _   <- ref.update { state =>
                        val newFailures = state.failures + 1
                        if (newFailures >= threshold)
                          CircuitBreakerState(CircuitState.Open, newFailures, Some(now))
@@ -494,7 +494,7 @@ object TokenValidationMiddleware {
     ): IntrospectionClient[F] = new IntrospectionClient[F] {
       private val endpoint = IntrospectionEndpoint.withBearerTokenAuth(
         authleteConfig.baseUrl,
-        authleteConfig.serviceAccessToken
+        authleteConfig.serviceAccessToken.value
       )
 
       def introspect(
@@ -625,7 +625,7 @@ object TokenValidationMiddleware {
       config: Config = Config()
   ): F[Http4sAuthMiddleware[F, ValidatedToken]] =
     for {
-      cache <- TokenCache.inMemory[F](config.cacheMaxSize)
+      cache          <- TokenCache.inMemory[F](config.cacheMaxSize)
       circuitBreaker <-
         CircuitBreaker[F](config.circuitBreakerThreshold, config.circuitBreakerResetTimeout)
     } yield build(client, cache, circuitBreaker, config)
@@ -678,7 +678,7 @@ object TokenValidationMiddleware {
 
     val onFailure: AuthedRoutes[TokenError, F] =
       Kleisli { authedReq =>
-        val error = authedReq.context
+        val error    = authedReq.context
         val response = Response[F](error.httpStatus).putHeaders(
           `WWW-Authenticate`(
             Challenge(

@@ -387,7 +387,7 @@ object DPoPProofValidator {
 
               // Validate htu (HTTP URL)
               htu <- payload.get("htu").flatMap(_.asString).toRight(DPoPError.InvalidHtu)
-              _ <- Either.cond(
+              _   <- Either.cond(
                      normalizeUrl(htu) == normalizeUrl(context.url.renderString),
                      (),
                      DPoPError.InvalidHtu
@@ -402,7 +402,7 @@ object DPoPProofValidator {
 
               // Validate freshness
               nowSeconds = now.toSeconds
-              _ <- Either.cond(
+              _         <- Either.cond(
                      iat >= nowSeconds - options.proofTokenValidityDuration.toSeconds - context
                        .clientClockSkew
                        .toSeconds &&
@@ -448,7 +448,7 @@ object DPoPProofValidator {
             replayCache
               .exists(ReplayCachePurpose, jti)
               .flatMap {
-                case true => Async[F].pure(Left(DPoPError.ReplayDetected))
+                case true  => Async[F].pure(Left(DPoPError.ReplayDetected))
                 case false =>
                   replayCache
                     .add(ReplayCachePurpose, jti, options.proofTokenValidityDuration * 2)
@@ -526,7 +526,7 @@ object DPoPMiddleware {
           OptionT
             .liftF(validator.validate(context))
             .flatMap {
-              case Right(_) => routes(request)
+              case Right(_)    => routes(request)
               case Left(error) =>
                 OptionT.pure[F](Response[F](Status.Unauthorized).withEntity(error.description))
             }
