@@ -93,7 +93,7 @@ lazy val root = (project in file("."))
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
   .settings(
-    scalacOptions                 := generatedScalacOptions,
+    scalacOptions                  := generatedScalacOptions,
     name                           := "authlete-codegen",
     openApiModelNamePrefix         := "",
     openApiModelNameSuffix         := "",
