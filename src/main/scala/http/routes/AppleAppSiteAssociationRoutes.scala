@@ -30,9 +30,7 @@ abstract class AppleAppSiteAssociationRoutes[F[*]: Concurrent](
           |    ]
           |  }
           |}""".stripMargin,
-        org
-          .http4s
-          .headers
+        org.http4s.headers
           .`Content-Type`(
             org.http4s.MediaType.application.json
           )

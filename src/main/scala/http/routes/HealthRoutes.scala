@@ -61,8 +61,7 @@ final class HealthRoutes[F[_]: Concurrent](
     // which one they believe they deployed.
     case GET -> Root / "health" =>
       Ok(
-        s"""{"name":"${AuthleteBuildInfo.name}","version":"${AuthleteBuildInfo
-            .version}","scalaVersion":"${AuthleteBuildInfo.scalaVersion}"}"""
+        s"""{"name":"${AuthleteBuildInfo.name}","version":"${AuthleteBuildInfo.version}","scalaVersion":"${AuthleteBuildInfo.scalaVersion}"}"""
       ).map(_.withContentType(`Content-Type`(MediaType.application.json)))
   }
 

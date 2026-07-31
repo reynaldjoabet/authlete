@@ -154,8 +154,7 @@ object TokenExchanger {
     private def determineSubjectByTokenInfo(
         resp: TokenResponse
     ): Either[TokenExchangeError, String] =
-      resp
-        .subjectTokenInfo
+      resp.subjectTokenInfo
         .flatMap(_.subject)
         .toRight(
           TokenExchangeError.SubjectNotFound(

@@ -92,8 +92,7 @@ object buildHttpApp {
     }
 
   private def warmJwksCache(jwks: JwksProvider): IO[Unit] =
-    jwks
-      .refreshNow
+    jwks.refreshNow
       .flatMap(_ => Log[IO].info("JWKS cache warmed"))
       .handleErrorWith { error =>
         Log[IO].warn(

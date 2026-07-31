@@ -197,8 +197,7 @@ object CorrelationIdMiddleware {
       val enrichedRequest = request.withAttribute(correlationIdKey, correlationId)
 
       OptionT(
-        local.set(Some(correlationId)) >> routes(enrichedRequest)
-          .value
+        local.set(Some(correlationId)) >> routes(enrichedRequest).value
           .map { maybeResponse =>
             maybeResponse.map { response =>
               if (config.includeInResponse)
@@ -234,8 +233,7 @@ object CorrelationIdMiddleware {
     }
 
   private def extractFromHeaders[F[_]](request: Request[F], config: Config): Option[String] = {
-    config
-      .requestHeaders
+    config.requestHeaders
       .flatMap(header => request.headers.get(header).map(_.head.value))
       .headOption
       .map(sanitizeId)
@@ -289,8 +287,7 @@ object CorrelationIdMiddleware {
     * Create a logging context from IOLocal.
     */
   def loggingContextFromLocal(local: IOLocal[Option[CorrelationId]]): IO[Map[String, String]] =
-    local
-      .get
+    local.get
       .map {
         case Some(id) => Map("correlationId" -> id.value, "requestId" -> id.value)
         case None     => Map.empty
@@ -327,13 +324,9 @@ object CorrelationIdMiddleware {
       getCorrelationId: F[Option[CorrelationId]],
       headerName: CIString = CIString("X-Correlation-ID")
   ): org.http4s.client.Client[F] => org.http4s.client.Client[F] = { client =>
-    org
-      .http4s
-      .client
+    org.http4s.client
       .Client { request =>
-        cats
-          .effect
-          .Resource
+        cats.effect.Resource
           .eval(getCorrelationId)
           .flatMap { maybeId =>
             val enrichedRequest = maybeId.fold(request) { id =>

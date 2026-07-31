@@ -262,7 +262,7 @@ object TokenValidationMiddleware {
   /**
     * Simple LRU cache for introspection responses.
     */
-  final private case class CacheEntry(
+  private final case class CacheEntry(
       response: ValidatedToken,
       expiresAt: Long
   )
@@ -310,8 +310,7 @@ object TokenValidationMiddleware {
                        // If still full after cleaning, remove oldest entries
                        val trimmed =
                          if (cleaned.size >= maxSize)
-                           cleaned
-                             .toSeq
+                           cleaned.toSeq
                              .sortBy(_._2.expiresAt)
                              .drop(cleaned.size - maxSize + 1)
                              .toMap
@@ -338,7 +337,7 @@ object TokenValidationMiddleware {
     case Closed, Open, HalfOpen
   }
 
-  final private case class CircuitBreakerState(
+  private final case class CircuitBreakerState(
       state: CircuitState,
       failures: Int,
       lastFailure: Option[Long]
@@ -435,8 +434,7 @@ object TokenValidationMiddleware {
       */
     def extractBearerToken[F[_]](request: Request[F]): Either[TokenError, String] =
       // First try Authorization header
-      request
-        .headers
+      request.headers
         .get[Authorization]
         .flatMap { auth =>
           auth.credentials match {
@@ -459,8 +457,7 @@ object TokenValidationMiddleware {
       */
     def extractClientCertificate[F[_]](request: Request[F]): Option[String] =
       // Check common headers used by reverse proxies for client certificates
-      request
-        .headers
+      request.headers
         .get(CIString("X-SSL-Client-Cert"))
         .orElse(request.headers.get(CIString("X-Client-Certificate")))
         .orElse(request.headers.get(CIString("SSL_CLIENT_CERT")))
@@ -545,8 +542,7 @@ object TokenValidationMiddleware {
               clientIdAlias = response.clientIdAlias,
               scopes = response.scopes.map(_.toSet).getOrElse(Set.empty),
               expiresAt = response.expiresAt.getOrElse(0L),
-              properties = response
-                .properties
+              properties = response.properties
                 .map(_.flatMap(p => p.key.map(k => k -> p.value.getOrElse(""))).toMap)
                 .getOrElse(Map.empty),
               grantId = response.grantId,
@@ -650,8 +646,7 @@ object TokenValidationMiddleware {
               .flatMap {
                 case Some(validated) =>
                   // Validate expiration from cache
-                  Clock[F]
-                    .realTime
+                  Clock[F].realTime
                     .map(_.toMillis)
                     .map { now =>
                       if (validated.isValid(now)) Right(validated)
@@ -693,9 +688,7 @@ object TokenValidationMiddleware {
               )
             )
           ),
-          org
-            .http4s
-            .headers
+          org.http4s.headers
             .`Cache-Control`(
               org.http4s.CacheDirective.`no-store`
             )

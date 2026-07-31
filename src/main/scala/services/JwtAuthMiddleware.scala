@@ -37,8 +37,7 @@ object JwtAuthMiddleware {
   }
 
   def authUser(secret: String)(req: Request[IO]): IO[Option[Principal]] = IO {
-    req
-      .headers
+    req.headers
       .get[Authorization]
       .collect { case org.http4s.headers.Authorization(org.http4s.Credentials.Token(_, token)) =>
         verifyJwt(token, secret).map { claim =>

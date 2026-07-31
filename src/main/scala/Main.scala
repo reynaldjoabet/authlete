@@ -73,8 +73,7 @@ object Main extends IOApp {
     * [[config.Secret]], so they render redacted even if a field is added here later.
     */
   private def startupSummary(config: AppConfig): String =
-    s"""Starting ${AuthleteBuildInfo.name} ${AuthleteBuildInfo.version} (Scala ${AuthleteBuildInfo
-        .scalaVersion})
+    s"""Starting ${AuthleteBuildInfo.name} ${AuthleteBuildInfo.version} (Scala ${AuthleteBuildInfo.scalaVersion})
        |  bind             : ${config.server.host}:${config.server.port}
        |  authlete         : ${config.authlete.baseUrl} (service ${config.authlete.serviceId})
        |  dpop             : ${if (config.authlete.isDpopEnabled) "enabled" else "disabled"}

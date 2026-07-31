@@ -241,8 +241,7 @@ private object JsonParser {
     * Parse JSON string to circe Json using jsoniter-scala for performance
     */
   def parse(input: String): Either[io.circe.ParsingFailure, Json] =
-    scala
-      .util
+    scala.util
       .Try(readFromString[Json](input))
       .toEither
       .left
@@ -373,8 +372,7 @@ object DPoPProofValidator {
         payload: Map[String, Json]
     ): ValidationResult[DPoPProofValidationResult] =
       EitherT(
-        Async[F]
-          .realTime
+        Async[F].realTime
           .map { now =>
             for {
               // Validate jti
@@ -403,9 +401,7 @@ object DPoPProofValidator {
               // Validate freshness
               nowSeconds = now.toSeconds
               _         <- Either.cond(
-                     iat >= nowSeconds - options.proofTokenValidityDuration.toSeconds - context
-                       .clientClockSkew
-                       .toSeconds &&
+                     iat >= nowSeconds - options.proofTokenValidityDuration.toSeconds - context.clientClockSkew.toSeconds &&
                        iat <= nowSeconds + options.serverClockSkew.toSeconds,
                      (),
                      DPoPError.TokenExpired
@@ -442,8 +438,7 @@ object DPoPProofValidator {
 
     private def validateReplay(result: DPoPProofValidationResult): ValidationResult[Unit] =
       EitherT(
-        result
-          .tokenId
+        result.tokenId
           .traverse { jti =>
             replayCache
               .exists(ReplayCachePurpose, jti)
@@ -494,8 +489,7 @@ object DPoPMiddleware {
     * Extract access token from Authorization header (DPoP scheme)
     */
   def extractDPoPToken[F[_]](request: Request[F]): Option[String] =
-    request
-      .headers
+    request.headers
       .get[Authorization]
       .flatMap { auth =>
         auth.credentials match {

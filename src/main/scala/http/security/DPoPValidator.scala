@@ -146,8 +146,7 @@ object DPoPValidator {
       * Verify this proof is bound to the given access token.
       */
     def verifyTokenBinding(accessToken: String): Boolean =
-      claims
-        .ath
+      claims.ath
         .exists { ath =>
           val expectedAth = computeAccessTokenHash(accessToken)
           ath == expectedAth
@@ -387,13 +386,13 @@ object DPoPValidator {
   // JSON Codecs
   // ============================================================================
 
-  final private case class RawJWTHeader(
+  private final case class RawJWTHeader(
       typ: Option[String],
       alg: Option[String],
       jwk: Option[RawJWK]
   )
 
-  final private case class RawJWK(
+  private final case class RawJWK(
       kty: Option[String],
       crv: Option[String],
       x: Option[String],
@@ -408,7 +407,7 @@ object DPoPValidator {
       qi: Option[String]  // Private key component
   )
 
-  final private case class RawJWTClaims(
+  private final case class RawJWTClaims(
       jti: Option[String],
       htm: Option[String],
       htu: Option[String],

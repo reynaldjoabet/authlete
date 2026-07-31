@@ -461,7 +461,7 @@ object JwtValidator {
   // JSON Codecs for Parsing
   // ============================================================================
 
-  final private case class RawHeader(
+  private final case class RawHeader(
       alg: Option[String],
       typ: Option[String],
       kid: Option[String],
@@ -475,7 +475,7 @@ object JwtValidator {
       crit: Option[List[String]]
   )
 
-  final private case class RawJWK(
+  private final case class RawJWK(
       kty: Option[String],
       kid: Option[String],
       use: Option[String],
@@ -487,7 +487,7 @@ object JwtValidator {
       y: Option[String]
   )
 
-  final private case class RawJWKS(keys: List[RawJWK])
+  private final case class RawJWKS(keys: List[RawJWK])
 
   private given JsonValueCodec[RawHeader] = JsonCodecMaker.make
   private given JsonValueCodec[RawJWK]    = JsonCodecMaker.make
@@ -1039,8 +1039,7 @@ object JwtValidator {
       }
 
     private def getJwks: F[JWKS] =
-      cache
-        .get
+      cache.get
         .flatMap {
           case Some((jwks, fetchedAt))
               if fetchedAt.plus(cacheDuration).isAfter(Instant.now(clock)) =>

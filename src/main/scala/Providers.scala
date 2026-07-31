@@ -5,8 +5,7 @@ object Providers extends App {
   providers.foreach { provider =>
     println(s"Provider: ${provider.getName}, version: ${provider.getVersionStr()}")
     // get all services for each provider
-    provider
-      .getServices
+    provider.getServices
       .forEach { service =>
         println(s"Type: ${service.getType}, Algo: ${service.getAlgorithm}")
       }

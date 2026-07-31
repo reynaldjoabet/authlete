@@ -98,8 +98,7 @@ object ExampleTest extends Properties {
   val elementSize = 100
 
   def hedgehogDoubles: List[Double] =
-    hedgehog
-      .Gen
+    hedgehog.Gen
       .list(
         hedgehog.Gen.double(hedgehog.Range.constant(0.0, 1.0)),
         hedgehog.Range.constant(0, listSize)
@@ -110,8 +109,7 @@ object ExampleTest extends Properties {
       .getOrElse(List.empty)
 
   def hedgehogIntListsOfSizeN: List[List[Int]] =
-    hedgehog
-      .Gen
+    hedgehog.Gen
       .int(hedgehog.Range.constant(Int.MinValue, Int.MaxValue))
       .list(hedgehog.Range.constant(0, elementSize))
       .list(hedgehog.Range.constant(0, listSize))
@@ -121,8 +119,7 @@ object ExampleTest extends Properties {
       .getOrElse(List.empty)
 
   def hedgehogStringsOfSizeN: List[String] =
-    hedgehog
-      .Gen
+    hedgehog.Gen
       .string(hedgehog.Gen.alpha, hedgehog.Range.constant(0, elementSize))
       .list(hedgehog.Range.constant(0, listSize))
       .run(hedgehog.Size(0), hedgehog.core.Seed.fromTime())

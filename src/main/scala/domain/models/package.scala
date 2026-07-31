@@ -47,8 +47,7 @@ package object models {
       .withIsStringified(true)
       // .withDiscriminatorFieldName(Some("$type"))
       .withAdtLeafClassNameMapper(
-        JsonCodecMaker
-          .enforce_snake_case
+        JsonCodecMaker.enforce_snake_case
           .andThen(_.toUpperCase())
           //  JsonCodecMaker.simpleClassName.andThen(name => name.replaceAll("([a-z])([A-Z])", "$1_$2")
           //                              .toUpperCase())

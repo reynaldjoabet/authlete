@@ -125,8 +125,7 @@ object AppConfig {
     }
 
   private def isLoopback(uri: Uri): Boolean =
-    uri
-      .host
+    uri.host
       .map(_.renderString)
       .exists { host =>
         host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]"

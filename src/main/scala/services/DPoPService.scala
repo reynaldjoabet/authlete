@@ -337,8 +337,7 @@ object DpopService {
     * Extract Bearer token from Authorization header.
     */
   def extractBearerToken[F[_]](request: Request[F]): Option[String] =
-    request
-      .headers
+    request.headers
       .get(CIString("Authorization"))
       .flatMap { headers =>
         val value = headers.head.value
@@ -861,8 +860,7 @@ object DpopService {
     * Check if a request uses DPoP token binding (DPoP Authorization scheme).
     */
   def isDPoPBound[F[_]](request: Request[F]): Boolean =
-    request
-      .headers
+    request.headers
       .get(CIString("Authorization"))
       .exists { headers =>
         headers.head.value.toLowerCase.startsWith("dpop ")

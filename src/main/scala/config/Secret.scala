@@ -43,7 +43,7 @@ object Secret {
 
   final val Redacted = "«redacted»"
 
-  final private val HashCode = 0
+  private final val HashCode = 0
 
   def apply(value: String): Secret = new Secret(value)
 

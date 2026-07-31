@@ -104,9 +104,7 @@ final class JwksProvider private (
   def getKey(kid: String): IO[Option[RSAKey]] =
     getJwkSet.flatMap { set =>
       IO {
-        set
-          .getKeys
-          .asScala
+        set.getKeys.asScala
           .collectFirst {
             case k: RSAKey if k.getKeyID == kid => k
           }
@@ -139,8 +137,7 @@ final class JwksProvider private (
     } yield jwkSet
 
   private def refresh(force: Boolean): IO[JWKSet] =
-    refreshLock
-      .permit
+    refreshLock.permit
       .use { _ =>
         for {
           now <- IO.realTimeInstant
@@ -150,13 +147,11 @@ final class JwksProvider private (
           jwkSet       <-
             if (!shouldRefresh) IO.pure(cur.get.jwkSet)
             else
-              fetchJwks
-                .map { set =>
-                  val freshUntil = now.plusSeconds(cfg.jwksTtl.toSeconds)
-                  val staleUntil = now.plusSeconds((cfg.jwksTtl + cfg.jwksMaxStale).toSeconds)
-                  state.set(Some(CacheState(set, freshUntil, staleUntil))).as(set)
-                }
-                .flatten
+              fetchJwks.map { set =>
+                val freshUntil = now.plusSeconds(cfg.jwksTtl.toSeconds)
+                val staleUntil = now.plusSeconds((cfg.jwksTtl + cfg.jwksMaxStale).toSeconds)
+                state.set(Some(CacheState(set, freshUntil, staleUntil))).as(set)
+              }.flatten
         } yield jwkSet
       }
 
@@ -201,8 +196,7 @@ final class JwtVerifier(cfg: JwtConfig, jwks: JwksProvider) {
     }
 
   private def verify(token: String): IO[Either[AuthError, Principal3]] =
-    IO(SignedJWT.parse(token))
-      .attempt
+    IO(SignedJWT.parse(token)).attempt
       .flatMap {
         case Left(e)    => IO.pure(Left(AuthError.InvalidToken(s"parse error: ${e.getMessage}")))
         case Right(jwt) =>

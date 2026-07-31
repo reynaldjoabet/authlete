@@ -59,8 +59,7 @@ abstract class AuthorizationRoutes[F[*]: Concurrent](
       *   Endpoint</a>
       */
     case req @ GET -> Root / "authorization" =>
-      val parameters = req
-        .params
+      val parameters = req.params
         .map { case (key, value) =>
           s"$key=$value"
         }
@@ -227,12 +226,10 @@ abstract class AuthorizationRoutes[F[*]: Concurrent](
                     // - requested scopes (response.scopes)
                     // - claims being requested (response.claims)
                     // - ticket for subsequent API call
-                    val clientName = response
-                      .client
+                    val clientName = response.client
                       .flatMap(_.clientName)
                       .getOrElse("Unknown Client")
-                    val scopeNames = response
-                      .scopes
+                    val scopeNames = response.scopes
                       .map(_.flatMap(_.name).mkString(", "))
                       .getOrElse("No scopes")
 

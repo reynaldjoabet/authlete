@@ -97,8 +97,7 @@ final class NimbusJwtVerifier[F[_]: Async](cfg: JwtCfg, keys: KeyProvider[F]) {
         val claims = jwt.getJWTClaimsSet
 
         // typ check (optional)
-        cfg
-          .requiredTyp
+        cfg.requiredTyp
           .foreach { t =>
             if (t != header.getType) throw new RuntimeException("bad typ")
           }
@@ -118,20 +117,18 @@ final class NimbusJwtVerifier[F[_]: Async](cfg: JwtCfg, keys: KeyProvider[F]) {
         case Right((jwt, alg, claims, clientType, clientId)) =>
           for {
             key <- keys.getKey(alg, clientType, clientId, claims)
-            ok  <- Async[F]
-                    .blocking {
-                      val verifier: JWSVerifier =
-                        if (JWSAlgorithm.Family.RSA.contains(alg))
-                          new RSASSAVerifier(key.asInstanceOf[RSAPublicKey])
-                        else if (JWSAlgorithm.Family.EC.contains(alg))
-                          new ECDSAVerifier(key.asInstanceOf[ECPublicKey])
-                        else if (JWSAlgorithm.Family.HMAC_SHA.contains(alg))
-                          new MACVerifier(key.getEncoded)
-                        else throw new RuntimeException("unsupported alg")
+            ok  <- Async[F].blocking {
+                    val verifier: JWSVerifier =
+                      if (JWSAlgorithm.Family.RSA.contains(alg))
+                        new RSASSAVerifier(key.asInstanceOf[RSAPublicKey])
+                      else if (JWSAlgorithm.Family.EC.contains(alg))
+                        new ECDSAVerifier(key.asInstanceOf[ECPublicKey])
+                      else if (JWSAlgorithm.Family.HMAC_SHA.contains(alg))
+                        new MACVerifier(key.getEncoded)
+                      else throw new RuntimeException("unsupported alg")
 
-                      jwt.verify(verifier)
-                    }
-                    .attempt
+                    jwt.verify(verifier)
+                  }.attempt
             out <- ok match {
                      case Left(_) | Right(false) =>
                        Async[F].pure(Left(AuthError2.InvalidToken("bad signature")))
@@ -143,9 +140,8 @@ final class NimbusJwtVerifier[F[_]: Async](cfg: JwtCfg, keys: KeyProvider[F]) {
                          .map {
                            case Left(_)  => Left(AuthError2.InvalidToken("claims rejected"))
                            case Right(_) =>
-                             val userId = Option(claims.getClaim("userId")).flatMap(v =>
-                               scala.util.Try(UUID.fromString(v.toString)).toOption
-                             )
+                             val userId = Option(claims.getClaim("userId"))
+                               .flatMap(v => scala.util.Try(UUID.fromString(v.toString)).toOption)
                              Right(Principal4(clientType, clientId, userId, claims))
                          }
                    }

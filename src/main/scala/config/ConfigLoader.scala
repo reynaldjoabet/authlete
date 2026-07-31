@@ -102,9 +102,7 @@ object ConfigLoader {
     }
 
   private def render(problems: NonEmptyList[String]): String =
-    problems
-      .toList
-      .zipWithIndex
+    problems.toList.zipWithIndex
       .map { case (problem, index) => s"  ${index + 1}. $problem" }
       .mkString(
         s"Invalid configuration (${problems.length} problem(s)):\n",
