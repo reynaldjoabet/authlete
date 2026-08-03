@@ -18,9 +18,9 @@ case class TokenRevokeRequest(
   @named("accessTokenIdentifier") accessTokenIdentifier: Option[String] = scala.None,
   /* The identifier of a refresh token to revoke.  The hash of a refresh token is recognized as an identifier as well as the refresh token itself.  */
   @named("refreshTokenIdentifier") refreshTokenIdentifier: Option[String] = scala.None,
-  /* The client ID of the access token to be revoked.  Both the numeric client ID and the alias are recognized as an identifier of a client.  */
+  /* The client ID of the access token to be revoked.  Both the numeric client ID and the alias are recognized as an identifier of a client.  Bulk revocation with `clientIdentifier` only or `clientIdentifier` + `subject` deletes at most **20 tokens per request** (the default of `token.revoke.count.max` in `ServerConfiguration.java`). If the target has more than 20 tokens, the response `count` will be 20 and the remainder is left untouched. To fully wipe them, call the endpoint repeatedly until `count` returns 0.  */
   @named("clientIdentifier") clientIdentifier: Option[String] = scala.None,
-  /* The subject of a resource owner.  */
+  /* The subject of a resource owner.  Bulk revocation with `clientIdentifier` + `subject` or `subject` only deletes at most **20 tokens per request** (the default of `token.revoke.count.max` in `ServerConfiguration.java`). If the target has more than 20 tokens, the response `count` will be 20 and the remainder is left untouched. To fully wipe them, call the endpoint repeatedly until `count` returns 0.  */
   @named("subject") subject: Option[String] = scala.None
 )
 

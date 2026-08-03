@@ -34,7 +34,7 @@ case class TokenRequest(
   @named("htu") htu: Option[String] = scala.None,
   /* The representation of an access token that may be issued as a result of the Authlete API call.  */
   @named("accessToken") accessToken: Option[String] = scala.None,
-  /* Additional claims that are added to the payload part of the JWT access token.  */
+  /* Additional claims that are added to the payload part of the JWT access token.  Effective only in the client_credentials grant flow (and the Native SSO branch of Token Exchange). For other grant flows, set additional JWT claims via the corresponding API: /auth/authorization/issue (authorization_code), /auth/backchannel/authentication/complete (CIBA), /auth/device/complete (device_code). The parameter is silently ignored when sent with other grants.  */
   @named("jwtAtClaims") jwtAtClaims: Option[String] = scala.None,
   /* The value of the `OAuth-Client-Attestation` HTTP header, which is defined in the specification of [OAuth 2.0 Attestation-Based Client Authentication](https://datatracker.ietf.org/doc/draft-ietf-oauth-attestation-based-client-auth/).  */
   @named("oauthClientAttestation") oauthClientAttestation: Option[String] = scala.None,

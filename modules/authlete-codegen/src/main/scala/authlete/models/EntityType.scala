@@ -14,38 +14,34 @@ package authlete.models
 import com.github.plokhotnyuk.jsoniter_scala.macros.named
 
   /**
-   * The client authentication method that the client application declares that it uses at the token endpoint. This property corresponds to `token_endpoint_auth_method` in [OpenID Connect Dynamic Client Registration 1.0, 2. Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata). 
+   * The entity type, as defined in OpenID Federation 1.0. 
    */
 
-enum ClientAuthMethod:
-  case `NONE`
-  case `CLIENT_SECRET_BASIC`
-  case `CLIENT_SECRET_POST`
-  case `CLIENT_SECRET_JWT`
-  case `PRIVATE_KEY_JWT`
-  case `TLS_CLIENT_AUTH`
-  case `SELF_SIGNED_TLS_CLIENT_AUTH`
-  case `ATTEST_JWT_CLIENT_AUTH`
-  case `SPIFFE_JWT`
+enum EntityType:
+  case `OPENID_RELYING_PARTY`
+  case `OPENID_PROVIDER`
+  case `OAUTH_AUTHORIZATION_SERVER`
+  case `OAUTH_CLIENT`
+  case `OAUTH_RESOURCE`
+  case `FEDERATION_ENTITY`
+  case `OPENID_CREDENTIAL_ISSUER`
 
-object ClientAuthMethod:
+object EntityType:
   import com.github.plokhotnyuk.jsoniter_scala.macros.*
   import com.github.plokhotnyuk.jsoniter_scala.core.*
-  given clientAuthMethodCodec: JsonValueCodec[ClientAuthMethod] = JsonCodecMaker.make {
+  given entityTypeCodec: JsonValueCodec[EntityType] = JsonCodecMaker.make {
     CodecMakerConfig
       .withAdtLeafClassNameMapper { x =>
         JsonCodecMaker.simpleClassName(x) match
-          case "NONE" => "NONE"
-          case "CLIENT_SECRET_BASIC" => "CLIENT_SECRET_BASIC"
-          case "CLIENT_SECRET_POST" => "CLIENT_SECRET_POST"
-          case "CLIENT_SECRET_JWT" => "CLIENT_SECRET_JWT"
-          case "PRIVATE_KEY_JWT" => "PRIVATE_KEY_JWT"
-          case "TLS_CLIENT_AUTH" => "TLS_CLIENT_AUTH"
-          case "SELF_SIGNED_TLS_CLIENT_AUTH" => "SELF_SIGNED_TLS_CLIENT_AUTH"
-          case "ATTEST_JWT_CLIENT_AUTH" => "ATTEST_JWT_CLIENT_AUTH"
-          case "SPIFFE_JWT" => "SPIFFE_JWT"
+          case "OPENID_RELYING_PARTY" => "OPENID_RELYING_PARTY"
+          case "OPENID_PROVIDER" => "OPENID_PROVIDER"
+          case "OAUTH_AUTHORIZATION_SERVER" => "OAUTH_AUTHORIZATION_SERVER"
+          case "OAUTH_CLIENT" => "OAUTH_CLIENT"
+          case "OAUTH_RESOURCE" => "OAUTH_RESOURCE"
+          case "FEDERATION_ENTITY" => "FEDERATION_ENTITY"
+          case "OPENID_CREDENTIAL_ISSUER" => "OPENID_CREDENTIAL_ISSUER"
       }
       .withDiscriminatorFieldName(scala.None)
   }
-end ClientAuthMethod
+end EntityType
 

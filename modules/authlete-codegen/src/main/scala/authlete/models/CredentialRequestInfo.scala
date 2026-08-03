@@ -18,6 +18,8 @@ case class CredentialRequestInfo(
   @named("identifier") identifier: Option[String] = scala.None,
   /* The value of the format parameter in the credential request. */
   @named("format") format: Option[String] = scala.None,
+  /* The identifier of the credential configuration referenced by the credential request. */
+  @named("credentialConfigurationId") credentialConfigurationId: Option[String] = scala.None,
   /* The binding key specified by the proof in the credential request. */
   @named("bindingKey") bindingKey: Option[String] = scala.None,
   /* The binding keys specified by the proofs in the credential request. */

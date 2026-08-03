@@ -28,9 +28,11 @@ object JsonSupport extends AdditionalTypeSerializers:
   given vciBatchParseRequestCodec: JsonValueCodec[VciBatchParseRequest] = deriveJsonCodec
   given clientAuthorizationGetListResponseCodec: JsonValueCodec[ClientAuthorizationGetListResponse] = deriveJsonCodec
   given federationRegistrationResponseCodec: JsonValueCodec[FederationRegistrationResponse] = deriveJsonCodec
+  given backchannelLogoutTokenResponseCodec: JsonValueCodec[BackchannelLogoutTokenResponse] = deriveJsonCodec
   given clientRegistrationGetApiRequestCodec: JsonValueCodec[ClientRegistrationGetApiRequest] = deriveJsonCodec
   given idtokenReissueRequestCodec: JsonValueCodec[IdtokenReissueRequest] = deriveJsonCodec
   given backchannelAuthenticationResponseCodec: JsonValueCodec[BackchannelAuthenticationResponse] = deriveJsonCodec
+  given backchannelLogoutTokenRequestCodec: JsonValueCodec[BackchannelLogoutTokenRequest] = deriveJsonCodec
   given clientCodec: JsonValueCodec[Client] = deriveJsonCodec
   given joseVerifyResponseCodec: JsonValueCodec[JoseVerifyResponse] = deriveJsonCodec
   given mapStringIoCirceJsonCodec: JsonValueCodec[Map[String, io.circe.Json]] = deriveJsonCodec
@@ -40,6 +42,7 @@ object JsonSupport extends AdditionalTypeSerializers:
   given serviceJwksGetResponseCodec: JsonValueCodec[ServiceJwksGetResponse] = deriveJsonCodec
   given authorizationIssueResponseCodec: JsonValueCodec[AuthorizationIssueResponse] = deriveJsonCodec
   given clientSecretRefreshResponseCodec: JsonValueCodec[ClientSecretRefreshResponse] = deriveJsonCodec
+  given federationConfigurationApiRequestCodec: JsonValueCodec[FederationConfigurationApiRequest] = deriveJsonCodec
   given clientExtensionRequestableScopesUpdateResponseCodec: JsonValueCodec[ClientExtensionRequestableScopesUpdateResponse] = deriveJsonCodec
   given revocationRequestCodec: JsonValueCodec[RevocationRequest] = deriveJsonCodec
   given authorizationResponseCodec: JsonValueCodec[AuthorizationResponse] = deriveJsonCodec
@@ -50,6 +53,7 @@ object JsonSupport extends AdditionalTypeSerializers:
   given hskDeleteResponseCodec: JsonValueCodec[HskDeleteResponse] = deriveJsonCodec
   given nativeSsoRequestCodec: JsonValueCodec[NativeSsoRequest] = deriveJsonCodec
   given clientAuthorizationUpdateResponseCodec: JsonValueCodec[ClientAuthorizationUpdateResponse] = deriveJsonCodec
+  given serviceRemoveIdpRequestCodec: JsonValueCodec[ServiceRemoveIdpRequest] = deriveJsonCodec
   given clientFlagUpdateRequestCodec: JsonValueCodec[ClientFlagUpdateRequest] = deriveJsonCodec
   given hskGetListResponseCodec: JsonValueCodec[HskGetListResponse] = deriveJsonCodec
   given deviceAuthorizationRequestCodec: JsonValueCodec[DeviceAuthorizationRequest] = deriveJsonCodec
@@ -78,6 +82,7 @@ object JsonSupport extends AdditionalTypeSerializers:
   given federationRegistrationRequestCodec: JsonValueCodec[FederationRegistrationRequest] = deriveJsonCodec
   given tokenGetListResponseCodec: JsonValueCodec[TokenGetListResponse] = deriveJsonCodec
   given vciOfferInfoRequestCodec: JsonValueCodec[VciOfferInfoRequest] = deriveJsonCodec
+  given setStringCodec: JsonValueCodec[Set[String]] = deriveJsonCodec
   given hskCreateRequestCodec: JsonValueCodec[HskCreateRequest] = deriveJsonCodec
   given backchannelAuthenticationRequestCodec: JsonValueCodec[BackchannelAuthenticationRequest] = deriveJsonCodec
   given tokenFailRequestCodec: JsonValueCodec[TokenFailRequest] = deriveJsonCodec
@@ -128,7 +133,9 @@ object JsonSupport extends AdditionalTypeSerializers:
   given authorizationIssueRequestCodec: JsonValueCodec[AuthorizationIssueRequest] = deriveJsonCodec
   given authorizationTicketInfoResponseCodec: JsonValueCodec[AuthorizationTicketInfoResponse] = deriveJsonCodec
   given vciMetadataRequestCodec: JsonValueCodec[VciMetadataRequest] = deriveJsonCodec
+  given auditEntriesGetResponseCodec: JsonValueCodec[AuditEntriesGetResponse] = deriveJsonCodec
   given clientAuthorizationDeleteApiPostRequestCodec: JsonValueCodec[ClientAuthorizationDeleteApiPostRequest] = deriveJsonCodec
+  given serviceCreateIdpRequestCodec: JsonValueCodec[ServiceCreateIdpRequest] = deriveJsonCodec
   given authorizationTicketUpdateRequestCodec: JsonValueCodec[AuthorizationTicketUpdateRequest] = deriveJsonCodec
   given clientExtensionRequestableScopesUpdateRequestCodec: JsonValueCodec[ClientExtensionRequestableScopesUpdateRequest] = deriveJsonCodec
   given deviceCompleteRequestCodec: JsonValueCodec[DeviceCompleteRequest] = deriveJsonCodec

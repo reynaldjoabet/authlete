@@ -32,6 +32,12 @@ case class CredentialIssuerMetadata(
   /* The supported JWE `enc` algorithms for credential response encryption. This property corresponds to the `credential_response_encryption.enc_values_supported` metadata.  */
   @named("credentialResponseEncryptionEncValuesSupported") credentialResponseEncryptionEncValuesSupported: Option[Seq[String]] = scala.None,
   /* The boolean flag indicating whether credential response encryption is required. This property corresponds to the `credential_response_encryption.encryption_required metadata`. If this flag is `true`, every credential request to the credential issuer must include the `credential_response_encryption` property.  */
-  @named("requireCredentialResponseEncryption") requireCredentialResponseEncryption: Option[Boolean] = scala.None
+  @named("requireCredentialResponseEncryption") requireCredentialResponseEncryption: Option[Boolean] = scala.None,
+  /* The boolean flag indicating whether credential request encryption is required. This property corresponds to the `credential_request_encryption.encryption_required` metadata. If this flag is `true`, every credential request to the credential issuer must be encrypted.  */
+  @named("requireCredentialRequestEncryption") requireCredentialRequestEncryption: Option[Boolean] = scala.None,
+  /* The supported JWE `zip` (compression) algorithms for credential response encryption. This property corresponds to the `credential_response_encryption.zip_values_supported` metadata.  */
+  @named("credentialResponseEncryptionZipValuesSupported") credentialResponseEncryptionZipValuesSupported: Option[Seq[String]] = scala.None,
+  /* The maximum array size for the `proofs` parameter in a credential request. This property corresponds to the `batch_credential_issuance.batch_size` metadata. If the value of this property is 2 or greater, the `batch_credential_issuance` parameter will appear in the response from the credential issuer metadata endpoint.  */
+  @named("batchSize") batchSize: Option[Int] = scala.None
 )
 

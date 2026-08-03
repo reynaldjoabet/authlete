@@ -145,6 +145,10 @@ case class Client(
   @named("bcRequestSignAlg") bcRequestSignAlg: Option[JwsAlg] = scala.None,
   /* The boolean flag to indicate whether a user code is required when this client makes a backchannel authentication request.  This property corresponds to the `backchannel_user_code_parameter` metadata.  */
   @named("bcUserCodeRequired") bcUserCodeRequired: Option[Boolean] = scala.None,
+  /* The backchannel logout URI for this client. Used by the service to deliver logout tokens when OpenID Connect Back-Channel Logout 1.0 is triggered.  */
+  @named("backchannelLogoutUri") backchannelLogoutUri: Option[String] = scala.None,
+  /* The flag indicating whether the client requires that a `sid` (session ID) claim be included in the logout token sent to `backchannelLogoutUri`.  */
+  @named("backchannelLogoutSessionRequired") backchannelLogoutSessionRequired: Option[Boolean] = scala.None,
   /* The attributes of this client.  */
   @named("attributes") attributes: Option[Seq[Pair]] = scala.None,
   @named("extension") extension: Option[ClientExtension] = scala.None,
@@ -215,7 +219,11 @@ case class Client(
   /* Indicates whether this client was discovered via a Client ID Metadata Document.  */
   @named("discoveredByMetadataDocument") discoveredByMetadataDocument: Option[Boolean] = scala.None,
   /* Source of this client record.  */
-  @named("clientSource") clientSource: Option[ClientEnums.ClientSource] = scala.None
+  @named("clientSource") clientSource: Option[ClientEnums.ClientSource] = scala.None,
+  /* The SPIFFE ID of the client. Used for SPIFFE-based client authentication (`SPIFFE_JWT`). Corresponds to the `spiffe_id` client metadata parameter.  */
+  @named("spiffeId") spiffeId: Option[String] = scala.None,
+  /* The endpoint URL of the SPIFFE bundle for this client. Used to fetch the SPIFFE trust bundle for validating JWT-SVIDs. Corresponds to the `spiffe_bundle_endpoint` client metadata parameter.  */
+  @named("spiffeBundleEndpoint") spiffeBundleEndpoint: Option[String] = scala.None
 )
 
 object ClientEnums:

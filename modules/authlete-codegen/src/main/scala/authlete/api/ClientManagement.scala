@@ -74,6 +74,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -101,6 +106,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    * 
    * Expected answers:
    *   code 200 : ClientAuthorizationDeleteResponse ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    * 
    * Available security schemes:
    *   bearer (http)
@@ -130,6 +140,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -160,6 +175,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -194,6 +214,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -222,6 +247,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -257,6 +287,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 401 : Result ()
    *   code 403 : Result ()
    *   code 404 :  (The client was not found.)
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -288,6 +323,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -317,6 +357,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 401 : Result ()
    *   code 403 : Result ()
    *   code 404 :  (The client was not found.)
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -345,6 +390,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -373,6 +423,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -401,6 +456,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -431,6 +491,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -461,6 +526,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -491,6 +561,12 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 404 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -519,6 +595,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -551,6 +632,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -581,6 +667,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -611,6 +702,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -638,6 +734,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    * 
    * Expected answers:
    *   code 200 : ClientAuthorizationDeleteResponse ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    * 
    * Available security schemes:
    *   bearer (http)
@@ -667,6 +768,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -697,6 +803,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -725,6 +836,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -756,6 +872,11 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
    *   code 401 : Result ()
    *   code 403 : Result ()
    *   code 404 :  (The client was not found.)
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:

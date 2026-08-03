@@ -59,6 +59,11 @@ case class PushedAuthorizationEndpoint[Auth <: authlete.Authorization] private (
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:

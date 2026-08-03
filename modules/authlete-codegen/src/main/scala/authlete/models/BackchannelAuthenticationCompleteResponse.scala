@@ -69,7 +69,9 @@ case class BackchannelAuthenticationCompleteResponse(
   /* The location of the client's metadata document that was used to resolve client metadata.  This property is set when client metadata was retrieved via the [OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/) (CIMD) mechanism.  */
   @named("metadataDocumentLocation") metadataDocumentLocation: Option[URI] = scala.None,
   /* Flag indicating whether a metadata document was used to resolve client metadata for this request.  When `true`, the client metadata was retrieved via the CIMD mechanism rather than from the Authlete database.  */
-  @named("metadataDocumentUsed") metadataDocumentUsed: Option[Boolean] = scala.None
+  @named("metadataDocumentUsed") metadataDocumentUsed: Option[Boolean] = scala.None,
+  /* the claims that the user has consented for the client application to know.  */
+  @named("consentedClaims") consentedClaims: Option[Seq[String]] = scala.None
 )
 
 object BackchannelAuthenticationCompleteResponseEnums:

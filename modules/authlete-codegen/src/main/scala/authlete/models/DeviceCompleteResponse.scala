@@ -19,7 +19,9 @@ case class DeviceCompleteResponse(
   /* A short message which explains the result of the API call. */
   @named("resultMessage") resultMessage: Option[String] = scala.None,
   /* The next action that the authorization server implementation should take.  */
-  @named("action") action: Option[DeviceCompleteResponseEnums.Action] = scala.None
+  @named("action") action: Option[DeviceCompleteResponseEnums.Action] = scala.None,
+  /* the claims that the user has consented for the client application to know.  */
+  @named("consentedClaims") consentedClaims: Option[Seq[String]] = scala.None
 )
 
 object DeviceCompleteResponseEnums:

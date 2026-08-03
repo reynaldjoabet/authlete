@@ -34,7 +34,9 @@ case class AuthorizationIssueResponse(
   @named("authorizationCode") authorizationCode: Option[String] = scala.None,
   /* The newly issued access token in JWT format. If the service is not configured to issue JWT-based access tokens, this property is always set to `null`.  */
   @named("jwtAccessToken") jwtAccessToken: Option[String] = scala.None,
-  @named("ticketInfo") ticketInfo: Option[AuthorizationTicketInfo] = scala.None
+  @named("ticketInfo") ticketInfo: Option[AuthorizationTicketInfo] = scala.None,
+  /* the claims that the user has consented for the client application to know.  */
+  @named("consentedClaims") consentedClaims: Option[Seq[String]] = scala.None
 )
 
 object AuthorizationIssueResponseEnums:

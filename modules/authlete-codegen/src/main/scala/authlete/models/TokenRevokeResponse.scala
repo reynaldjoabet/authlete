@@ -18,7 +18,7 @@ case class TokenRevokeResponse(
   @named("resultCode") resultCode: Option[String] = scala.None,
   /* A short message which explains the result of the API call. */
   @named("resultMessage") resultMessage: Option[String] = scala.None,
-  /* The number of tokens revoked */
+  /* The number of tokens revoked.  If the target has more than 20 tokens, the response `count` will be 20 and the remainder is left untouched. To fully wipe them, call the endpoint repeatedly until `count` returns 0.  */
   @named("count") count: Option[Int] = scala.None
 )
 

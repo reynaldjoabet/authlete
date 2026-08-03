@@ -29,7 +29,10 @@ case class VciSingleIssueResponse(
 object VciSingleIssueResponseEnums:
   enum Action:
     case `OK`
+    case `OK_JWT`
     case `ACCEPTED`
+    case `ACCEPTED_JWT`
+    case `BAD_REQUEST`
     case `UNAUTHORIZED`
     case `FORBIDDEN`
     case `INTERNAL_SERVER_ERROR`
@@ -43,7 +46,10 @@ object VciSingleIssueResponseEnums:
         .withAdtLeafClassNameMapper { x =>
           JsonCodecMaker.simpleClassName(x) match
             case "OK" => "OK"
+            case "OK_JWT" => "OK_JWT"
             case "ACCEPTED" => "ACCEPTED"
+            case "ACCEPTED_JWT" => "ACCEPTED_JWT"
+            case "BAD_REQUEST" => "BAD_REQUEST"
             case "UNAUTHORIZED" => "UNAUTHORIZED"
             case "FORBIDDEN" => "FORBIDDEN"
             case "INTERNAL_SERVER_ERROR" => "INTERNAL_SERVER_ERROR"

@@ -11,8 +11,9 @@
  */
 package authlete.api
 
+import authlete.models.BackchannelLogoutTokenRequest
+import authlete.models.BackchannelLogoutTokenResponse
 import authlete.models.Result
-import authlete.models.ServiceJwksGetResponse
 import authlete.JsonSupport.{*, given}
 import authlete.FormSerializable
 import authlete.FormStyleFormat
@@ -26,36 +27,35 @@ import sttp.client4.jsoniter.*
 import sttp.client4.*
 import sttp.model.Method
 
-object JWKSetEndpoint:
-  def apply(baseUrl: String = "https://us.authlete.com"): JWKSetEndpoint[authlete.Authorization.NoAuthorization.type] = JWKSetEndpoint(baseUrl, authlete.Authorization.NoAuthorization)
-  def withBasicAuth(baseUrl: String, username: String, password: String): JWKSetEndpoint[authlete.Authorization.BasicAuth] =
-    JWKSetEndpoint(baseUrl, authlete.Authorization.BasicAuth(username, password))
+object BackChannelLogout:
+  def apply(baseUrl: String = "https://us.authlete.com"): BackChannelLogout[authlete.Authorization.NoAuthorization.type] = BackChannelLogout(baseUrl, authlete.Authorization.NoAuthorization)
+  def withBasicAuth(baseUrl: String, username: String, password: String): BackChannelLogout[authlete.Authorization.BasicAuth] =
+    BackChannelLogout(baseUrl, authlete.Authorization.BasicAuth(username, password))
 
-  def withApiKeyAuth(baseUrl: String, apiKey: String): JWKSetEndpoint[authlete.Authorization.ApiKey] =
-    JWKSetEndpoint(baseUrl, authlete.Authorization.ApiKey(apiKey))
+  def withApiKeyAuth(baseUrl: String, apiKey: String): BackChannelLogout[authlete.Authorization.ApiKey] =
+    BackChannelLogout(baseUrl, authlete.Authorization.ApiKey(apiKey))
 
-  def withBearerTokenAuth(baseUrl: String, token: String): JWKSetEndpoint[authlete.Authorization.BearerToken] =
-    JWKSetEndpoint(baseUrl, authlete.Authorization.BearerToken(token))
+  def withBearerTokenAuth(baseUrl: String, token: String): BackChannelLogout[authlete.Authorization.BearerToken] =
+    BackChannelLogout(baseUrl, authlete.Authorization.BearerToken(token))
 
-case class JWKSetEndpoint[Auth <: authlete.Authorization] private (baseUrl: String, authConfig: authlete.Authorization):
-  def withBasicAuth(username: String, password: String): JWKSetEndpoint[authlete.Authorization.BasicAuth] =
+case class BackChannelLogout[Auth <: authlete.Authorization] private (baseUrl: String, authConfig: authlete.Authorization):
+  def withBasicAuth(username: String, password: String): BackChannelLogout[authlete.Authorization.BasicAuth] =
     copy(authConfig = authlete.Authorization.BasicAuth(username, password))
 
-  def withApiKeyAuth(apiKey: String): JWKSetEndpoint[authlete.Authorization.ApiKey] =
+  def withApiKeyAuth(apiKey: String): BackChannelLogout[authlete.Authorization.ApiKey] =
     copy(authConfig = authlete.Authorization.ApiKey(apiKey))
 
-  def withNoAuth: JWKSetEndpoint[authlete.Authorization.NoAuthorization.type] =
+  def withNoAuth: BackChannelLogout[authlete.Authorization.NoAuthorization.type] =
     copy(authConfig = authlete.Authorization.NoAuthorization)
 
-  def withBearerTokenAuth(token: String): JWKSetEndpoint[authlete.Authorization.BearerToken] =
+  def withBearerTokenAuth(token: String): BackChannelLogout[authlete.Authorization.BearerToken] =
     copy(authConfig = authlete.Authorization.BearerToken(token))
 
   /**
-   * This API gathers JWK Set information for a service so that its client applications can verify signatures by the service and encrypt their requests to the service.  This API is supposed to be called from within the implementation of the jwk set endpoint of the service where the service that supports OpenID Connect must expose its JWK Set information so that client applications can verify signatures by the service and encrypt their requests to the service. The URI of the endpoint can be found as the value of `jwks_uri` in [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata) if the service supports [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html). 
+   * The `/backchannel/logout/token` API issues a logout token for a client application in the context of [OpenID Connect Back-Channel Logout 1.0](https://openid.net/specs/openid-connect-backchannel-1_0.html). 
    * 
    * Expected answers:
-   *   code 200 : ServiceJwksGetResponse ()
-   *   code 204 :  (No JWK Set available for this service)
+   *   code 200 : BackchannelLogoutTokenResponse ()
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
@@ -70,20 +70,18 @@ case class JWKSetEndpoint[Auth <: authlete.Authorization] private (baseUrl: Stri
    *   bearer (http)
    * 
    * @param serviceId A service ID.
-   * @param includePrivateKeys The boolean value that indicates whether the response should include the private keys associated with the service or not. If `true`, the private keys are included in the response. The default value is `false`.
-   * @param pretty This boolean value indicates whether the JSON in the response should be formatted or not. If `true`, the JSON in the response is pretty-formatted. The default value is `false`.
+   * @param backchannelLogoutTokenRequest 
    */
-  def jwksGetApi(serviceId: String, includePrivateKeys: Option[Boolean] = scala.None, pretty: Option[Boolean] = scala.None)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ServiceJwksGetResponse]] =
+  def logoutTokenApi(serviceId: String, backchannelLogoutTokenRequest: BackchannelLogoutTokenRequest)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], BackchannelLogoutTokenResponse]] =
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
-      uri"$baseUrl/api/${serviceIdPathParam}/service/jwks/get"
-        .addParams(FormSerializable.serialize("includePrivateKeys", includePrivateKeys, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("pretty", pretty, FormStyleFormat.FORM, true): _*)
+      uri"$baseUrl/api/${serviceIdPathParam}/backchannel/logout/token"
 
     basicRequest
-      .method(Method.GET, requestURL)
+      .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ServiceJwksGetResponse])
+      .body(asJson(backchannelLogoutTokenRequest))
+      .response(asJson[BackchannelLogoutTokenResponse])
 
-end JWKSetEndpoint
+end BackChannelLogout

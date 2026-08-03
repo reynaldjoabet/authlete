@@ -13,39 +13,12 @@ package authlete.models
 
 import com.github.plokhotnyuk.jsoniter_scala.macros.named
 
-  /**
-   * The client authentication method that the client application declares that it uses at the token endpoint. This property corresponds to `token_endpoint_auth_method` in [OpenID Connect Dynamic Client Registration 1.0, 2. Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata). 
-   */
-
-enum ClientAuthMethod:
-  case `NONE`
-  case `CLIENT_SECRET_BASIC`
-  case `CLIENT_SECRET_POST`
-  case `CLIENT_SECRET_JWT`
-  case `PRIVATE_KEY_JWT`
-  case `TLS_CLIENT_AUTH`
-  case `SELF_SIGNED_TLS_CLIENT_AUTH`
-  case `ATTEST_JWT_CLIENT_AUTH`
-  case `SPIFFE_JWT`
-
-object ClientAuthMethod:
-  import com.github.plokhotnyuk.jsoniter_scala.macros.*
-  import com.github.plokhotnyuk.jsoniter_scala.core.*
-  given clientAuthMethodCodec: JsonValueCodec[ClientAuthMethod] = JsonCodecMaker.make {
-    CodecMakerConfig
-      .withAdtLeafClassNameMapper { x =>
-        JsonCodecMaker.simpleClassName(x) match
-          case "NONE" => "NONE"
-          case "CLIENT_SECRET_BASIC" => "CLIENT_SECRET_BASIC"
-          case "CLIENT_SECRET_POST" => "CLIENT_SECRET_POST"
-          case "CLIENT_SECRET_JWT" => "CLIENT_SECRET_JWT"
-          case "PRIVATE_KEY_JWT" => "PRIVATE_KEY_JWT"
-          case "TLS_CLIENT_AUTH" => "TLS_CLIENT_AUTH"
-          case "SELF_SIGNED_TLS_CLIENT_AUTH" => "SELF_SIGNED_TLS_CLIENT_AUTH"
-          case "ATTEST_JWT_CLIENT_AUTH" => "ATTEST_JWT_CLIENT_AUTH"
-          case "SPIFFE_JWT" => "SPIFFE_JWT"
-      }
-      .withDiscriminatorFieldName(scala.None)
-  }
-end ClientAuthMethod
+case class AuditEntriesGetResponse(
+  /* The audit log entries on this page, in reverse chronological order. Entries sharing the same timestamp are never split across pages, so a page may contain more than `limit` entries.  */
+  @named("entries") entries: Option[Seq[AuditLogEntry]] = scala.None,
+  /* An opaque cursor pointing at the next page. Pass this value as the `cursor` parameter of the next request to fetch the following page. Absent or `null` on the last page.  */
+  @named("nextCursor") nextCursor: Option[String] = scala.None,
+  /* The effective page size limit applied to this response. May differ from the requested `limit` if the requested value was outside the allowed range.  */
+  @named("limit") limit: Option[Int] = scala.None
+)
 

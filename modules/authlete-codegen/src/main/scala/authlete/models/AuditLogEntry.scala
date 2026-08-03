@@ -11,78 +11,46 @@
  */
 package authlete.models
 
+import com.github.plokhotnyuk.jsoniter_scala.circe.JsoniterScalaCodec.*
+import java.time.OffsetDateTime
 import com.github.plokhotnyuk.jsoniter_scala.macros.named
 
-case class PushedAuthorizationResponse(
-  /* The code which represents the result of the API call. */
-  @named("resultCode") resultCode: Option[String] = scala.None,
-  /* A short message which explains the result of the API call. */
-  @named("resultMessage") resultMessage: Option[String] = scala.None,
-  /* The next action that the authorization server implementation should take. Any other value other than \"CREATED\" should be handled as unsuccessful result. */
-  @named("action") action: Option[PushedAuthorizationResponseEnums.Action] = scala.None,
-  /* The request_uri created to the client to be used as request_uri on the authorize call.  */
-  @named("requestUri") requestUri: Option[String] = scala.None,
-  /* The content that the authorization server implementation is to return to the client application.  */
-  @named("responseContent") responseContent: Option[String] = scala.None,
-  /* The client authentication method that the client application declares that it uses at the token endpoint. This property corresponds to `token_endpoint_auth_method` in [OpenID Connect Dynamic Client Registration 1.0, 2. Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata).  */
-  @named("clientAuthMethod") clientAuthMethod: Option[PushedAuthorizationResponseEnums.ClientAuthMethod] = scala.None,
-  /* Get the expected nonce value for DPoP proof JWT, which should be used as the value of the `DPoP-Nonce` HTTP header.  */
-  @named("dpopNonce") dpopNonce: Option[String] = scala.None
+case class AuditLogEntry(
+  /* The audit event type (e.g. service.create, security.login). */
+  @named("event") event: Option[String] = scala.None,
+  /* Whether the action completed successfully or failed. */
+  @named("status") status: Option[AuditLogEntryEnums.Status] = scala.None,
+  /* When the event occurred (ISO 8601). May be null for entries without a recorded timestamp; such entries are only returned on the first page of results.  */
+  @named("timestamp") timestamp: Option[OffsetDateTime] = scala.None,
+  /* The cluster or region where the event occurred. */
+  @named("cluster") cluster: Option[String] = scala.None,
+  /* The API path that triggered the event. */
+  @named("path") path: Option[String] = scala.None,
+  /* The IP address of the client that performed the action. */
+  @named("remoteAddr") remoteAddr: Option[String] = scala.None,
+  /* The user agent of the client. */
+  @named("userAgent") userAgent: Option[String] = scala.None,
+  /* The user or token that performed the action. */
+  @named("user") user: Option[String] = scala.None,
+  /* Additional event-specific metadata. */
+  @named("details") details: Option[Map[String, io.circe.Json]] = scala.None
 )
 
-object PushedAuthorizationResponseEnums:
-  enum Action:
-    case `CREATED`
-    case `BAD_REQUEST`
-    case `UNAUTHORIZED`
-    case `FORBIDDEN`
-    case `PAYLOAD_TOO_LARGE`
-    case `INTERNAL_SERVER_ERROR`
+object AuditLogEntryEnums:
+  enum Status:
+    case `completed`
+    case `failed`
 
-  object Action:
+  object Status:
     import com.github.plokhotnyuk.jsoniter_scala.macros.*
     import com.github.plokhotnyuk.jsoniter_scala.core.*
-    given actionCodec: JsonValueCodec[Action] = JsonCodecMaker.make {
+    given statusCodec: JsonValueCodec[Status] = JsonCodecMaker.make {
       CodecMakerConfig
         .withAdtLeafClassNameMapper { x =>
           JsonCodecMaker.simpleClassName(x) match
-            case "CREATED" => "CREATED"
-            case "BAD_REQUEST" => "BAD_REQUEST"
-            case "UNAUTHORIZED" => "UNAUTHORIZED"
-            case "FORBIDDEN" => "FORBIDDEN"
-            case "PAYLOAD_TOO_LARGE" => "PAYLOAD_TOO_LARGE"
-            case "INTERNAL_SERVER_ERROR" => "INTERNAL_SERVER_ERROR"
+            case "completed" => "completed"
+            case "failed" => "failed"
         }
         .withDiscriminatorFieldName(scala.None)
     }
-  enum ClientAuthMethod:
-    case `NONE`
-    case `CLIENT_SECRET_BASIC`
-    case `CLIENT_SECRET_POST`
-    case `CLIENT_SECRET_JWT`
-    case `PRIVATE_KEY_JWT`
-    case `TLS_CLIENT_AUTH`
-    case `SELF_SIGNED_TLS_CLIENT_AUTH`
-    case `ATTEST_JWT_CLIENT_AUTH`
-    case `SPIFFE_JWT`
-
-  object ClientAuthMethod:
-    import com.github.plokhotnyuk.jsoniter_scala.macros.*
-    import com.github.plokhotnyuk.jsoniter_scala.core.*
-    given clientAuthMethodCodec: JsonValueCodec[ClientAuthMethod] = JsonCodecMaker.make {
-      CodecMakerConfig
-        .withAdtLeafClassNameMapper { x =>
-          JsonCodecMaker.simpleClassName(x) match
-            case "NONE" => "NONE"
-            case "CLIENT_SECRET_BASIC" => "CLIENT_SECRET_BASIC"
-            case "CLIENT_SECRET_POST" => "CLIENT_SECRET_POST"
-            case "CLIENT_SECRET_JWT" => "CLIENT_SECRET_JWT"
-            case "PRIVATE_KEY_JWT" => "PRIVATE_KEY_JWT"
-            case "TLS_CLIENT_AUTH" => "TLS_CLIENT_AUTH"
-            case "SELF_SIGNED_TLS_CLIENT_AUTH" => "SELF_SIGNED_TLS_CLIENT_AUTH"
-            case "ATTEST_JWT_CLIENT_AUTH" => "ATTEST_JWT_CLIENT_AUTH"
-            case "SPIFFE_JWT" => "SPIFFE_JWT"
-        }
-        .withDiscriminatorFieldName(scala.None)
-    }
-end PushedAuthorizationResponseEnums
+end AuditLogEntryEnums

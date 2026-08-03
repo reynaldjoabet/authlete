@@ -59,6 +59,8 @@ case class ClientLimitedAuthorization(
   @named("tlsClientCertificateBoundAccessTokens") tlsClientCertificateBoundAccessTokens: Option[Boolean] = scala.None,
   /* The boolean flag to indicate whether a user code is required when this client makes a backchannel authentication request.  This property corresponds to the `backchannel_user_code_parameter` metadata.  */
   @named("bcUserCodeRequired") bcUserCodeRequired: Option[Boolean] = scala.None,
+  /* The flag indicating whether the client requires that a `sid` (session ID) claim be included in the logout token sent to `backchannelLogoutUri`.  */
+  @named("backchannelLogoutSessionRequired") backchannelLogoutSessionRequired: Option[Boolean] = scala.None,
   /* The flag to indicate whether this client has been registered dynamically. For more details, see [RFC 7591](https://datatracker.ietf.org/doc/html/rfc7591).  */
   @named("dynamicallyRegistered") dynamicallyRegistered: Option[Boolean] = scala.None,
   /* The flag to indicate whether this client is required to use the pushed authorization request endpoint. This property corresponds to the `require_pushed_authorization_requests` client metadata defined in \"OAuth 2.0 Pushed Authorization Requests\".  */

@@ -11,9 +11,12 @@
  */
 package authlete.api
 
+import authlete.models.IdpError
 import authlete.models.Result
 import authlete.models.Service
+import authlete.models.ServiceCreateIdpRequest
 import authlete.models.ServiceGetListResponse
+import authlete.models.ServiceRemoveIdpRequest
 import com.github.plokhotnyuk.jsoniter_scala.circe.JsoniterScalaCodec.*
 import authlete.JsonSupport.{*, given}
 import authlete.FormSerializable
@@ -60,6 +63,11 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -91,6 +99,11 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -110,6 +123,32 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
       .response(asJson[Service])
 
   /**
+   * Create a new service on the API server, belonging to the specified organization. A service can be created with an organization token or by a user with the CREATE_SERVICE role.  This endpoint is hosted on the Authlete IdP server (`https://login.authlete.com`), not on the regional API clusters. 
+   * 
+   * Expected answers:
+   *   code 200 : Service (Service created successfully.)
+   *   code 400 : IdpError ()
+   *   code 401 : IdpError ()
+   *   code 403 : IdpError ()
+   *   code 500 : IdpError ()
+   * 
+   * Available security schemes:
+   *   bearer (http)
+   * 
+   * @param serviceCreateIdpRequest 
+   */
+  def createIdpApi(serviceCreateIdpRequest: ServiceCreateIdpRequest)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], Service]] =
+    val requestURL =
+      uri"$baseUrl/api/service"
+
+    basicRequest
+      .method(Method.POST, requestURL)
+      .contentType("application/json")
+      .auth(authConfig)
+      .body(asJson(serviceCreateIdpRequest))
+      .response(asJson[Service])
+
+  /**
    * Delete a service. 
    * 
    * Expected answers:
@@ -117,6 +156,11 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -143,6 +187,11 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -169,6 +218,11 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
@@ -190,6 +244,32 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
       .response(asJson[ServiceGetListResponse])
 
   /**
+   * Delete a service from the API server. A service can be deleted with an organization token or by a user with the MODIFY_SERVICE role.  This endpoint is hosted on the Authlete IdP server (`https://login.authlete.com`), not on the regional API clusters. 
+   * 
+   * Expected answers:
+   *   code 204 :  (Service removed successfully.)
+   *   code 400 : IdpError ()
+   *   code 401 : IdpError ()
+   *   code 403 : IdpError ()
+   *   code 500 : IdpError ()
+   * 
+   * Available security schemes:
+   *   bearer (http)
+   * 
+   * @param serviceRemoveIdpRequest 
+   */
+  def removeIdpApi(serviceRemoveIdpRequest: ServiceRemoveIdpRequest)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], Unit]] =
+    val requestURL =
+      uri"$baseUrl/api/service/remove"
+
+    basicRequest
+      .method(Method.POST, requestURL)
+      .contentType("application/json")
+      .auth(authConfig)
+      .body(asJson(serviceRemoveIdpRequest))
+      .response(asString.mapWithMetadata(ResponseAs.deserializeRightWithError(_ => Right(()))))
+
+  /**
    * Update a service. 
    * 
    * Expected answers:
@@ -197,6 +277,11 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:

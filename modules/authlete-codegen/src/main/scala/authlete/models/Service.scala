@@ -393,7 +393,23 @@ case class Service(
   /* When `true`, client ID aliases starting with `https://` or `http://` are prohibited.  */
   @named("httpAliasProhibited") httpAliasProhibited: Option[Boolean] = scala.None,
   /* The time window of attestation challenges in seconds. This is used for OAuth 2.0 Attestation-Based Client Authentication.  */
-  @named("attestationChallengeTimeWindow") attestationChallengeTimeWindow: Option[Long] = scala.None
+  @named("attestationChallengeTimeWindow") attestationChallengeTimeWindow: Option[Long] = scala.None,
+  /* The flag indicating whether the attester roots for Client Attestation JWT x5c chain validation are enabled.  */
+  @named("clientAttesterRootsEnabled") clientAttesterRootsEnabled: Option[Boolean] = scala.None,
+  /* The flag indicating whether only client authentication validated via attester roots is accepted.  */
+  @named("clientAttesterRootsOnly") clientAttesterRootsOnly: Option[Boolean] = scala.None,
+  /* The flag indicating whether the attester roots for Key Attestation JWT x5c chain validation are enabled.  */
+  @named("keyAttesterRootsEnabled") keyAttesterRootsEnabled: Option[Boolean] = scala.None,
+  /* The flag indicating whether only key attestation validated via attester roots is accepted.  */
+  @named("keyAttesterRootsOnly") keyAttesterRootsOnly: Option[Boolean] = scala.None,
+  /* The trusted root certificates (PEM-encoded X.509) for validating the x5c chain in Client Attestation JWTs.  */
+  @named("clientAttesterRoots") clientAttesterRoots: Option[Seq[String]] = scala.None,
+  /* The trusted root certificates (PEM-encoded X.509) for validating the x5c chain in Key Attestation JWTs.  */
+  @named("keyAttesterRoots") keyAttesterRoots: Option[Seq[String]] = scala.None,
+  /* The flag indicating whether this service supports OpenID Connect Back-Channel Logout 1.0.  */
+  @named("backchannelLogoutSupported") backchannelLogoutSupported: Option[Boolean] = scala.None,
+  /* The flag indicating whether this service includes a `sid` (session ID) claim in ID tokens, supporting per-session backchannel logout.  */
+  @named("backchannelLogoutSessionSupported") backchannelLogoutSessionSupported: Option[Boolean] = scala.None
 )
 
 object ServiceEnums:

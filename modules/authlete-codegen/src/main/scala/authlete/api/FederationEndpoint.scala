@@ -11,11 +11,11 @@
  */
 package authlete.api
 
+import authlete.models.FederationConfigurationApiRequest
 import authlete.models.FederationConfigurationResponse
 import authlete.models.FederationRegistrationRequest
 import authlete.models.FederationRegistrationResponse
 import authlete.models.Result
-import com.github.plokhotnyuk.jsoniter_scala.circe.JsoniterScalaCodec.*
 import authlete.JsonSupport.{*, given}
 import authlete.FormSerializable
 import authlete.FormStyleFormat
@@ -61,15 +61,20 @@ case class FederationEndpoint[Auth <: authlete.Authorization] private (baseUrl: 
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:
    *   bearer (http)
    * 
    * @param serviceId A service ID.
-   * @param body 
+   * @param federationConfigurationApiRequest 
    */
-  def configurationApi(serviceId: String, body: Option[io.circe.Json] = scala.None)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], FederationConfigurationResponse]] =
+  def configurationApi(serviceId: String, federationConfigurationApiRequest: FederationConfigurationApiRequest)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], FederationConfigurationResponse]] =
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/federation/configuration"
@@ -78,7 +83,7 @@ case class FederationEndpoint[Auth <: authlete.Authorization] private (baseUrl: 
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .body(asJson(body))
+      .body(asJson(federationConfigurationApiRequest))
       .response(asJson[FederationConfigurationResponse])
 
   /**
@@ -89,6 +94,11 @@ case class FederationEndpoint[Auth <: authlete.Authorization] private (baseUrl: 
    *   code 400 : Result ()
    *   code 401 : Result ()
    *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
    *   code 500 : Result ()
    * 
    * Available security schemes:

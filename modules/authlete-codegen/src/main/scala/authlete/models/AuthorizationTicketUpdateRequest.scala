@@ -16,7 +16,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
 case class AuthorizationTicketUpdateRequest(
   /* The ticket. */
   @named("ticket") ticket: String,
-  /* The information about the ticket. */
-  @named("info") info: String
+  @named("info") info: AuthorizationTicketInfo
 )
 

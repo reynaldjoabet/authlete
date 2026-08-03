@@ -11,41 +11,11 @@
  */
 package authlete.models
 
+import authlete.models.EntityType.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.named
 
-  /**
-   * The client authentication method that the client application declares that it uses at the token endpoint. This property corresponds to `token_endpoint_auth_method` in [OpenID Connect Dynamic Client Registration 1.0, 2. Client Metadata](https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata). 
-   */
-
-enum ClientAuthMethod:
-  case `NONE`
-  case `CLIENT_SECRET_BASIC`
-  case `CLIENT_SECRET_POST`
-  case `CLIENT_SECRET_JWT`
-  case `PRIVATE_KEY_JWT`
-  case `TLS_CLIENT_AUTH`
-  case `SELF_SIGNED_TLS_CLIENT_AUTH`
-  case `ATTEST_JWT_CLIENT_AUTH`
-  case `SPIFFE_JWT`
-
-object ClientAuthMethod:
-  import com.github.plokhotnyuk.jsoniter_scala.macros.*
-  import com.github.plokhotnyuk.jsoniter_scala.core.*
-  given clientAuthMethodCodec: JsonValueCodec[ClientAuthMethod] = JsonCodecMaker.make {
-    CodecMakerConfig
-      .withAdtLeafClassNameMapper { x =>
-        JsonCodecMaker.simpleClassName(x) match
-          case "NONE" => "NONE"
-          case "CLIENT_SECRET_BASIC" => "CLIENT_SECRET_BASIC"
-          case "CLIENT_SECRET_POST" => "CLIENT_SECRET_POST"
-          case "CLIENT_SECRET_JWT" => "CLIENT_SECRET_JWT"
-          case "PRIVATE_KEY_JWT" => "PRIVATE_KEY_JWT"
-          case "TLS_CLIENT_AUTH" => "TLS_CLIENT_AUTH"
-          case "SELF_SIGNED_TLS_CLIENT_AUTH" => "SELF_SIGNED_TLS_CLIENT_AUTH"
-          case "ATTEST_JWT_CLIENT_AUTH" => "ATTEST_JWT_CLIENT_AUTH"
-          case "SPIFFE_JWT" => "SPIFFE_JWT"
-      }
-      .withDiscriminatorFieldName(scala.None)
-  }
-end ClientAuthMethod
+case class FederationConfigurationApiRequest(
+  /* The entity types for which the entity configuration is requested. When omitted or empty, it defaults to `OPENID_PROVIDER` only (backward compatibility). Unsupported entity types are ignored. `OPENID_CREDENTIAL_ISSUER` requires the Verifiable Credentials feature (Authlete 3.0+).  */
+  @named("entityTypes") entityTypes: Option[Seq[EntityType]] = scala.None
+)
 
