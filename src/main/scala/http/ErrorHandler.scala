@@ -5,9 +5,10 @@ import cats.syntax.all._
 
 import http.middlewares.CorrelationIdMiddleware
 import logging.Log
-import org.http4s.{HttpApp, Request, Response, Status}
+import org.http4s.{Header, HttpApp, Request, Response, Status}
 import org.http4s.headers.`Content-Type`
 import org.http4s.MediaType
+import org.typelevel.ci.*
 
 /**
   * Last line of defence for exceptions that escape a route.
@@ -74,5 +75,12 @@ object ErrorHandler {
         s"""{"error":"server_error","error_description":"The server encountered an unexpected condition.","reference":"$reference"}"""
       )
       .withContentType(`Content-Type`(MediaType.application.json))
+      // RFC 6749 5.1 requires these on token-endpoint responses, and 5.2 extends it to the error
+      // ones. They belong here rather than only on the endpoints because this handler is what
+      // actually answers when a call to Authlete raises -- a connection failure surfaces as a
+      // raised throwable, not as a value the endpoint can frame itself -- so without them the
+      // most common token-endpoint failure is the one response that ships cacheable.
+      .putHeaders(Header.Raw(ci"Cache-Control", "no-store"))
+      .putHeaders(Header.Raw(ci"Pragma", "no-cache"))
 
 }

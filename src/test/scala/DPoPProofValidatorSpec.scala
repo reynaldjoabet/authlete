@@ -253,4 +253,7 @@
 
 // }
 
-object DPoPProofValidatorSpec extends App {}
+// Placeholder keeping this file compilable while the suite above stays commented out.
+// `extends App` removed: deprecated since Scala 3.8, and it made this empty object a discovered
+// main class for no reason.
+object DPoPProofValidatorSpec {}

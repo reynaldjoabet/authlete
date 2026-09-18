@@ -17,9 +17,12 @@ import org.http4s.Method
 import org.http4s.Request
 import org.http4s.UrlForm
 
-object Hello extends Greeting with App {
+object Hello extends Greeting {
 
-  println(greeting)
+  // `trait App` is deprecated since Scala 3.8; an explicit main is the replacement it points to.
+  // Only this println was ever an executed statement -- the vals below are object members either
+  // way, and touching the object to call main initialises them exactly as App did.
+  def main(args: Array[String]): Unit = println(greeting)
 
   val userID: UUID = UUID.randomUUID()
   val user: User   = User(userID, "John", "Doe")

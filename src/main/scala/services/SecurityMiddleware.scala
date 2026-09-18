@@ -283,8 +283,8 @@ final class JwtVerifier(cfg: JwtConfig, jwks: JwksProvider) {
 
     // Keycloak often: realm_access.roles and resource_access.<client>.roles
     val roles =
-      Option(raw.get("roles").asInstanceOf[java.util.List[_]])
-        .collect { case xs: java.util.List[_] => xs.asScala.map(_.toString).toSet }
+      Option(raw.get("roles").asInstanceOf[java.util.List[?]])
+        .collect { case xs: java.util.List[?] => xs.asScala.map(_.toString).toSet }
         .getOrElse(Set.empty)
 
     Principal3(

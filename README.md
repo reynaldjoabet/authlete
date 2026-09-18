@@ -1872,3 +1872,63 @@ use cases for distributed cache like redis
 - distributed lock management etc
 
 ![alt text](image-19.png)
+
+[openid-connect-back-channel-logout-1-0](https://developers.authlete.com/protocols-and-flows/protocol-extensions/openid-connect-back-channel-logout-1-0)
+
+![alt text](image-20.png)
+
+## Envelope Encryption
+- BYOK(Bring Your Own Key)
+- Field-level encryption
+- olumn-Level encryption
+
+
+## Key Encapsulation Mechanism (KEM)
+
+`javax.crypto.KEM`, since Java 21.
+
+A KEM secures symmetric keys using asymmetric (public key) cryptography between two parties.
+The sender calls `encapsulate` to generate a secret key and a key encapsulation message; the
+receiver calls `decapsulate` to recover the same secret key from that message.
+
+`KEM.getInstance` creates a new `KEM` object implementing the specified algorithm.
+
+### Immutability and concurrency
+
+A `KEM` object is immutable. It is safe to call multiple `newEncapsulator` and `newDecapsulator`
+methods on the same `KEM` object at the same time.
+
+`Encapsulator` and `Decapsulator` objects are also immutable. It is safe to invoke multiple
+`encapsulate` and `decapsulate` methods on the same object at the same time. **Each invocation of
+`encapsulate` generates a new shared secret and key encapsulation message.**
+
+### Provider selection
+
+If a provider is not specified in `getInstance`, then `newEncapsulator` and `newDecapsulator` may
+return encapsulators or decapsulators from *different* providers. The provider is selected from the
+arguments passed to those methods: the private or public key, and the optional
+`AlgorithmParameterSpec`.
+
+`Encapsulator.providerName` and `Decapsulator.providerName` return the name of the selected
+provider.
+
+### Example
+
+```java
+// Receiver side
+var kpg = KeyPairGenerator.getInstance("X25519");
+var kp = kpg.generateKeyPair();
+
+// Sender side
+var kem1 = KEM.getInstance("DHKEM");
+var sender = kem1.newEncapsulator(kp.getPublic());
+var encapsulated = sender.encapsulate();
+var k1 = encapsulated.key();
+
+// Receiver side
+var kem2 = KEM.getInstance("DHKEM");
+var receiver = kem2.newDecapsulator(kp.getPrivate());
+var k2 = receiver.decapsulate(encapsulated.encapsulation());
+
+assert Arrays.equals(k1.getEncoded(), k2.getEncoded());
+```

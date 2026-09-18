@@ -1,7 +1,8 @@
 import Dependencies.*
 
-ThisBuild / scalaVersion := "3.3.8"
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion       := "3.3.8"
+ThisBuild / crossScalaVersions := Seq("3.3.8", "3.9.0")
+ThisBuild / version            := "0.1.0-SNAPSHOT"
 
 ThisBuild / semanticdbEnabled := true
 
@@ -12,12 +13,10 @@ ThisBuild / scalacOptions := Seq(
   "-deprecation",
   "-feature",
   "-unchecked",
-  "-source:3.3",
   "-java-output-version:17",
   "-Werror",
   "-Wvalue-discard",
   "-Wnonunit-statement",
-  "-Xlint:all",
   "-Xcheck-macros",
   "-Xmax-inlines:64"
 )
@@ -54,6 +53,7 @@ lazy val root = (project in file("."))
       jsoniterMacros,
       jsoniterCirce,
       munit,
+      munitCatsEffect,
       nimbusJoseJwt,
       nimbusOauth2Oidc,
       jwtCirce,
@@ -87,6 +87,43 @@ lazy val root = (project in file("."))
     ),
     buildInfoPackage := "authlete",
     buildInfoObject  := "AuthleteBuildInfo"
+  )
+  .settings(
+    assembly / mainClass       := Some("Main"),
+    assembly / assemblyJarName := "authlete.jar",
+
+    // Anchored at the repository root. Left to itself, sbt 2 writes into the content-addressed
+    // `target/out/jvm/<scala-version>/<project>` tree, which a Dockerfile COPY cannot name without
+    // baking the Scala version into the build.
+    assembly / assemblyOutputPath :=
+      (LocalRootProject / baseDirectory).value / "target" / "authlete.jar",
+
+    // Several classes under src/main/scala carry a main method (the crypto examples), so the jar's
+    // Main-Class has to be stated rather than discovered -- otherwise assembly fails on the
+    // ambiguity, the same way `sbt run` does.
+    assembly / assemblyMergeStrategy := {
+      // Typesafe Config reads *every* reference.conf on the classpath and merges them. Taking only
+      // the first would silently drop the defaults of every library after it -- Pekko/Ember timeouts
+      // among them -- so these have to be concatenated, not deduplicated.
+      case PathList("reference.conf")   => MergeStrategy.concat
+      case PathList("application.conf") => MergeStrategy.concat
+      // ServiceLoader registries: same reasoning. One file per provider, all of which matter.
+      case PathList("META-INF", "services", _*) => MergeStrategy.concat
+      // JPMS descriptors and signatures are meaningless inside a shaded jar, and a retained
+      // signature makes the JVM reject the jar as tampered with.
+      case PathList("module-info.class")                                                  => MergeStrategy.discard
+      case PathList("META-INF", "versions", _, "module-info.class")                       => MergeStrategy.discard
+      case path if path.endsWith(".SF") || path.endsWith(".DSA") || path.endsWith(".RSA") =>
+        MergeStrategy.discard
+      // Build metadata, one copy per Netty module and per OSGi bundle. It describes the jar it came
+      // from, so inside a shaded jar it describes nothing; no code reads it at runtime.
+      case PathList("META-INF", "io.netty.versions.properties")           => MergeStrategy.discard
+      case PathList("META-INF", "versions", _, "OSGI-INF", "MANIFEST.MF") => MergeStrategy.discard
+      case PathList("META-INF", "OSGI-INF", _*)                           => MergeStrategy.discard
+      case path                                                           =>
+        val default = (assembly / assemblyMergeStrategy).value
+        default(path)
+    }
   )
 
 lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))

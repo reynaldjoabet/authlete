@@ -2,7 +2,9 @@ package config
 
 import scala.concurrent.duration.FiniteDuration
 
+import config.ConfigReaders.given
 import config.Secret.given
+import org.typelevel.ci.CIString
 import pureconfig.ConfigReader
 
 /**
@@ -33,6 +35,15 @@ import pureconfig.ConfigReader
   *   Public/private key pair used for DPoP signatures, in JWK format.
   * @param clientCertificate
   *   Certificate used for mTLS-bound access tokens, in PEM format.
+  * @param clientCertificateHeader
+  *   Name of the header through which a TLS-terminating proxy forwards the *client's* certificate,
+  *   for RFC 8705. Distinct from `clientCertificate` above, which is this server's own certificate
+  *   for calling Authlete.
+  *
+  * Absent by default, and deliberately so. The header a proxy adds is indistinguishable from one a
+  * client sent, so reading it unconditionally would let any caller impersonate a client registered
+  * for `tls_client_auth`. Setting this asserts that a trusted terminator populates the header and
+  * strips any inbound copy of it.
   */
 final case class AuthleteConfig(
     requestTimeout: FiniteDuration,
@@ -43,5 +54,9 @@ final case class AuthleteConfig(
     serviceApiKey: Option[Secret] = None,
     serviceApiSecret: Option[Secret] = None,
     dpopKey: Option[Secret] = None,
-    clientCertificate: Option[Secret] = None
+    clientCertificate: Option[Secret] = None,
+    // A single optional field rather than a nested block: an unset `${?VAR}` inside an object still
+    // leaves the object present-but-empty, which is what made `Option[InteractionConfig]` fail to
+    // decode. One flat key has no such trap.
+    clientCertificateHeader: Option[CIString] = None
 ) derives ConfigReader

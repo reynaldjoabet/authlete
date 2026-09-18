@@ -2,6 +2,7 @@ package config
 
 import com.comcast.ip4s.{Host, Port}
 import org.http4s.Uri
+import org.typelevel.ci.CIString
 import pureconfig.error.CannotConvert
 import pureconfig.ConfigReader
 
@@ -30,6 +31,13 @@ object ConfigReaders {
     ConfigReader[Int].emap { raw =>
       Port.fromInt(raw).toRight(CannotConvert(raw.toString, "Port", "must be between 0 and 65535"))
     }
+
+  /**
+    * Header names are case-insensitive per RFC 9110, and every lookup against them in this codebase
+    * goes through `CIString`. Reading it as one here means a config value that differs only in case
+    * from what a proxy sends still matches.
+    */
+  given ConfigReader[CIString] = ConfigReader[String].map(CIString(_))
 
   given ConfigReader[Uri] =
     ConfigReader[String].emap { raw =>

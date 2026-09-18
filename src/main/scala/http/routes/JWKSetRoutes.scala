@@ -1,13 +1,16 @@
 package http.routes
 
-import cats.effect.kernel.Concurrent
+import cats.effect.Concurrent
+import cats.syntax.all.*
 
-import authlete.JsonSupport
+import authlete.api.JWKSetEndpoint
 import config.AuthleteConfig
 import http.given
-import org.http4s.*
+import http.ResponseUtil
+import io.circe.Json
+import org.http4s.{Header, HttpRoutes, Response, Status}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.server.Router
+import org.typelevel.ci.*
 import sttp.client4.Backend
 
 /**
@@ -22,6 +25,13 @@ import sttp.client4.Backend
   * "http://openid.net/specs/openid-connect-discovery-1_0.html">OpenID Connect Discovery 1.0</a>.
   * </p>
   *
+  * JWK Set endpoint (RFC 7517), advertised as `jwks_uri` in the discovery document.
+  *
+  * Publishes the service's public keys so relying parties can verify ID token signatures and
+  * encrypt request objects to this server. The private halves stay at Authlete and are never
+  * requested here: `includePrivateKeys` exists on the API for key-management use and passing it
+  * from a public endpoint would publish the service's signing keys to anyone who asked.
+  *
   * @see
   *   <a href="http://tools.ietf.org/html/rfc7517" >RFC 7517, JSON Web Key (JWK)</a>
   *
@@ -32,26 +42,43 @@ import sttp.client4.Backend
   *   <a href="http://openid.net/specs/openid-connect-discovery-1_0.html" >OpenID Connect Discovery
   *   1.0</a>
   */
-abstract class JWKSetRoutes[F[*]: Concurrent](
+final class JWKSetRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
     backend: Backend[F]
 ) extends Http4sDsl[F] {
 
-  def routes: HttpRoutes[F] = HttpRoutes.of {
+  /**
+    * The JWK Set endpoint for {@code GET} method.
+    *
+    * @see
+    *   <a href="http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata" >OpenID
+    *   Connect Discovery 1.0, 3.1.3. jwks_uri</a>
+    */
+  def routes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "jwks" =>
+    JWKSetEndpoint
+      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
+      .jwksGetApi(config.serviceId)
+      .send(backend)
+      .map { upstream =>
+        upstream.body match {
+          case Right(response) =>
+            // A JWK Set is `{"keys":[...]}` even when empty (RFC 7517 5). Emitting a bare `{}` or
+            // omitting the member would fail a conforming client's parse rather than telling it
+            // there are no keys.
+            val keys     = response.keys.getOrElse(Seq.empty).map(Json.fromFields)
+            val document = Json.obj("keys" -> Json.fromValues(keys))
 
-    /**
-      * The JWK Set endpoint for {@code GET} method.
-      *
-      * @see
-      *   <a href="http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata"
-      *   >OpenID Connect Discovery 1.0, 3.1.3. jwks_uri</a>
-      *
-      * JWK Set endpoint.
-      */
+            // Public, and rotated rarely. Clients cache it and re-fetch on an unknown `kid`, so a
+            // modest max-age keeps key rotation from requiring a fetch per verification.
+            Response[F](Status.Ok)
+              .withEntity(document.noSpaces)
+              .putHeaders(Header.Raw(ci"Content-Type", "application/jwk-set+json"))
+              .putHeaders(Header.Raw(ci"Cache-Control", "public, max-age=3600"))
 
-    case GET -> Root / "jwks" =>
-      Ok("JWK Set Endpoint")
-
+          case Left(_) =>
+            ResponseUtil.upstreamFailure[F]
+        }
+      }
   }
 
 }

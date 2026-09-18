@@ -1,20 +1,24 @@
-object Providers extends App {
+object Providers {
 
-  // get all providers
-  val providers = java.security.Security.getProviders()
-  providers.foreach { provider =>
-    println(s"Provider: ${provider.getName}, version: ${provider.getVersionStr()}")
-    // get all services for each provider
-    provider.getServices
-      .forEach { service =>
-        println(s"Type: ${service.getType}, Algo: ${service.getAlgorithm}")
-      }
+  def main(args: Array[String]): Unit = {
+
+    // get all providers
+    val providers = java.security.Security.getProviders()
+    providers.foreach { provider =>
+      println(s"Provider: ${provider.getName}, version: ${provider.getVersionStr()}")
+      // get all services for each provider
+      provider.getServices
+        .forEach { service =>
+          println(s"Type: ${service.getType}, Algo: ${service.getAlgorithm}")
+        }
+    }
+
+    trait A
+
+    trait B
+
+    def f: A & B = ???
+
   }
-
-  trait A
-
-  trait B
-
-  def f: A & B = ???
 
 }

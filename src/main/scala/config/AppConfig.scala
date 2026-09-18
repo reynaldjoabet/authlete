@@ -18,8 +18,23 @@ import pureconfig.ConfigReader
 final case class AppConfig(
     server: HttpServerConfig,
     authlete: AuthleteConfig,
-    jwt: JwtConfig
+    jwt: JwtConfig,
+    // Read as two independent options rather than an optional block: an unset `${?VAR}` inside an
+    // object still leaves the object present-but-empty, so `Option[InteractionConfig]` would never
+    // be `None`. `InteractionSettings.resolve` restores the both-or-neither invariant.
+    interaction: InteractionSettings = InteractionSettings()
 ) derives ConfigReader {
+
+  /**
+    * The interaction application, once the pairing has been checked.
+    *
+    * Safe to read only after [[validate]] has succeeded, which is the only path by which an
+    * `AppConfig` reaches the rest of the program -- `ConfigLoader` returns nothing else. A
+    * half-configured pair has already been rejected by then, so the fallback here is unreachable
+    * rather than a silent default.
+    */
+  def interactionConfig: Option[InteractionConfig] =
+    interaction.resolve.getOrElse(None)
 
   /**
     * Rules that a type can't express: cross-field invariants and value ranges.
@@ -65,6 +80,17 @@ final case class AppConfig(
         server.maxConnections > 0,
         (),
         s"server.max-connections: must be positive, got ${server.maxConnections}"
+      ),
+      // Rejects a half-configured pair, and the absolute-URL check below guards the redirect: a
+      // relative or scheme-less value resolves against this server and silently loops instead of
+      // reaching the interaction application.
+      interaction.resolve.void,
+      interaction.baseUrl.fold(Validated.validNel[String, Unit](()))(url =>
+        Validated.condNel(
+          url.scheme.isDefined && url.host.isDefined,
+          (),
+          s"interaction.base-url: must be absolute (scheme and host), got '${url.renderString}'"
+        )
       )
     )
 

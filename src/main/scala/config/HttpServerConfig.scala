@@ -25,11 +25,19 @@ import pureconfig.ConfigReader
   *   How long an idle connection is held open. Bounds sockets consumed by dead peers.
   * @param maxConnections
   *   Ceiling on concurrent connections; backpressure instead of unbounded memory growth under load.
+  * @param corsOrigins
+  *   Browser origins allowed to call the token, revocation, userinfo and discovery endpoints. A
+  *   public client running in a browser cannot complete a flow without this. Empty by default:
+  *   every origin listed is another place a hostile page can drive requests from, and a deployment
+  *   serving only confidential clients has no browser callers to allow.
   */
 final case class HttpServerConfig(
     host: Host,
     port: Port,
     shutdownTimeout: FiniteDuration,
     idleTimeout: FiniteDuration,
-    maxConnections: Int
+    maxConnections: Int,
+    // Browser origins permitted to call the protocol endpoints. Empty disables CORS entirely,
+    // which is right for a deployment with only confidential clients.
+    corsOrigins: ConfigReaders.CommaSeparatedSet = ConfigReaders.CommaSeparatedSet(Set.empty)
 ) derives ConfigReader

@@ -1,0 +1,29 @@
+# Everything the image does not need, kept out of the build context.
+#
+# target/ matters most: after a local `sbt assembly` it holds a 132MB jar plus the whole compiled
+# tree, all of which would be uploaded to the daemon on every build and then thrown away, since the
+# build stage produces its own.
+target/
+modules/*/target/
+project/target/
+project/project/
+.bloop/
+.bsp/
+.metals/
+.scala-build/
+
+.git/
+.github/
+.idea/
+.vscode/
+
+# Never let a real .env reach an image layer -- it holds the Authlete service access token and the
+# interaction shared secret. Configuration is injected at run time.
+.env
+*.env
+!.env.example
+
+*.md
+Makefile
+.gitignore
+.scalafmt.conf.bak
