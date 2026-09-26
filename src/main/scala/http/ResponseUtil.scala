@@ -32,7 +32,7 @@ object ResponseUtil {
     * an empty 200, and a few actions need a body this server writes because Authlete has none to
     * offer (an unimplemented grant, say).
     */
-  enum Body {
+  enum Body derives CanEqual {
 
     case FromAuthlete
     case Empty
