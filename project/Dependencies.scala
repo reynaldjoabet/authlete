@@ -7,11 +7,11 @@ object Dependencies {
     // --- ZIO ecosystem ---
     val zio        = "2.1.26"
     val zioJson    = "0.9.2"
-    val zioHttp    = "3.11.3"
+    val zioHttp    = "3.11.6"
     val zioLogging = "2.5.3"
     val zioConfig  = "4.0.7"
     val zioSchema  = "1.8.5"
-    val zioKafka   = "3.7.0"
+    val zioKafka   = "3.8.0"
 
     // --- HTTP ---
     val http4s  = "0.23.36"
@@ -24,43 +24,43 @@ object Dependencies {
     val circe    = "0.14.16"
 
     // --- FP ---
-    val catsEffect      = "3.7.0"
-    val fs2             = "3.13.0"
-    val fs2Kafka        = "4.0.0"
+    val catsEffect      = "3.7.1"
+    val fs2             = "3.14.0"
+    val fs2Kafka        = "4.1.1"
     val chimney         = "2.0.0"
     val iron            = "3.3.2"
     val hedgehog        = "0.13.1"
-    val scalacheck      = "1.19.0"
-    val munit           = "1.3.4"
-    val munitCatsEffect = "2.2.0"
+    val scalacheck      = "1.20.0"
+    val munit           = "1.3.6"
+    val munitCatsEffect = "2.2.1"
 
     // --- DB ---
     val quill    = "4.8.6"
     val magnum   = "2.0.0-M3"
-    val skunk    = "1.1.0-RC1"
+    val skunk    = "2.0.0-RC3"
     val hikaricp = "7.1.0"
-    val flyway   = "12.11.0"
+    val flyway   = "13.7.0"
     val postgres = "42.7.13"
 
     // --- Security ---
     val jwtScala         = "11.0.4"
     val bouncycastle     = "1.85"
     val password4j       = "1.8.4"
-    val auth0            = "4.5.2"
-    val nimbusJoseJwt    = "10.9.1"
-    val nimbusOauth2Oidc = "11.38.1"
+    val auth0            = "4.6.1"
+    val nimbusJoseJwt    = "10.10"
+    val nimbusOauth2Oidc = "11.38.2"
     val vault            = "5.1.0"
 
     // --- Logging ---
     val scribe  = "3.19.0"
-    val slf4j   = "2.0.18"
-    val logback = "1.5.38"
+    val slf4j   = "2.0.20"
+    val logback = "1.6.3"
 
     // --- Cache ---
-    val caffeine = "3.2.4"
+    val caffeine = "3.3.0"
 
     // --- Observability ---
-    val datadog = "2.56.0"
+    val datadog = "2.60.0"
     val kamon   = "2.8.1"
     val otel4s  = "1.0.1"
 
@@ -69,7 +69,7 @@ object Dependencies {
 
     // --- Cloud ---
     val awsV2         = "2.47.5"
-    val azureIdentity = "1.18.4"
+    val azureIdentity = "1.18.6"
     val azureKv       = "4.11.1"
 
   }
