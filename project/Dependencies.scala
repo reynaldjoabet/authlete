@@ -39,7 +39,7 @@ object Dependencies {
     val magnum   = "2.0.0-M3"
     val skunk    = "2.0.0-RC3"
     val hikaricp = "7.1.0"
-    val flyway   = "13.7.0"
+    val flyway   = "13.8.0"
     val postgres = "42.7.13"
 
     // --- Security ---
@@ -54,7 +54,7 @@ object Dependencies {
     // --- Logging ---
     val scribe  = "3.19.0"
     val slf4j   = "2.0.20"
-    val logback = "1.6.3"
+    val logback = "1.6.4"
 
     // --- Cache ---
     val caffeine = "3.3.0"
