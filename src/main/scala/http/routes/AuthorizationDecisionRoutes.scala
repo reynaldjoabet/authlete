@@ -3,7 +3,6 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.AuthorizationEndpoint
 import authlete.models.{
   AuthorizationFailRequest,
   AuthorizationFailRequestEnums,
@@ -16,9 +15,11 @@ import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import io.circe.parser.decode
 import io.circe.Decoder
+import http.middlewares.CorrelationIdMiddleware
+import http.middlewares.CorrelationIdMiddleware.CorrelationId
 import org.http4s.{HttpRoutes, Request, Response, Status}
 import org.http4s.dsl.Http4sDsl
-import sttp.client4.Backend
+import services.{AuthleteApi, AuthleteFailure}
 
 /**
   * Where an interaction application reports what the user decided, resuming a pending
@@ -40,7 +41,7 @@ import sttp.client4.Backend
 final class AuthorizationDecisionRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
     interaction: InteractionConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   /**
@@ -112,7 +113,7 @@ final class AuthorizationDecisionRoutes[F[_]: Concurrent](
                 .pure[F]
 
             case Right(decision) if !decision.authorized =>
-              deny(decision.ticket)
+              deny(decision.ticket, CorrelationIdMiddleware.get(request))
 
             // Authlete types `subject` as required for exactly this reason: an issued code has to
             // belong to someone. Matching it out here rather than unwrapping later keeps that
@@ -123,7 +124,7 @@ final class AuthorizationDecisionRoutes[F[_]: Concurrent](
               // subject no user directory can resolve.
               decision.subject.map(_.trim).filter(_.nonEmpty) match {
                 case Some(subject) =>
-                  issue(decision, subject)
+                  issue(decision, subject, CorrelationIdMiddleware.get(request))
 
                 case None =>
                   ResponseUtil
@@ -153,25 +154,30 @@ final class AuthorizationDecisionRoutes[F[_]: Concurrent](
   /**
     * The user authenticated and consented: let Authlete mint the authorization response.
     */
-  private def issue(decision: Decision, subject: String): F[Response[F]] =
-    AuthorizationEndpoint
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .authorizationIssueApi(
-        config.serviceId,
-        AuthorizationIssueRequest(
-          ticket = decision.ticket,
-          subject = subject,
-          authTime = decision.authTime,
-          acr = decision.acr,
-          claims = decision.claims.map(_.noSpaces),
-          // Passed through only when present. Authlete reads a null here as "grant what was
-          // requested", which is why an absent field and an empty list must stay distinguishable:
-          // the latter is a user who granted nothing.
-          scopes = decision.scopes.map(_.toSeq),
-          sub = decision.sub
-        )
-      )
-      .send(backend)
+  private def issue(
+      decision: Decision,
+      subject: String,
+      correlationId: Option[CorrelationId]
+  ): F[Response[F]] =
+    authleteApi
+      .call("authorization issue", correlationId) { endpoints =>
+        endpoints.authorization
+          .authorizationIssueApi(
+            config.serviceId,
+            AuthorizationIssueRequest(
+              ticket = decision.ticket,
+              subject = subject,
+              authTime = decision.authTime,
+              acr = decision.acr,
+              claims = decision.claims.map(_.noSpaces),
+              // Passed through only when present. Authlete reads a null here as "grant what was
+              // requested", which is why an absent field and an empty list must stay distinguishable:
+              // the latter is a user who granted nothing.
+              scopes = decision.scopes.map(_.toSeq),
+              sub = decision.sub
+            )
+          )
+      }
       .map(complete)
 
   /**
@@ -181,17 +187,18 @@ final class AuthorizationDecisionRoutes[F[_]: Concurrent](
     * spec-shaped `access_denied` redirect rather than an error page, which is what returns the user
     * to the application they started from.
     */
-  private def deny(ticket: String): F[Response[F]] =
-    AuthorizationEndpoint
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .authorizationFailApi(
-        config.serviceId,
-        AuthorizationFailRequest(
-          ticket = ticket,
-          reason = AuthorizationFailRequestEnums.Reason.DENIED
-        )
-      )
-      .send(backend)
+  private def deny(ticket: String, correlationId: Option[CorrelationId]): F[Response[F]] =
+    authleteApi
+      .call("authorization fail", correlationId) { endpoints =>
+        endpoints.authorization
+          .authorizationFailApi(
+            config.serviceId,
+            AuthorizationFailRequest(
+              ticket = ticket,
+              reason = AuthorizationFailRequestEnums.Reason.DENIED
+            )
+          )
+      }
       .map(complete)
 
   /**
@@ -202,9 +209,9 @@ final class AuthorizationDecisionRoutes[F[_]: Concurrent](
     * connection to redirect. The interaction application performs the redirect.
     */
   private def complete[A](
-      upstream: sttp.client4.Response[Either[sttp.client4.ResponseException[String], A]]
+      upstream: Either[AuthleteFailure, A]
   )(using Extract[A]): Response[F] =
-    upstream.body match {
+    upstream match {
       case Left(_) =>
         ResponseUtil.upstreamFailure[F]
 

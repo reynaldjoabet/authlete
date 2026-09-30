@@ -3,17 +3,18 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.UserInfoEndpoint
 import authlete.models.{UserinfoIssueRequest, UserinfoRequest}
 import config.AuthleteConfig
 import http.given
+import http.middlewares.CorrelationIdMiddleware
+import http.middlewares.CorrelationIdMiddleware.CorrelationId
 import http.ClientAuthentication
 import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import org.http4s.{Header, HttpRoutes, Request, Response, Status}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of userinfo endpoint (<a href=
@@ -47,7 +48,7 @@ import sttp.client4.Backend
   */
 final class UserInfoRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   def routes: HttpRoutes[F] = HttpRoutes.of[F] {
@@ -100,26 +101,32 @@ final class UserInfoRoutes[F[_]: Concurrent](
     * Step one: does this token exist, and what is it allowed to see?
     */
   private def validate(request: Request[F], accessToken: String): F[Response[F]] =
-    UserInfoEndpoint
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .userinfoApi(
-        config.serviceId,
-        UserinfoRequest(
-          token = accessToken,
-          dpop = request.headers.get(ci"DPoP").map(_.head.value),
-          htm = Some(request.method.name)
-        )
-      )
-      .send(backend)
+    authleteApi
+      .call("userinfo", CorrelationIdMiddleware.get(request)) { endpoints =>
+        endpoints.userInfo
+          .userinfoApi(
+            config.serviceId,
+            UserinfoRequest(
+              token = accessToken,
+              dpop = request.headers.get(ci"DPoP").map(_.head.value),
+              htm = Some(request.method.name)
+            )
+          )
+      }
       .flatMap { upstream =>
-        upstream.body match {
+        upstream match {
           case Left(_) =>
             ResponseUtil.upstreamFailure[F].pure[F]
 
           case Right(response) =>
             response.action.map(_.toString) match {
               case Some("OK") =>
-                issue(accessToken, response.userInfoClaims, response.subject)
+                issue(
+                  accessToken,
+                  response.userInfoClaims,
+                  response.subject,
+                  CorrelationIdMiddleware.get(request)
+                )
 
               case other =>
                 tokenError(other, response.responseContent).pure[F]
@@ -133,17 +140,19 @@ final class UserInfoRoutes[F[_]: Concurrent](
   private def issue(
       accessToken: String,
       claims: Option[String],
-      subject: Option[String]
+      subject: Option[String],
+      correlationId: Option[CorrelationId]
   ): F[Response[F]] =
-    UserInfoEndpoint
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .userinfoIssueApi(
-        config.serviceId,
-        UserinfoIssueRequest(token = accessToken, claims = claims, sub = subject)
-      )
-      .send(backend)
+    authleteApi
+      .call("userinfo issue", correlationId) { endpoints =>
+        endpoints.userInfo
+          .userinfoIssueApi(
+            config.serviceId,
+            UserinfoIssueRequest(token = accessToken, claims = claims, sub = subject)
+          )
+      }
       .map { upstream =>
-        upstream.body match {
+        upstream match {
           case Left(_) =>
             ResponseUtil.upstreamFailure[F]
 

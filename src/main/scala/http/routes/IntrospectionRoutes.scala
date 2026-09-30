@@ -3,16 +3,16 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.IntrospectionEndpoint
 import authlete.models.StandardIntrospectionRequest
 import config.AuthleteConfig
 import http.given
+import http.middlewares.CorrelationIdMiddleware
 import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import org.http4s.{Header, HttpRoutes, Status}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of introspection endpoint (<a href= "http://tools.ietf.org/html/rfc7662">RFC
@@ -30,7 +30,7 @@ import sttp.client4.Backend
   */
 final class IntrospectionRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val Mappings: Map[String, Mapping] =
@@ -69,15 +69,16 @@ final class IntrospectionRoutes[F[_]: Concurrent](
         .pure[F]
     else
       request.as[String].flatMap { parameters =>
-        IntrospectionEndpoint
-          .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-          .introspectionStandardApi(
-            config.serviceId,
-            StandardIntrospectionRequest(parameters = parameters)
-          )
-          .send(backend)
+        authleteApi
+          .call("standard introspection", CorrelationIdMiddleware.get(request)) { endpoints =>
+            endpoints.introspection
+              .introspectionStandardApi(
+                config.serviceId,
+                StandardIntrospectionRequest(parameters = parameters)
+              )
+          }
           .map { upstream =>
-            upstream.body match {
+            upstream match {
               case Right(response) =>
                 ResponseUtil.forAction[F](
                   response.action.map(_.toString),

@@ -6,15 +6,14 @@ import cats.data.{Kleisli, OptionT}
 import cats.effect.{Clock, Concurrent, Ref, Temporal}
 import cats.syntax.all.*
 
-import authlete.api.IntrospectionEndpoint
 import authlete.models.{IntrospectionRequest, IntrospectionResponse, IntrospectionResponseEnums}
-import config.AuthleteConfig
+import http.middlewares.CorrelationIdMiddleware
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.headers.{`WWW-Authenticate`, Authorization}
 import org.http4s.server.{AuthMiddleware => Http4sAuthMiddleware}
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 given CanEqual[IntrospectionResponseEnums.Action, IntrospectionResponseEnums.Action] =
   CanEqual.derived
@@ -484,98 +483,91 @@ object TokenValidationMiddleware {
 
   object IntrospectionClient {
 
-    def apply[F[_]: Concurrent](
-        backend: Backend[F],
-        authleteConfig: AuthleteConfig,
-        serviceId: String
-    ): IntrospectionClient[F] = new IntrospectionClient[F] {
-      private val endpoint = IntrospectionEndpoint.withBearerTokenAuth(
-        authleteConfig.baseUrl,
-        authleteConfig.serviceAccessToken.value
-      )
+    def apply[F[_]: Concurrent](authleteApi: AuthleteApi[F]): IntrospectionClient[F] =
+      new IntrospectionClient[F] {
 
-      def introspect(
-          token: String,
-          request: Request[F],
-          config: Config
-      ): F[Either[TokenError, ValidatedToken]] = {
-        val dpopHeader        = if (config.enableDPoP) TokenExtractor.extractDPoP(request) else None
-        val clientCertificate = TokenExtractor.extractClientCertificate(request)
-        val httpMethod        = request.method.name
-        val requestUri        = request.uri.renderString
+        def introspect(
+            token: String,
+            request: Request[F],
+            config: Config
+        ): F[Either[TokenError, ValidatedToken]] = {
+          val dpopHeader        = if (config.enableDPoP) TokenExtractor.extractDPoP(request) else None
+          val clientCertificate = TokenExtractor.extractClientCertificate(request)
+          val httpMethod        = request.method.name
+          val requestUri        = request.uri.renderString
 
-        val introspectionRequest = IntrospectionRequest(
-          token = token,
-          scopes = if (config.requiredScopes.nonEmpty) Some(config.requiredScopes.toSeq) else None,
-          subject = config.requiredSubject,
-          clientCertificate = clientCertificate,
-          dpop = dpopHeader,
-          htm = dpopHeader.map(_ => httpMethod),
-          htu = dpopHeader.map(_ => requestUri),
-          resources = config.resources,
-          acrValues = config.acrValues,
-          maxAge = config.maxAge,
-          dpopNonceRequired = Some(config.dpopNonceRequired)
-        )
+          val introspectionRequest = IntrospectionRequest(
+            token = token,
+            scopes =
+              if (config.requiredScopes.nonEmpty) Some(config.requiredScopes.toSeq) else None,
+            subject = config.requiredSubject,
+            clientCertificate = clientCertificate,
+            dpop = dpopHeader,
+            htm = dpopHeader.map(_ => httpMethod),
+            htu = dpopHeader.map(_ => requestUri),
+            resources = config.resources,
+            acrValues = config.acrValues,
+            maxAge = config.maxAge,
+            dpopNonceRequired = Some(config.dpopNonceRequired)
+          )
 
-        val sttpRequest = endpoint.introspectionApi(serviceId, introspectionRequest)
-
-        backend
-          .send(sttpRequest)
-          .map { response =>
-            response.body match {
+          authleteApi
+            .call("introspection", CorrelationIdMiddleware.get(request))(
+              _.introspection.introspectionApi(authleteApi.serviceId, introspectionRequest)
+            )
+            .map {
               case Right(resp) => mapIntrospectionResponse(resp, config)
-              case Left(error) => Left(TokenError.ServiceError(error.getMessage))
+              // Already logged, with its cause, by AuthleteApi.
+              case Left(failure) => Left(TokenError.ServiceError(failure.describe))
             }
+        }
+
+        private def mapIntrospectionResponse(
+            response: IntrospectionResponse,
+            config: Config
+        ): Either[TokenError, ValidatedToken] =
+          response.action match {
+            case Some(IntrospectionResponseEnums.Action.OK) =>
+              val validated = ValidatedToken(
+                subject = response.subject,
+                clientId = response.clientId.getOrElse(0L),
+                clientIdAlias = response.clientIdAlias,
+                scopes = response.scopes.map(_.toSet).getOrElse(Set.empty),
+                expiresAt = response.expiresAt.getOrElse(0L),
+                properties = response.properties
+                  .map(_.flatMap(p => p.key.map(k => k -> p.value.getOrElse(""))).toMap)
+                  .getOrElse(Map.empty),
+                grantId = response.grantId,
+                authTime = response.authTime,
+                acr = response.acr,
+                certificateThumbprint = response.certificateThumbprint,
+                resources = response.resources.map(_.toSet).getOrElse(Set.empty),
+                authorizationDetails = response.authorizationDetails.map(_.toString),
+                isRefreshable = response.refreshable.getOrElse(false),
+                grantType = response.grantType.map(_.toString)
+              )
+              // Additional scope check (Authlete already validates, but double-check)
+              if (config.requiredScopes.nonEmpty && !validated.hasScopes(config.requiredScopes))
+                Left(TokenError.InsufficientScope(config.requiredScopes))
+              else
+                Right(validated)
+
+            case Some(IntrospectionResponseEnums.Action.UNAUTHORIZED) =>
+              Left(TokenError.InvalidToken)
+
+            case Some(IntrospectionResponseEnums.Action.FORBIDDEN) =>
+              Left(TokenError.InsufficientScope(config.requiredScopes))
+
+            case Some(IntrospectionResponseEnums.Action.BAD_REQUEST) =>
+              Left(TokenError.MissingToken)
+
+            case Some(IntrospectionResponseEnums.Action.INTERNAL_SERVER_ERROR) =>
+              Left(TokenError.ServiceError(response.resultMessage.getOrElse("Unknown error")))
+
+            case None =>
+              Left(TokenError.ServiceError("No action in introspection response"))
           }
       }
-
-      private def mapIntrospectionResponse(
-          response: IntrospectionResponse,
-          config: Config
-      ): Either[TokenError, ValidatedToken] =
-        response.action match {
-          case Some(IntrospectionResponseEnums.Action.OK) =>
-            val validated = ValidatedToken(
-              subject = response.subject,
-              clientId = response.clientId.getOrElse(0L),
-              clientIdAlias = response.clientIdAlias,
-              scopes = response.scopes.map(_.toSet).getOrElse(Set.empty),
-              expiresAt = response.expiresAt.getOrElse(0L),
-              properties = response.properties
-                .map(_.flatMap(p => p.key.map(k => k -> p.value.getOrElse(""))).toMap)
-                .getOrElse(Map.empty),
-              grantId = response.grantId,
-              authTime = response.authTime,
-              acr = response.acr,
-              certificateThumbprint = response.certificateThumbprint,
-              resources = response.resources.map(_.toSet).getOrElse(Set.empty),
-              authorizationDetails = response.authorizationDetails.map(_.toString),
-              isRefreshable = response.refreshable.getOrElse(false),
-              grantType = response.grantType.map(_.toString)
-            )
-            // Additional scope check (Authlete already validates, but double-check)
-            if (config.requiredScopes.nonEmpty && !validated.hasScopes(config.requiredScopes))
-              Left(TokenError.InsufficientScope(config.requiredScopes))
-            else
-              Right(validated)
-
-          case Some(IntrospectionResponseEnums.Action.UNAUTHORIZED) =>
-            Left(TokenError.InvalidToken)
-
-          case Some(IntrospectionResponseEnums.Action.FORBIDDEN) =>
-            Left(TokenError.InsufficientScope(config.requiredScopes))
-
-          case Some(IntrospectionResponseEnums.Action.BAD_REQUEST) =>
-            Left(TokenError.MissingToken)
-
-          case Some(IntrospectionResponseEnums.Action.INTERNAL_SERVER_ERROR) =>
-            Left(TokenError.ServiceError(response.resultMessage.getOrElse("Unknown error")))
-
-          case None =>
-            Left(TokenError.ServiceError("No action in introspection response"))
-        }
-    }
 
   }
 
@@ -586,21 +578,16 @@ object TokenValidationMiddleware {
   /**
     * Create a production-ready token validation middleware.
     *
-    * @param backend
-    *   STTP backend for HTTP calls
-    * @param authleteConfig
-    *   Authlete service configuration
-    * @param serviceId
-    *   Authlete service identifier
+    * @param authleteApi
+    *   The Authlete client (it carries the service id and credentials that the `backend`,
+    *   `authleteConfig` and `serviceId` parameters used to supply separately)
     * @param config
     *   Middleware configuration
     * @return
     *   Http4s AuthMiddleware that validates tokens and provides ValidatedToken to routes
     */
   def apply[F[_]: Temporal](
-      backend: Backend[F],
-      authleteConfig: AuthleteConfig,
-      serviceId: String,
+      authleteApi: AuthleteApi[F],
       config: Config = Config()
   ): F[Http4sAuthMiddleware[F, ValidatedToken]] =
     for {
@@ -610,7 +597,7 @@ object TokenValidationMiddleware {
                  TokenCache.inMemory[F](0) // Disabled cache
       circuitBreaker <-
         CircuitBreaker[F](config.circuitBreakerThreshold, config.circuitBreakerResetTimeout)
-      client = IntrospectionClient[F](backend, authleteConfig, serviceId)
+      client = IntrospectionClient[F](authleteApi)
     } yield build(client, cache, circuitBreaker, config)
 
   /**
@@ -707,28 +694,19 @@ object TokenValidationMiddleware {
     * Create middleware requiring specific scopes.
     */
   def withScopes[F[_]: Temporal](
-      backend: Backend[F],
-      authleteConfig: AuthleteConfig,
-      serviceId: String,
+      authleteApi: AuthleteApi[F],
       scopes: Set[String]
   ): F[Http4sAuthMiddleware[F, ValidatedToken]] =
-    apply(backend, authleteConfig, serviceId, Config(requiredScopes = scopes))
+    apply(authleteApi, Config(requiredScopes = scopes))
 
   /**
     * Create middleware with DPoP validation enabled.
     */
   def withDPoP[F[_]: Temporal](
-      backend: Backend[F],
-      authleteConfig: AuthleteConfig,
-      serviceId: String,
+      authleteApi: AuthleteApi[F],
       dpopNonceRequired: Boolean = false
   ): F[Http4sAuthMiddleware[F, ValidatedToken]] =
-    apply(
-      backend,
-      authleteConfig,
-      serviceId,
-      Config(enableDPoP = true, dpopNonceRequired = dpopNonceRequired)
-    )
+    apply(authleteApi, Config(enableDPoP = true, dpopNonceRequired = dpopNonceRequired))
 
   // ============================================================================
   // Route Helpers

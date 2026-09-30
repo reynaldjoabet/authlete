@@ -3,15 +3,16 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.ServiceManagement
 import config.AuthleteConfig
 import http.given
 import http.ResponseUtil
 import io.circe.Json
+import http.middlewares.CorrelationIdMiddleware
+import http.middlewares.CorrelationIdMiddleware.CorrelationId
 import org.http4s.{Header, HttpRoutes, Response, Status}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of an OpenID Provider configuration endpoint.
@@ -63,12 +64,14 @@ import sttp.client4.Backend
   */
 final class ConfigurationRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   def routes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case GET -> Root / ".well-known" / "openid-configuration"       => metadata
-    case GET -> Root / ".well-known" / "oauth-authorization-server" => metadata
+    case request @ GET -> Root / ".well-known" / "openid-configuration" =>
+      metadata(CorrelationIdMiddleware.get(request))
+    case request @ GET -> Root / ".well-known" / "oauth-authorization-server" =>
+      metadata(CorrelationIdMiddleware.get(request))
   }
 
   /**
@@ -84,13 +87,14 @@ final class ConfigurationRoutes[F[_]: Concurrent](
     * capabilities that differ from the service's registration. A caller needing a modified document
     * can apply the patch after receiving it. </p>
     */
-  private def metadata: F[Response[F]] =
-    ServiceManagement
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .configurationApi(config.serviceId)
-      .send(backend)
+  private def metadata(correlationId: Option[CorrelationId]): F[Response[F]] =
+    authleteApi
+      .call("service configuration", correlationId) { endpoints =>
+        endpoints.serviceManagement
+          .configurationApi(config.serviceId)
+      }
       .map { upstream =>
-        upstream.body match {
+        upstream match {
           case Right(fields) =>
             // Discovery metadata is public and changes only when the service is reconfigured, so
             // unlike every token-bearing response on this server it is deliberately cacheable.

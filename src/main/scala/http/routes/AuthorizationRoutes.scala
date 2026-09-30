@@ -3,16 +3,17 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.AuthorizationEndpoint
 import authlete.models.AuthorizationRequest
 import config.{AuthleteConfig, InteractionConfig}
 import http.given
+import http.middlewares.CorrelationIdMiddleware
+import http.middlewares.CorrelationIdMiddleware.CorrelationId
 import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import org.http4s.{Header, HttpRoutes, Request, Response, Status, Uri}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of OAuth 2.0 authorization endpoint with OpenID Connect support.
@@ -53,7 +54,7 @@ import sttp.client4.Backend
 final class AuthorizationRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
     interaction: Option[InteractionConfig],
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   def routes: HttpRoutes[F] = HttpRoutes.of[F] {
@@ -63,21 +64,22 @@ final class AuthorizationRoutes[F[_]: Concurrent](
       // The query string as sent. `request.params` would drop a repeated parameter, and a duplicate
       // `scope` or `redirect_uri` is precisely the shape of a parameter-pollution attempt that
       // Authlete needs to see in order to reject it.
-      authorize(request.uri.query.renderString)
+      authorize(CorrelationIdMiddleware.get(request))(request.uri.query.renderString)
 
     // RFC 6749, 3.1 says the endpoint MAY support POST; OpenID Connect Core 1.0, 3.1.2.1
     // Authentication Request says it MUST.
     case request @ POST -> Root / "authorization" =>
-      request.as[String].flatMap(authorize)
+      request.as[String].flatMap(authorize(CorrelationIdMiddleware.get(request)))
   }
 
-  private def authorize(parameters: String): F[Response[F]] =
-    AuthorizationEndpoint
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .authorizationApi(config.serviceId, AuthorizationRequest(parameters))
-      .send(backend)
+  private def authorize(correlationId: Option[CorrelationId])(parameters: String): F[Response[F]] =
+    authleteApi
+      .call("authorization", correlationId) { endpoints =>
+        endpoints.authorization
+          .authorizationApi(config.serviceId, AuthorizationRequest(parameters))
+      }
       .map { upstream =>
-        upstream.body match {
+        upstream match {
           case Left(_) =>
             ResponseUtil.upstreamFailure[F]
 

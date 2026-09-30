@@ -3,17 +3,17 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.TokenEndpoint
 import authlete.models.TokenRequest
 import config.AuthleteConfig
 import http.given
+import http.middlewares.CorrelationIdMiddleware
 import http.ClientAuthentication
 import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import org.http4s.{HttpRoutes, Status}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of OAuth 2.0 token endpoint with OpenID Connect support.
@@ -43,7 +43,7 @@ import sttp.client4.Backend
   */
 final class TokenRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   /**
@@ -112,12 +112,13 @@ final class TokenRoutes[F[_]: Concurrent](
         oauthClientAttestationPop = ClientAuthentication.attestationPop(request)
       )
 
-      TokenEndpoint
-        .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-        .tokenApi(config.serviceId, tokenRequest)
-        .send(backend)
+      authleteApi
+        .call("token", CorrelationIdMiddleware.get(request)) { endpoints =>
+          endpoints.token
+            .tokenApi(config.serviceId, tokenRequest)
+        }
         .map { upstream =>
-          upstream.body match {
+          upstream match {
             case Right(response) =>
               ResponseUtil
                 .forAction[F](response.action.map(_.toString), response.responseContent, Mappings)

@@ -8,7 +8,6 @@ import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.TokenOperations
 import authlete.models.{
   GrantType,
   TokenCreateRequest,
@@ -23,7 +22,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import org.http4s.{MediaType, Response, Status}
 import org.http4s.headers.`Content-Type`
-import sttp.client4.Backend
 
 given CanEqual[TokenType, TokenType]                                             = CanEqual.derived
 given CanEqual[GrantType, GrantType]                                             = CanEqual.derived
@@ -61,9 +59,6 @@ object TokenExchanger {
     * Configuration for the token exchanger.
     */
   final case class Config(
-      serviceId: String,
-      baseUrl: String = "https://us.authlete.com",
-      serviceAccessToken: String,
       allowUnidentifiableClients: Boolean = false,
       supportedTokenTypes: Set[TokenType] = Set(
         TokenType.ACCESS_TOKEN,
@@ -78,8 +73,8 @@ object TokenExchanger {
     */
   def apply[F[_]: Concurrent](
       config: Config,
-      backend: Backend[F]
-  ): TokenExchanger[F] = new TokenExchangerImpl[F](config, backend)
+      authleteApi: AuthleteApi[F]
+  ): TokenExchanger[F] = new TokenExchangerImpl[F](config, authleteApi)
 
   // ============================================================================
   // Implementation
@@ -87,11 +82,8 @@ object TokenExchanger {
 
   private class TokenExchangerImpl[F[_]: Concurrent](
       config: Config,
-      backend: Backend[F]
+      authleteApi: AuthleteApi[F]
   ) extends TokenExchanger[F] {
-
-    private val tokenOps =
-      TokenOperations.withBearerTokenAuth(config.baseUrl, config.serviceAccessToken)
 
     override def exchange(
         tokenResponse: TokenResponse
@@ -213,11 +205,13 @@ object TokenExchanger {
         resources = if (resources.nonEmpty) Some(resources) else None
       )
 
-      tokenOps
-        .tokenCreateApi(config.serviceId, request)
-        .send(backend)
+      // No correlation id: `exchange` receives Authlete's token response, not the inbound request.
+      authleteApi
+        .call("token create", None)(
+          _.tokenOperations.tokenCreateApi(authleteApi.serviceId, request)
+        )
         .map { response =>
-          response.body match {
+          response match {
             case Right(tcResp) =>
               tcResp.action match {
                 case Some(TokenCreateResponseEnums.Action.OK) =>
@@ -250,12 +244,10 @@ object TokenExchanger {
                     )
                   )
               }
-            case Left(err) =>
-              Left(
-                TokenExchangeError.ServerError(
-                  s"Failed to create access token: ${err.getMessage}"
-                )
-              )
+            // The cause is logged by AuthleteApi, not carried here: the sttp message quoted the raw
+            // Authlete response body, and this error can end up in a client-facing response.
+            case Left(_) =>
+              Left(TokenExchangeError.ServerError("Failed to create access token"))
           }
         }
     }

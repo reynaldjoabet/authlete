@@ -3,15 +3,15 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.JWKSetEndpoint
 import config.AuthleteConfig
 import http.given
 import http.ResponseUtil
 import io.circe.Json
+import http.middlewares.CorrelationIdMiddleware
 import org.http4s.{Header, HttpRoutes, Response, Status}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of an endpoint to expose a JSON Web Key Set document (<a
@@ -44,7 +44,7 @@ import sttp.client4.Backend
   */
 final class JWKSetRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   /**
@@ -54,13 +54,14 @@ final class JWKSetRoutes[F[_]: Concurrent](
     *   <a href="http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata" >OpenID
     *   Connect Discovery 1.0, 3.1.3. jwks_uri</a>
     */
-  def routes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root / "jwks" =>
-    JWKSetEndpoint
-      .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-      .jwksGetApi(config.serviceId)
-      .send(backend)
+  def routes: HttpRoutes[F] = HttpRoutes.of[F] { case request @ GET -> Root / "jwks" =>
+    authleteApi
+      .call("jwks", CorrelationIdMiddleware.get(request)) { endpoints =>
+        endpoints.jwkSet
+          .jwksGetApi(config.serviceId)
+      }
       .map { upstream =>
-        upstream.body match {
+        upstream match {
           case Right(response) =>
             // A JWK Set is `{"keys":[...]}` even when empty (RFC 7517 5). Emitting a bare `{}` or
             // omitting the member would fail a conforming client's parse rather than telling it

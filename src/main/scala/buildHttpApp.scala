@@ -22,7 +22,7 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.middleware.Logger
 import org.http4s.server.Router
 import org.typelevel.ci._
-import services.{AuthleteClient, JwksProvider, JwtVerifier, SecurityMiddleware}
+import services.{AuthleteApi, AuthleteClient, JwksProvider, JwtVerifier, SecurityMiddleware}
 
 /**
   * Assembles the HTTP application: dependencies, routes, and the middleware stack around them.
@@ -42,6 +42,10 @@ object buildHttpApp {
   def apply(cfg: AppConfig): Resource[IO, HttpApp[IO]] =
     for {
       backend <- AuthleteClient.resource[IO](cfg.authlete)
+
+      // Every route reaches Authlete through this one instance: it holds the service token and
+      // logs any call Authlete refuses, which the routes themselves only turn into a response.
+      authleteApi = AuthleteApi[IO](cfg.authlete, backend)
 
       // A separate client from the Authlete backend on purpose: the IdP and Authlete are independent
       // dependencies, and sharing a connection pool lets one exhaust the other's capacity.
@@ -71,13 +75,13 @@ object buildHttpApp {
       // which makes the failure look intermittent.
       // Reachable from a browser, so these carry CORS when origins are configured.
       browserFacingRoutes =
-        new AuthorizationRoutes[IO](cfg.authlete, cfg.interactionConfig, backend).routes <+>
-          new TokenRoutes[IO](cfg.authlete, backend).routes <+>
-          new UserInfoRoutes[IO](cfg.authlete, backend).routes <+>
-          new IntrospectionRoutes[IO](cfg.authlete, backend).routes <+>
-          new RevocationRoutes[IO](cfg.authlete, backend).routes <+>
-          new PushedAuthorizationRoutes[IO](cfg.authlete, backend).routes <+>
-          new JWKSetRoutes[IO](cfg.authlete, backend).routes
+        new AuthorizationRoutes[IO](cfg.authlete, cfg.interactionConfig, authleteApi).routes <+>
+          new TokenRoutes[IO](cfg.authlete, authleteApi).routes <+>
+          new UserInfoRoutes[IO](cfg.authlete, authleteApi).routes <+>
+          new IntrospectionRoutes[IO](cfg.authlete, authleteApi).routes <+>
+          new RevocationRoutes[IO](cfg.authlete, authleteApi).routes <+>
+          new PushedAuthorizationRoutes[IO](cfg.authlete, authleteApi).routes <+>
+          new JWKSetRoutes[IO](cfg.authlete, authleteApi).routes
 
       // Server-to-server only, and deliberately outside the CORS wrapper below. This is the call
       // that grants consent; no browser has business initiating it, and advertising it
@@ -88,12 +92,12 @@ object buildHttpApp {
       // absence is the safe default rather than an oversight.
       decisionRoutes =
         cfg.interactionConfig.fold(HttpRoutes.empty[IO])(interactionCfg =>
-          new AuthorizationDecisionRoutes[IO](cfg.authlete, interactionCfg, backend).routes
+          new AuthorizationDecisionRoutes[IO](cfg.authlete, interactionCfg, authleteApi).routes
         )
 
       // Discovery is anchored at the origin root by both specs that define it (OIDC Discovery 1.0
       // 4.1 and RFC 8414 3), so it cannot sit behind the API prefix.
-      discoveryRoutes = new ConfigurationRoutes[IO](cfg.authlete, backend).routes
+      discoveryRoutes = new ConfigurationRoutes[IO](cfg.authlete, authleteApi).routes
 
       healthRoutes = new HealthRoutes[IO](
                        List(

@@ -10,6 +10,7 @@ import munit.CatsEffectSuite
 import org.http4s.{Header, Method, Request, Status, Uri}
 import org.http4s.implicits.*
 import org.typelevel.ci.*
+import services.AuthleteApi
 import sttp.client4.Backend
 
 /**
@@ -31,19 +32,22 @@ class AuthorizationDecisionRoutesSpec extends CatsEffectSuite {
 
   private val secret = "correct-horse-battery-staple"
 
+  private val authleteConfig =
+    AuthleteConfig(
+      requestTimeout = 30.seconds,
+      serviceId = "12345",
+      serviceAccessToken = Secret("service-token"),
+      baseUrl = "https://api.authlete.com/api"
+    )
+
   private val routes =
     new AuthorizationDecisionRoutes[IO](
-      AuthleteConfig(
-        requestTimeout = 30.seconds,
-        serviceId = "12345",
-        serviceAccessToken = Secret("service-token"),
-        baseUrl = "https://api.authlete.com/api"
-      ),
+      authleteConfig,
       InteractionConfig(
         baseUrl = uri"https://auth-ui.example.com",
         sharedSecret = Secret(secret)
       ),
-      unusableBackend
+      AuthleteApi[IO](authleteConfig, unusableBackend)
     ).routes
 
   private def post(body: String, authorization: Option[String]): IO[org.http4s.Response[IO]] = {

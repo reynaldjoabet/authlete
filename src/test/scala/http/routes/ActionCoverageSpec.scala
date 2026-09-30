@@ -15,6 +15,7 @@ import authlete.models.{
 import config.{AuthleteConfig, InteractionConfig, Secret}
 import munit.FunSuite
 import org.http4s.implicits.*
+import services.AuthleteApi
 import sttp.client4.Backend
 
 /**
@@ -48,6 +49,8 @@ class ActionCoverageSpec extends FunSuite {
     baseUrl = "https://api.authlete.com/api"
   )
 
+  private val authleteApi = AuthleteApi[IO](authlete, noBackend)
+
   private def check(endpoint: String, mapped: Set[String], actual: Set[String]): Unit = {
     val unhandled = actual -- mapped
     val phantom   = mapped -- actual
@@ -67,7 +70,7 @@ class ActionCoverageSpec extends FunSuite {
   test("token endpoint maps exactly its actions") {
     check(
       "token",
-      new TokenRoutes[IO](authlete, noBackend).Mappings.keySet,
+      new TokenRoutes[IO](authlete, authleteApi).Mappings.keySet,
       TokenResponseEnums.Action.values.map(_.toString).toSet
     )
   }
@@ -75,7 +78,7 @@ class ActionCoverageSpec extends FunSuite {
   test("revocation endpoint maps exactly its actions") {
     check(
       "revocation",
-      new RevocationRoutes[IO](authlete, noBackend).Mappings.keySet,
+      new RevocationRoutes[IO](authlete, authleteApi).Mappings.keySet,
       RevocationResponseEnums.Action.values.map(_.toString).toSet
     )
   }
@@ -83,7 +86,7 @@ class ActionCoverageSpec extends FunSuite {
   test("introspection endpoint maps exactly its actions") {
     check(
       "introspection",
-      new IntrospectionRoutes[IO](authlete, noBackend).Mappings.keySet,
+      new IntrospectionRoutes[IO](authlete, authleteApi).Mappings.keySet,
       StandardIntrospectionResponseEnums.Action.values.map(_.toString).toSet
     )
   }
@@ -91,7 +94,7 @@ class ActionCoverageSpec extends FunSuite {
   test("pushed authorization endpoint maps exactly its actions") {
     check(
       "pushed authorization",
-      new PushedAuthorizationRoutes[IO](authlete, noBackend).Mappings.keySet,
+      new PushedAuthorizationRoutes[IO](authlete, authleteApi).Mappings.keySet,
       PushedAuthorizationResponseEnums.Action.values.map(_.toString).toSet
     )
   }
@@ -107,7 +110,7 @@ class ActionCoverageSpec extends FunSuite {
 
     check(
       "authorization",
-      new AuthorizationRoutes[IO](authlete, interaction, noBackend).Terminal.keySet ++
+      new AuthorizationRoutes[IO](authlete, interaction, authleteApi).Terminal.keySet ++
         handledInMatch,
       AuthorizationResponseEnums.Action.values.map(_.toString).toSet
     )
@@ -121,7 +124,7 @@ class ActionCoverageSpec extends FunSuite {
       new AuthorizationDecisionRoutes[IO](
         authlete,
         InteractionConfig(uri"https://auth-ui.example.com", Secret("s")),
-        noBackend
+        authleteApi
       ).Terminal.keySet ++ handledInMatch,
       AuthorizationIssueResponseEnums.Action.values.map(_.toString).toSet
     )

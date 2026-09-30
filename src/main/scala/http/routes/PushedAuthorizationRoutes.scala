@@ -3,17 +3,17 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.PushedAuthorizationEndpoint
 import authlete.models.PushedAuthorizationRequest
 import config.AuthleteConfig
 import http.given
+import http.middlewares.CorrelationIdMiddleware
 import http.ClientAuthentication
 import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import org.http4s.{HttpRoutes, Status}
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.ci.*
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of a pushed authorization endpoint.
@@ -34,7 +34,7 @@ import sttp.client4.Backend
   */
 final class PushedAuthorizationRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   /**
@@ -65,25 +65,26 @@ final class PushedAuthorizationRoutes[F[_]: Concurrent](
     request.as[String].flatMap { parameters =>
       val credentials = ClientAuthentication.basicCredentials(request)
 
-      PushedAuthorizationEndpoint
-        .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-        .authReqApi(
-          config.serviceId,
-          PushedAuthorizationRequest(
-            parameters = parameters,
-            clientId = credentials.map(_._1),
-            clientSecret = credentials.map(_._2),
-            dpop = request.headers.get(ci"DPoP").map(_.head.value),
-            htm = Some("POST"),
-            clientCertificate =
-              ClientAuthentication.clientCertificate(request, config.clientCertificateHeader),
-            oauthClientAttestation = ClientAuthentication.attestation(request),
-            oauthClientAttestationPop = ClientAuthentication.attestationPop(request)
-          )
-        )
-        .send(backend)
+      authleteApi
+        .call("pushed authorization", CorrelationIdMiddleware.get(request)) { endpoints =>
+          endpoints.pushedAuthorization
+            .authReqApi(
+              config.serviceId,
+              PushedAuthorizationRequest(
+                parameters = parameters,
+                clientId = credentials.map(_._1),
+                clientSecret = credentials.map(_._2),
+                dpop = request.headers.get(ci"DPoP").map(_.head.value),
+                htm = Some("POST"),
+                clientCertificate =
+                  ClientAuthentication.clientCertificate(request, config.clientCertificateHeader),
+                oauthClientAttestation = ClientAuthentication.attestation(request),
+                oauthClientAttestationPop = ClientAuthentication.attestationPop(request)
+              )
+            )
+        }
         .map { upstream =>
-          upstream.body match {
+          upstream match {
             case Right(response) =>
               ResponseUtil
                 .forAction[F](response.action.map(_.toString), response.responseContent, Mappings)

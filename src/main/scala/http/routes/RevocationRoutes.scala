@@ -3,16 +3,16 @@ package http.routes
 import cats.effect.Concurrent
 import cats.syntax.all.*
 
-import authlete.api.RevocationEndpoint
 import authlete.models.RevocationRequest
 import config.AuthleteConfig
 import http.given
+import http.middlewares.CorrelationIdMiddleware
 import http.ClientAuthentication
 import http.ResponseUtil
 import http.ResponseUtil.{Body, Mapping}
 import org.http4s.{HttpRoutes, Status}
 import org.http4s.dsl.Http4sDsl
-import sttp.client4.Backend
+import services.AuthleteApi
 
 /**
   * An implementation of revocation endpoint (<a href=
@@ -35,7 +35,7 @@ import sttp.client4.Backend
   */
 final class RevocationRoutes[F[_]: Concurrent](
     config: AuthleteConfig,
-    backend: Backend[F]
+    authleteApi: AuthleteApi[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val Mappings: Map[String, Mapping] =
@@ -59,23 +59,24 @@ final class RevocationRoutes[F[_]: Concurrent](
     request.as[String].flatMap { parameters =>
       val credentials = ClientAuthentication.basicCredentials(request)
 
-      RevocationEndpoint
-        .withBearerTokenAuth(config.baseUrl, config.serviceAccessToken.value)
-        .revocationApi(
-          config.serviceId,
-          RevocationRequest(
-            parameters = parameters,
-            clientId = credentials.map(_._1),
-            clientSecret = credentials.map(_._2),
-            clientCertificate =
-              ClientAuthentication.clientCertificate(request, config.clientCertificateHeader),
-            oauthClientAttestation = ClientAuthentication.attestation(request),
-            oauthClientAttestationPop = ClientAuthentication.attestationPop(request)
-          )
-        )
-        .send(backend)
+      authleteApi
+        .call("revocation", CorrelationIdMiddleware.get(request)) { endpoints =>
+          endpoints.revocation
+            .revocationApi(
+              config.serviceId,
+              RevocationRequest(
+                parameters = parameters,
+                clientId = credentials.map(_._1),
+                clientSecret = credentials.map(_._2),
+                clientCertificate =
+                  ClientAuthentication.clientCertificate(request, config.clientCertificateHeader),
+                oauthClientAttestation = ClientAuthentication.attestation(request),
+                oauthClientAttestationPop = ClientAuthentication.attestationPop(request)
+              )
+            )
+        }
         .map { upstream =>
-          upstream.body match {
+          upstream match {
             case Right(response) =>
               ResponseUtil
                 .forAction[F](response.action.map(_.toString), response.responseContent, Mappings)

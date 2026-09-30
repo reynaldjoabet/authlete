@@ -76,6 +76,15 @@ final case class AppConfig(
         (),
         "authlete.dpop-key: required when authlete.is-dpop-enabled is true"
       ),
+      // Fail closed until DPoP-bound calls to Authlete exist. Nothing signs a proof today, so the
+      // flag would only change the startup banner -- and an operator who set it would believe the
+      // service token is sender-constrained when it is a plain bearer token.
+      Validated.condNel(
+        !authlete.isDpopEnabled,
+        (),
+        "authlete.is-dpop-enabled: DPoP-bound calls to Authlete are not implemented; unset it " +
+          "rather than run with a bearer token presented as DPoP-bound"
+      ),
       Validated.condNel(
         server.maxConnections > 0,
         (),

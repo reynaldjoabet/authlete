@@ -167,12 +167,17 @@ object ResponseUtil {
     * Distinct from an Authlete-reported error: here there is no `action` at all because the call
     * did not complete. The cause is deliberately not echoed -- it carries Authlete URLs, and on a
     * TLS or parse failure the exception text can include fragments of the request.
+    *
+    * In practice this is reached when Authlete refused the API call itself or answered with
+    * something the generated client could not read; `services.AuthleteApi` has already logged
+    * which. A raised transport failure (timeout, refused connection) never gets here --
+    * [[ErrorHandler]] answers it.
     */
   def upstreamFailure[F[_]]: Response[F] =
     oauthError[F](
       Status.InternalServerError,
       "server_error",
-      "The authorization server could not reach its backend."
+      "The authorization server could not complete the request with its backend."
     )
 
   /**
