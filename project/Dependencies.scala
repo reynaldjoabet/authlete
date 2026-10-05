@@ -26,8 +26,8 @@ object Dependencies {
     // --- FP ---
     val catsEffect      = "3.7.1"
     val fs2             = "3.14.0"
-    val fs2Kafka        = "4.1.1"
-    val chimney         = "2.0.0"
+    val fs2Kafka        = "4.1.2"
+    val chimney         = "2.1.0"
     val iron            = "3.3.2"
     val hedgehog        = "0.13.1"
     val scalacheck      = "1.20.0"
@@ -39,7 +39,7 @@ object Dependencies {
     val magnum   = "2.0.0-M3"
     val skunk    = "2.0.0-RC3"
     val hikaricp = "7.1.0"
-    val flyway   = "13.8.0"
+    val flyway   = "13.9.0"
     val postgres = "42.7.13"
 
     // --- Security ---
@@ -54,13 +54,13 @@ object Dependencies {
     // --- Logging ---
     val scribe  = "3.19.0"
     val slf4j   = "2.0.20"
-    val logback = "1.6.4"
+    val logback = "1.6.5"
 
     // --- Cache ---
     val caffeine = "3.3.0"
 
     // --- Observability ---
-    val datadog = "2.60.0"
+    val datadog = "2.61.0"
     val kamon   = "2.8.1"
     val otel4s  = "1.0.1"
 
