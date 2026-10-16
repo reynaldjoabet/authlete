@@ -36,7 +36,7 @@ object Dependencies {
 
     // --- DB ---
     val quill    = "4.8.6"
-    val magnum   = "2.0.0-M3"
+    val magnum   = "2.0.0-M4"
     val skunk    = "2.0.0-RC3"
     val hikaricp = "7.1.0"
     val flyway   = "13.10.0"
