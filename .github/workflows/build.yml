@@ -13,19 +13,51 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SBT_OPTS: -Xmx4g -XX:ReservedCodeCacheSize=512m
+
 jobs:
+  # Formatting is independent of Scala and JDK version, so it runs once here
+  # rather than being repeated in every matrix leg.
+  lint:
+    name: Formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: 'sbt'
+          cache-dependency-path: |
+            **/*.sbt
+            **/project/build.properties
+            **/project/*.scala
+            **/project/**/*.scala
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Check formatting
+        run: sbt -v "scalafmtSbtCheck; scalafmtCheckAll"
+
   build:
-    name: Scala ${{ matrix.scala }} / Java ${{ matrix.java }} (${{ matrix.distribution }}) on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    name: Java ${{ matrix.java }} (${{ matrix.distribution }})
+
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     strategy:
       fail-fast: false
       matrix:
-        java: [17,21,25]
+        java: ['17','21', '25']
+
         distribution: [temurin, corretto]
-        scala: ['3.9.0']
-        os: [ubuntu-latest]
 
     steps:
       - name: Checkout repository
@@ -47,8 +79,5 @@ jobs:
       - name: Set up sbt
         uses: sbt/setup-sbt@v1
 
-      - name: Check formatting
-        run: sbt -v --server "scalafmtSbtCheck; scalafmtCheckAll"
-      
       - name: Compile and test
-        run: sbt -v --server "++${{ matrix.scala }}" "Test/compile; test"
+        run: sbt -v "Test/compile; test"
