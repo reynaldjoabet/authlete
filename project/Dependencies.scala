@@ -11,7 +11,7 @@ object Dependencies {
     val zioLogging = "2.5.3"
     val zioConfig  = "4.0.7"
     val zioSchema  = "1.8.5"
-    val zioKafka   = "3.8.0"
+    val zioKafka   = "3.8.1"
 
     // --- HTTP ---
     val http4s  = "0.23.36"
@@ -54,7 +54,7 @@ object Dependencies {
     // --- Logging ---
     val scribe  = "3.19.0"
     val slf4j   = "2.0.20"
-    val logback = "1.6.5"
+    val logback = "1.6.6"
 
     // --- Cache ---
     val caffeine = "3.3.1"
