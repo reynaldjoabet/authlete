@@ -1932,3 +1932,7 @@ var k2 = receiver.decapsulate(encapsulated.encapsulation());
 
 assert Arrays.equals(k1.getEncoded(), k2.getEncoded());
 ```
+
+Level check timing: the level is checked when the `F[Unit]` is built, not when it runs. An effect built once and run many times, like `Stream.repeatEval(log.debug(...))`, keeps the level it was built with.
+Class names: Scribe works out className from the file name at compile time, so keep one class per file or the name will be wrong.
+Dropped logs: lines are only dropped if 65,536 are queued at once, and each drop is counted and reported with a warning. Export LoggingSetup.dropped as a metric.

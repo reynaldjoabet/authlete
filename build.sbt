@@ -1,9 +1,7 @@
 import Dependencies.*
 
-ThisBuild / scalaVersion := "3.10.0"
+ThisBuild / scalaVersion := "3.9.0"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-
-ThisBuild / crossScalaVersions := Seq("3.9.0")
 
 ThisBuild / scalacOptions := Seq(
   "-encoding",
@@ -45,10 +43,10 @@ lazy val root = (project in file("."))
       catsEffect,
       pureconfig,
       slf4j,
-      logback,
       scribe,
       scribeSlf4j,
       scribeCats,
+      scribeJsonCirce,
       jsoniter,
       jsoniterMacros,
       jsoniterCirce,
