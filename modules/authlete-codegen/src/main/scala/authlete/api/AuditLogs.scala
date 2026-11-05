@@ -75,12 +75,12 @@ case class AuditLogs[Auth <: authlete.Authorization] private (baseUrl: String, a
   def entriesGetIdpApi(after: Option[OffsetDateTime] = scala.None, before: Option[OffsetDateTime] = scala.None, types: Set[String], organizationId: Option[Long] = scala.None, limit: Option[Int] = scala.None, cursor: Option[String] = scala.None)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], AuditEntriesGetResponse]] =
     val requestURL =
       uri"$baseUrl/api/audit/entries"
-        .addParams(FormSerializable.serialize("after", after, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("before", before, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("types", types, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("organizationId", organizationId, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("limit", limit, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("cursor", cursor, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("after", after, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("before", before, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("types", types, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("organizationId", organizationId, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("limit", limit, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("cursor", cursor, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)

@@ -6,6 +6,10 @@ ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalacOptions := Seq(
   "-encoding",
   "UTF-8",
+  // The lowest JDK in the CI matrix, and what the Dockerfile promises. Without this, the bytecode
+  // and the visible JDK API follow whichever JDK happens to run the compiler, so a build on 25 can
+  // link against an API that does not exist on the JRE it ships to.
+  "-java-output-version:17",
   "-no-indent",
   "-deprecation",
   "-feature",
@@ -17,7 +21,10 @@ ThisBuild / scalacOptions := Seq(
   "-language:strictEquality",
   "-Xcheck-macros",
   "-Xmax-inlines:64"
-)
+) ++
+  // CI only: a warning should stop a merge, but not interrupt someone mid-change at their desk.
+  // Generated code sets its own options below, so its warnings are not affected.
+  (if (sys.env.contains("CI")) Seq("-Werror") else Seq.empty)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -39,6 +46,8 @@ lazy val root = (project in file("."))
       emberServer,
       chimney,
       fs2,
+      fs2Io,
+      fs2ReactiveStreams,
       emberClient,
       catsEffect,
       pureconfig,
@@ -55,19 +64,6 @@ lazy val root = (project in file("."))
       nimbusJoseJwt,
       nimbusOauth2Oidc,
       jwtCirce,
-      caffeine,
-      zio,
-      zioJson,
-      zioTest,
-      zioTestSbt,
-      zioConfig,
-      zioConfigMagnolia,
-      zioLogging,
-      zioLoggingSlf4j,
-      zioHttp,
-      zioJsonGolden,
-      zioSttp,
-      zioKafka,
       circeParser,
       hedgehog,
       hedgehogSbt,
@@ -85,6 +81,12 @@ lazy val root = (project in file("."))
     ),
     buildInfoPackage := "authlete",
     buildInfoObject  := "AuthleteBuildInfo"
+  )
+  .settings(
+    Compile / run / mainClass := Some("Main"),
+    // In its own JVM, as in production: SIGTERM reaches Main's graceful shutdown, and a run that
+    // exits or leaks threads cannot take the sbt server with it.
+    run / fork := true
   )
   .settings(
     assembly / mainClass       := Some("Main"),
@@ -174,13 +176,3 @@ lazy val `authlete-codegen` = (project in file("modules/authlete-codegen"))
       jsoniterCirce
     )
   )
-
-lazy val populateTestDB =
-  taskKey[Unit]("Run PopulateTestDatabase main class from the test folder")
-
-populateTestDB := Def.uncached {
-  val log = streams.value.log
-  (Test / runMain).toTask(s"utils.PopulateTestDatabase").value
-}
-
-ThisProject / dependencyOverrides += "dev.zio" %% "zio-json" % "0.9.2"

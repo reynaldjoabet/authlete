@@ -93,7 +93,7 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
     val clientIdPathParam = PathSerializable.serialize("clientId", clientId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/client/authorization/delete/${clientIdPathParam}"
-        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.DELETE, requestURL)
@@ -195,10 +195,10 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/client/authorization/get/list"
-        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("developer", developer, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("developer", developer, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)
@@ -268,9 +268,9 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
     val subjectPathParam = PathSerializable.serialize("subject", subject, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/client/authorization/get/list/${subjectPathParam}"
-        .addParams(FormSerializable.serialize("developer", developer, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("developer", developer, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)
@@ -614,9 +614,9 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/client/get/list"
-        .addParams(FormSerializable.serialize("developer", developer, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("developer", developer, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)
@@ -651,7 +651,7 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
     val clientIdPathParam = PathSerializable.serialize("clientId", clientId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/client/granted_scopes/delete/${clientIdPathParam}"
-        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.DELETE, requestURL)
@@ -721,7 +721,7 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
     val clientIdPathParam = PathSerializable.serialize("clientId", clientId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/client/granted_scopes/get/${clientIdPathParam}"
-        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)

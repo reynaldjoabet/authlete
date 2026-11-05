@@ -150,10 +150,10 @@ case class TokenOperations[Auth <: authlete.Authorization] private (baseUrl: Str
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/auth/token/get/list"
-        .addParams(FormSerializable.serialize("clientIdentifier", clientIdentifier, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("clientIdentifier", clientIdentifier, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("subject", subject, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)

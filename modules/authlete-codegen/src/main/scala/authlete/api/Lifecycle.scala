@@ -60,7 +60,7 @@ case class Lifecycle[Auth <: authlete.Authorization] private (baseUrl: String, a
   def apiLifecycleHealthcheckGet(extended: Option[Boolean] = scala.None): sttp.client4.Request[Either[ResponseException[String], String]] =
     val requestURL =
       uri"$baseUrl/api/lifecycle/healthcheck"
-        .addParams(FormSerializable.serialize("extended", extended, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("extended", extended, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)

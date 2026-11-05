@@ -77,8 +77,8 @@ case class JWKSetEndpoint[Auth <: authlete.Authorization] private (baseUrl: Stri
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/service/jwks/get"
-        .addParams(FormSerializable.serialize("includePrivateKeys", includePrivateKeys, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("pretty", pretty, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("includePrivateKeys", includePrivateKeys, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("pretty", pretty, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)

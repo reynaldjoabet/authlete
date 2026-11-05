@@ -81,8 +81,8 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
     val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/api/${serviceIdPathParam}/service/configuration"
-        .addParams(FormSerializable.serialize("pretty", pretty, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("patch", patch, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("pretty", pretty, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("patch", patch, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)
@@ -234,8 +234,8 @@ case class ServiceManagement[Auth <: authlete.Authorization] private (baseUrl: S
   def getListApi(start: Option[Int] = scala.None, end: Option[Int] = scala.None)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ServiceGetListResponse]] =
     val requestURL =
       uri"$baseUrl/api/service/get/list"
-        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true): _*)
-        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true)*)
 
     basicRequest
       .method(Method.GET, requestURL)
