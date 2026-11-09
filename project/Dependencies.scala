@@ -48,7 +48,7 @@ object Dependencies {
     val password4j       = "1.8.4"
     val auth0            = "4.6.2"
     val nimbusJoseJwt    = "10.10"
-    val nimbusOauth2Oidc = "11.38.2"
+    val nimbusOauth2Oidc = "11.39"
     val vault            = "5.1.0"
 
     // --- Logging ---
