@@ -1,6 +1,6 @@
 /**
  * Authlete API
- * Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the  platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to  build powerful OAuth 2.0 and OpenID Connect servers.  At a high level, the Authlete API is grouped into two categories:  - **Management APIs**: Enable you to manage services and clients. - **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers.  ## 🌐 API Servers  Authlete is a global service with clusters available in multiple regions across the world:  - 🇺🇸 **US**: `https://us.authlete.com` - 🇯🇵 **Japan**: `https://jp.authlete.com` - 🇪🇺 **Europe**: `https://eu.authlete.com` - 🇧🇷 **Brazil**: `https://br.authlete.com`  Our customers can host their data in the region that best meets their requirements.  ## 🔑 Authentication  All API endpoints are secured using **Bearer token authentication**. You must include an access token in every request:  ``` Authorization: Bearer YOUR_ACCESS_TOKEN ```  ### Getting Your Access Token  Authlete supports two types of access tokens:  **Service Access Token** - Scoped to a single service (authorization server instance)  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to your service → **Settings** → **Access Tokens** 3. Click **Create Token** and select permissions (e.g., `service.read`, `client.write`) 4. Copy the generated token  **Organization Token** - Scoped to your entire organization  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to **Organization Settings** → **Access Tokens** 3. Click **Create Token** and select org-level permissions 4. Copy the generated token  > ⚠️ **Important Note**: Tokens inherit the permissions of the account that creates them. Service tokens can only  > access their specific service, while organization tokens can access all services within your org.  ### Token Security Best Practices  - **Never commit tokens to version control** - Store in environment variables or secure secret managers - **Rotate regularly** - Generate new tokens periodically and revoke old ones - **Scope appropriately** - Request only the permissions your application needs - **Revoke unused tokens** - Delete tokens you're no longer using from the console  ### Quick Test  Verify your token works with a simple API call:  ```bash curl -X GET https://us.authlete.com/api/service/get/list \\   -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" ```  ## 🎓 Tutorials  If you're new to Authlete or want to see sample implementations, these resources will help you get started:  - [Getting Started with Authlete](https://www.authlete.com/developers/getting_started/) - [From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)  ## 🛠 Contact Us  If you have any questions or need assistance, our team is here to help:  - [Contact Page](https://www.authlete.com/contact/) 
+ * Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to build powerful OAuth 2.0 and OpenID Connect servers.  At a high level, the Authlete API is grouped into two categories:  - **Management APIs**: Enable you to manage services and clients. - **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers.  ## 🌐 API Servers  Authlete is a global service with clusters available in multiple regions across the world:  - 🇺🇸 **US**: `https://us.authlete.com` - 🇯🇵 **Japan**: `https://jp.authlete.com` - 🇪🇺 **Europe**: `https://eu.authlete.com` - 🇧🇷 **Brazil**: `https://br.authlete.com`  Our customers can host their data in the region that best meets their requirements.  ## 🔑 Authentication  All API endpoints are secured using **Bearer token authentication**. You must include an access token in every request:  ``` Authorization: Bearer YOUR_ACCESS_TOKEN ```  ### Getting Your Access Token  Authlete supports two types of access tokens:  **Service Access Token** - Scoped to a single service (authorization server instance)  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to your service → **Settings** → **Access Tokens** 3. Click **Create Token** and select permissions (e.g., `service.read`, `client.write`) 4. Copy the generated token  **Organization Token** - Scoped to your entire organization  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to **Organization Settings** → **Access Tokens** 3. Click **Create Token** and select org-level permissions 4. Copy the generated token  > ⚠️ **Important Note**: Tokens inherit the permissions of the account that creates them. Service tokens can only access their specific service, while organization tokens can access all services within your org.  ### Token Security Best Practices  - **Never commit tokens to version control** - Store in environment variables or secure secret managers - **Rotate regularly** - Generate new tokens periodically and revoke old ones - **Scope appropriately** - Request only the permissions your application needs - **Revoke unused tokens** - Delete tokens you're no longer using from the console  ### Quick Test  Verify your token works with a simple API call:  ```bash curl -X GET https://us.authlete.com/api/service/get/list \\   -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" ```  ## 🎓 Tutorials  If you're new to Authlete or want to see sample implementations, these resources will help you get started:  - [Getting Started with Authlete](https://www.authlete.com/developers/getting_started/) - [From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)  ## 🛠 Contact Us  If you have any questions or need assistance, our team is here to help:  - [Contact Page](https://www.authlete.com/contact/) 
  *
  * The version of the OpenAPI document: 3.0.16
  * 
@@ -18,6 +18,7 @@ import authlete.models.ClientAuthorizationGetListRequest
 import authlete.models.ClientAuthorizationGetListResponse
 import authlete.models.ClientAuthorizationUpdateRequest
 import authlete.models.ClientAuthorizationUpdateResponse
+import authlete.models.ClientCursorListResponse
 import authlete.models.ClientExtensionRequestableScopesGetResponse
 import authlete.models.ClientExtensionRequestableScopesUpdateRequest
 import authlete.models.ClientExtensionRequestableScopesUpdateResponse
@@ -25,6 +26,7 @@ import authlete.models.ClientFlagUpdateRequest
 import authlete.models.ClientFlagUpdateResponse
 import authlete.models.ClientGetListResponse
 import authlete.models.ClientGrantedScopesDeleteResponse
+import authlete.models.ClientSearchResponse
 import authlete.models.ClientSecretRefreshResponse
 import authlete.models.ClientSecretUpdateRequest
 import authlete.models.ClientSecretUpdateResponse
@@ -347,6 +349,38 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
       .auth(authConfig)
       .body(asJson(client))
       .response(asJson[Client])
+
+  /**
+   * Retrieve the clients in the requested service via cursor based iteration. 
+   * 
+   * Expected answers:
+   *   code 200 : ClientCursorListResponse ()
+   *   code 400 : Result ()
+   *   code 401 : Result ()
+   *   code 403 : Result ()
+   *   code 500 : Result ()
+   * 
+   * Available security schemes:
+   *   bearer (http)
+   * 
+   * @param serviceId The ID of the service to retrieve a list of clients from.
+   * @param cursor This should be set to the value of `nextCursor` from a previous call to this endpoint. Which will retrieve the next set of clients available and receive the next available set. If this is not provided the list operation will start from the beginning. 
+   * @param limit The maximum amount of results to return from this request. This value will be clamped between 1 and the allowed maximum. The default will be used if no value is provided. 
+   * @param includeTotalCount Indicates whether the `totalCount` property should be calculated and included in the response, otherwise it will be unset. For some large datasets this can be expensive and is not always required to calculate. 
+   */
+  def cursorListApi(serviceId: Int, cursor: Option[String] = scala.None, limit: Option[Int] = scala.None, includeTotalCount: Option[Boolean] = scala.None)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ClientCursorListResponse]] =
+    val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
+    val requestURL =
+      uri"$baseUrl/api/${serviceIdPathParam}/client"
+        .addParams(FormSerializable.serialize("cursor", cursor, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("limit", limit, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("includeTotalCount", includeTotalCount, FormStyleFormat.FORM, true)*)
+
+    basicRequest
+      .method(Method.GET, requestURL)
+      .contentType("application/json")
+      .auth(authConfig)
+      .response(asJson[ClientCursorListResponse])
 
   /**
    * Delete a client. 
@@ -794,6 +828,45 @@ case class ClientManagement[Auth <: authlete.Authorization] private (baseUrl: St
       .contentType("application/json")
       .auth(authConfig)
       .response(asJson[ClientAuthorizationDeleteResponse])
+
+  /**
+   * Search the clients in the requested service that match the condition provided in the `q` query parameter. Results are returned via cursor based iteration. To iterate through all clients without a search condition, use the `/api/&#123;serviceId&#125;/client` API instead. 
+   * 
+   * Expected answers:
+   *   code 200 : ClientSearchResponse ()
+   *   code 400 : Result ()
+   *   code 401 : Result ()
+   *   code 403 : Result ()
+   *   code 429 : Result (The request exceeded the request rate permitted for the endpoint.)
+   *              Headers :
+   *                Retry-After - The number of seconds to wait before retrying the request.
+   *                RateLimit-Remaining - The number of requests remaining in the next second.
+   *                RateLimit-Reset - The number of seconds to wait before the request rate is fully replenished.
+   *   code 500 : Result ()
+   * 
+   * Available security schemes:
+   *   bearer (http)
+   * 
+   * @param serviceId The ID of the service to retrieve a list of clients from.
+   * @param `q` The search query. See the description of this API for the supported syntax and fields.  This parameter is required unless `cursor` is provided. When `cursor` is provided, this parameter is ignored and the search query stored in the cursor is used instead. 
+   * @param cursor This should be set to the value of `nextCursor` from a previous call to this endpoint, which will retrieve the next set of clients matching the original search query. If this is not provided the search will start from the beginning. 
+   * @param limit The maximum amount of results to return from this request. This value will be clamped between 1 and the allowed maximum. The default will be used if no value is provided. 
+   * @param includeTotalCount Indicates whether the `totalCount` property should be calculated and included in the response, otherwise it will be unset.  **Warning:** Calculating the total count requires an additional query and reduces the performance and throughput of this API. Only set this to `true` when the total count is actually required, rather than on every request. 
+   */
+  def searchApi(serviceId: Int, `q`: Option[String] = scala.None, cursor: Option[String] = scala.None, limit: Option[Int] = scala.None, includeTotalCount: Option[Boolean] = scala.None)(using Auth <:< authlete.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ClientSearchResponse]] =
+    val serviceIdPathParam = PathSerializable.serialize("serviceId", serviceId, PathStyleFormat.SIMPLE, false)
+    val requestURL =
+      uri"$baseUrl/api/${serviceIdPathParam}/client/search"
+        .addParams(FormSerializable.serialize("q", `q`, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("cursor", cursor, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("limit", limit, FormStyleFormat.FORM, true)*)
+        .addParams(FormSerializable.serialize("includeTotalCount", includeTotalCount, FormStyleFormat.FORM, true)*)
+
+    basicRequest
+      .method(Method.GET, requestURL)
+      .contentType("application/json")
+      .auth(authConfig)
+      .response(asJson[ClientSearchResponse])
 
   /**
    * Refresh the client secret of a client. A new value of the client secret will be generated by the Authlete server.  If you want to specify a new value, use `/api/client/secret/update` API. 

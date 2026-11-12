@@ -1,6 +1,6 @@
 /**
  * Authlete API
- * Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the  platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to  build powerful OAuth 2.0 and OpenID Connect servers.  At a high level, the Authlete API is grouped into two categories:  - **Management APIs**: Enable you to manage services and clients. - **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers.  ## 🌐 API Servers  Authlete is a global service with clusters available in multiple regions across the world:  - 🇺🇸 **US**: `https://us.authlete.com` - 🇯🇵 **Japan**: `https://jp.authlete.com` - 🇪🇺 **Europe**: `https://eu.authlete.com` - 🇧🇷 **Brazil**: `https://br.authlete.com`  Our customers can host their data in the region that best meets their requirements.  ## 🔑 Authentication  All API endpoints are secured using **Bearer token authentication**. You must include an access token in every request:  ``` Authorization: Bearer YOUR_ACCESS_TOKEN ```  ### Getting Your Access Token  Authlete supports two types of access tokens:  **Service Access Token** - Scoped to a single service (authorization server instance)  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to your service → **Settings** → **Access Tokens** 3. Click **Create Token** and select permissions (e.g., `service.read`, `client.write`) 4. Copy the generated token  **Organization Token** - Scoped to your entire organization  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to **Organization Settings** → **Access Tokens** 3. Click **Create Token** and select org-level permissions 4. Copy the generated token  > ⚠️ **Important Note**: Tokens inherit the permissions of the account that creates them. Service tokens can only  > access their specific service, while organization tokens can access all services within your org.  ### Token Security Best Practices  - **Never commit tokens to version control** - Store in environment variables or secure secret managers - **Rotate regularly** - Generate new tokens periodically and revoke old ones - **Scope appropriately** - Request only the permissions your application needs - **Revoke unused tokens** - Delete tokens you're no longer using from the console  ### Quick Test  Verify your token works with a simple API call:  ```bash curl -X GET https://us.authlete.com/api/service/get/list \\   -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" ```  ## 🎓 Tutorials  If you're new to Authlete or want to see sample implementations, these resources will help you get started:  - [Getting Started with Authlete](https://www.authlete.com/developers/getting_started/) - [From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)  ## 🛠 Contact Us  If you have any questions or need assistance, our team is here to help:  - [Contact Page](https://www.authlete.com/contact/) 
+ * Welcome to the **Authlete API documentation**. Authlete is an **API-first service** where every aspect of the platform is configurable via API. This documentation will help you authenticate and integrate with Authlete to build powerful OAuth 2.0 and OpenID Connect servers.  At a high level, the Authlete API is grouped into two categories:  - **Management APIs**: Enable you to manage services and clients. - **Runtime APIs**: Allow you to build your own Authorization Servers or Verifiable Credential (VC) issuers.  ## 🌐 API Servers  Authlete is a global service with clusters available in multiple regions across the world:  - 🇺🇸 **US**: `https://us.authlete.com` - 🇯🇵 **Japan**: `https://jp.authlete.com` - 🇪🇺 **Europe**: `https://eu.authlete.com` - 🇧🇷 **Brazil**: `https://br.authlete.com`  Our customers can host their data in the region that best meets their requirements.  ## 🔑 Authentication  All API endpoints are secured using **Bearer token authentication**. You must include an access token in every request:  ``` Authorization: Bearer YOUR_ACCESS_TOKEN ```  ### Getting Your Access Token  Authlete supports two types of access tokens:  **Service Access Token** - Scoped to a single service (authorization server instance)  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to your service → **Settings** → **Access Tokens** 3. Click **Create Token** and select permissions (e.g., `service.read`, `client.write`) 4. Copy the generated token  **Organization Token** - Scoped to your entire organization  1. Log in to [Authlete Console](https://console.authlete.com) 2. Navigate to **Organization Settings** → **Access Tokens** 3. Click **Create Token** and select org-level permissions 4. Copy the generated token  > ⚠️ **Important Note**: Tokens inherit the permissions of the account that creates them. Service tokens can only access their specific service, while organization tokens can access all services within your org.  ### Token Security Best Practices  - **Never commit tokens to version control** - Store in environment variables or secure secret managers - **Rotate regularly** - Generate new tokens periodically and revoke old ones - **Scope appropriately** - Request only the permissions your application needs - **Revoke unused tokens** - Delete tokens you're no longer using from the console  ### Quick Test  Verify your token works with a simple API call:  ```bash curl -X GET https://us.authlete.com/api/service/get/list \\   -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" ```  ## 🎓 Tutorials  If you're new to Authlete or want to see sample implementations, these resources will help you get started:  - [Getting Started with Authlete](https://www.authlete.com/developers/getting_started/) - [From Sign-Up to the First API Request](https://www.authlete.com/developers/tutorial/signup/)  ## 🛠 Contact Us  If you have any questions or need assistance, our team is here to help:  - [Contact Page](https://www.authlete.com/contact/) 
  *
  * The version of the OpenAPI document: 3.0.16
  * 
@@ -39,26 +39,30 @@ case class Service(
   @named("description") description: Option[String] = scala.None,
   /* The service ID used in Authlete API calls. The value of this property is assigned by Authlete. */
   @named("apiKey") apiKey: Option[Long] = scala.None,
-  /* The API secret of this service. This value is assigned by Authlete and  is used for service authentication in API calls.  */
+  /* The API secret of this service. This value is assigned by Authlete and is used for service authentication in API calls.  */
   @named("apiSecret") apiSecret: Option[String] = scala.None,
-  /* The endpoint for batch token notifications. This endpoint is called when  multiple tokens are issued or revoked in a batch operation.  */
+  /* The endpoint for batch token notifications. This endpoint is called when multiple tokens are issued or revoked in a batch operation.  */
   @named("tokenBatchNotificationEndpoint") tokenBatchNotificationEndpoint: Option[URI] = scala.None,
-  /* The flag indicating whether the audience of client assertion JWTs must  match the issuer identifier of this service.  */
+  /* The flag indicating whether the audience of client assertion JWTs must match the issuer identifier of this service.  */
   @named("clientAssertionAudRestrictedToIssuer") clientAssertionAudRestrictedToIssuer: Option[Boolean] = scala.None,
-  /* The number of the organization that owns this service. This value is  assigned by Authlete.  */
+  /* The number of the organization that owns this service. This value is assigned by Authlete.  */
   @named("serviceOwnerNumber") serviceOwnerNumber: Option[Int] = scala.None,
   /* The maximum number of client applications that a developer can have.  */
   @named("clientsPerDeveloper") clientsPerDeveloper: Option[Int] = scala.None,
-  /* The endpoint for developer authentication callbacks. This is used when  developers log into the developer portal.  */
+  /* The endpoint for developer authentication callbacks. This is used when developers log into the developer portal.  */
   @named("developerAuthenticationCallbackEndpoint") developerAuthenticationCallbackEndpoint: Option[URI] = scala.None,
-  /* The API key for basic authentication at the developer authentication  callback endpoint.  */
+  /* The API key for basic authentication at the developer authentication callback endpoint.  */
   @named("developerAuthenticationCallbackApiKey") developerAuthenticationCallbackApiKey: Option[String] = scala.None,
-  /* The API secret for basic authentication at the developer authentication  callback endpoint.  */
+  /* The API secret for basic authentication at the developer authentication callback endpoint.  */
   @named("developerAuthenticationCallbackApiSecret") developerAuthenticationCallbackApiSecret: Option[String] = scala.None,
-  /* Social login services (SNS) that this service supports for end-user  authentication.  */
+  /* Social login services (SNS) that this service supports for end-user authentication.  */
   @named("supportedSnses") supportedSnses: Option[Seq[ServiceEnums.SupportedSnses]] = scala.None,
-  /* The credentials for social login services (SNS) that are used for  end-user authentication.  */
+  /* The credentials for social login services (SNS) that are used for end-user authentication.  */
   @named("snsCredentials") snsCredentials: Option[Seq[SnsCredentials]] = scala.None,
+  /* Social login services (SNS) that this service supports for developer authentication.  */
+  @named("supportedDeveloperSnses") supportedDeveloperSnses: Option[Seq[ServiceEnums.SupportedDeveloperSnses]] = scala.None,
+  /* The credentials for social login services (SNS) that are used for developer authentication.  */
+  @named("developerSnsCredentials") developerSnsCredentials: Option[Seq[SnsCredentials]] = scala.None,
   /* Deprecated. Always `true`. */
   @named("clientIdAliasEnabled") clientIdAliasEnabled: Option[Boolean] = scala.None,
   /* The `metadata` of the service. The content of the returned array depends on contexts. The predefined service metadata is listed in the following table.    | Key | Description |   | --- | --- |   | `clientCount` | The number of client applications which belong to this service.  |  */
@@ -89,7 +93,7 @@ case class Service(
   @named("errorUriOmitted") errorUriOmitted: Option[Boolean] = scala.None,
   /* The authorization endpoint of the service.  A URL that starts with `https://` and has no fragment component. For example, `https://example.com/auth/authorization`.  The value of this property is used as `authorization_endpoint` property in the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("authorizationEndpoint") authorizationEndpoint: Option[URI] = scala.None,
-  /* The flag to indicate whether the direct authorization endpoint is enabled or not.  The path of the endpoint is `/api/auth/authorization/direct/service-api-key`.  */
+  /* Deprecated. The direct authorization endpoint was removed in Authlete 3.0.15, so this flag has no effect and is always returned as `false`.  */
   @named("directAuthorizationEndpointEnabled") directAuthorizationEndpointEnabled: Option[Boolean] = scala.None,
   /* UI locales that the service supports.  Each element is a language tag defined in [RFC 5646](https://tools.ietf.org/html/rfc5646). For example, `en-US` and `ja-JP`.  The value of this property is used as `ui_locales_supported` property in the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("supportedUiLocales") supportedUiLocales: Option[Seq[String]] = scala.None,
@@ -105,7 +109,7 @@ case class Service(
   @named("authorizationCodeDuration") authorizationCodeDuration: Option[Long] = scala.None,
   /* The [token endpoint](https://tools.ietf.org/html/rfc6749#section-3.2) of the service.  A URL that starts with `https://` and has not fragment component. For example, `https://example.com/auth/token`.  The value of this property is used as `token_endpoint` property in the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("tokenEndpoint") tokenEndpoint: Option[URI] = scala.None,
-  /* The flag to indicate whether the direct token endpoint is enabled or not. The path of the endpoint is `/api/auth/token/direct/service-api-key`.  */
+  /* Deprecated. The direct token endpoint was removed in Authlete 3.0.15, so this flag has no effect and is always returned as `false`.  */
   @named("directTokenEndpointEnabled") directTokenEndpointEnabled: Option[Boolean] = scala.None,
   /* Client authentication methods supported by the token endpoint of the service.  The value of this property is used as `token_endpoint_auth_methods_supports` property in the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("supportedTokenAuthMethods") supportedTokenAuthMethods: Option[Seq[ClientAuthMethod]] = scala.None,
@@ -113,13 +117,13 @@ case class Service(
   @named("missingClientIdAllowed") missingClientIdAllowed: Option[Boolean] = scala.None,
   /* The [revocation endpoint](https://tools.ietf.org/html/rfc7009) of the service.  A URL that starts with `https://`. For example, `https://example.com/auth/revocation`.  */
   @named("revocationEndpoint") revocationEndpoint: Option[URI] = scala.None,
-  /* The flag to indicate whether the direct revocation endpoint is enabled or not. The URL of the endpoint is `/api/auth/revocation/direct/service-api-key`.  */
+  /* Deprecated. The direct revocation endpoint was removed in Authlete 3.0.15, so this flag has no effect and is always returned as `false`.  */
   @named("directRevocationEndpointEnabled") directRevocationEndpointEnabled: Option[Boolean] = scala.None,
   /* Client authentication methods supported at the revocation endpoint.  */
   @named("supportedRevocationAuthMethods") supportedRevocationAuthMethods: Option[Seq[ClientAuthMethod]] = scala.None,
   /* The URI of the introspection endpoint. */
   @named("introspectionEndpoint") introspectionEndpoint: Option[URI] = scala.None,
-  /* The flag to indicate whether the direct userinfo endpoint is enabled or not. The path of the endpoint is `/api/auth/userinfo/direct/{serviceApiKey}`.  */
+  /* Deprecated. The direct introspection endpoint was removed in Authlete 3.0.15, so this flag has no effect and is always returned as `false`.  */
   @named("directIntrospectionEndpointEnabled") directIntrospectionEndpointEnabled: Option[Boolean] = scala.None,
   /* Client authentication methods supported at the introspection endpoint.  */
   @named("supportedIntrospectionAuthMethods") supportedIntrospectionAuthMethods: Option[Seq[ClientAuthMethod]] = scala.None,
@@ -176,7 +180,7 @@ case class Service(
   @named("claimShortcutRestrictive") claimShortcutRestrictive: Option[Boolean] = scala.None,
   /* The URL of the service's [JSON Web Key Set](https://tools.ietf.org/html/rfc7517) document. For example, `http://example.com/auth/jwks`.  Client applications accesses this URL (1) to get the public key of the service to validate the signature of an ID token issued by the service and (2) to get the public key of the service to encrypt an request object of the client application. See [OpenID Connect Core 1.0, 10. Signatures and Encryption](https://openid.net/specs/openid-connect-core-1_0.html#SigEnc) for details.  The value of this property is used as `jwks_uri` property in the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("jwksUri") jwksUri: Option[URI] = scala.None,
-  /* 'The flag to indicate whether the direct jwks endpoint is enabled or not. The path of the endpoint is `/api/service/jwks/get/direct/service-api-key`. '  */
+  /* Deprecated. The direct JWKS endpoint was removed in Authlete 3.0.15, so this flag has no effect and is always returned as `false`.  */
   @named("directJwksEndpointEnabled") directJwksEndpointEnabled: Option[Boolean] = scala.None,
   /* The content of the service's [JSON Web Key Set](https://tools.ietf.org/html/rfc7517) document.  If this property is not `null` in a `/service/create` request or a `/service/update` request, Authlete hosts the content in the database. This property must not be `null` and must contain pairs of public/private keys if the service wants to support asymmetric signatures for ID tokens and asymmetric encryption for request objects. See [OpenID Connect Core 1.0, 10. Signatures and Encryption](https://openid.net/specs/openid-connect-core-1_0.html#SigEnc) for details.  */
   @named("jwks") jwks: Option[String] = scala.None,
@@ -188,7 +192,7 @@ case class Service(
   @named("authorizationSignatureKeyId") authorizationSignatureKeyId: Option[String] = scala.None,
   /* The [user info endpoint](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo) of the service. A URL that starts with `https://`. For example, `https://example.com/auth/userinfo`.  The value of this property is used as `userinfo_endpoint` property in the [OpenID Provider Metadata](http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("userInfoEndpoint") userInfoEndpoint: Option[URI] = scala.None,
-  /* The flag to indicate whether the direct userinfo endpoint is enabled or not. The path of the endpoint is `/api/auth/userinfo/direct/service-api-key`.  */
+  /* Deprecated. The direct userinfo endpoint was removed in Authlete 3.0.15, so this flag has no effect and is always returned as `false`.  */
   @named("directUserInfoEndpointEnabled") directUserInfoEndpointEnabled: Option[Boolean] = scala.None,
   /* The boolean flag which indicates whether the [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591) is supported.  */
   @named("dynamicRegistrationSupported") dynamicRegistrationSupported: Option[Boolean] = scala.None,
@@ -268,6 +272,8 @@ case class Service(
   @named("dcrScopeUsedAsRequestable") dcrScopeUsedAsRequestable: Option[Boolean] = scala.None,
   /* The endpoint for clients ending the sessions.  A URL that starts with `https://` and has no fragment component. For example, `https://example.com/auth/endSession`.  The value of this property is used as `end_session_endpoint` property in the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata).  */
   @named("endSessionEndpoint") endSessionEndpoint: Option[URI] = scala.None,
+  /* The URL of the challenge endpoint, which is defined in OAuth 2.0 Attestation-Based Client Authentication.  */
+  @named("challengeEndpoint") challengeEndpoint: Option[URI] = scala.None,
   /* The flag indicating whether the port number component of redirection URIs can be variable when the host component indicates loopback.  */
   @named("loopbackRedirectionUriVariable") loopbackRedirectionUriVariable: Option[Boolean] = scala.None,
   /* The flag indicating whether Authlete checks whether the `aud` claim of request objects matches the issuer identifier of this service.  */
@@ -331,6 +337,10 @@ case class Service(
   @named("trustAnchors") trustAnchors: Option[Seq[TrustAnchor]] = scala.None,
   /* The flag indicating whether the openid scope should be dropped from scopes list assigned to access token issued when a refresh token grant is used.  */
   @named("openidDroppedOnRefreshWithoutOfflineAccess") openidDroppedOnRefreshWithoutOfflineAccess: Option[Boolean] = scala.None,
+  /* The flag indicating whether to refrain from issuing an ID token when the `openid` scope has been removed from the scopes to be granted by the `scopes` request parameter of the `/auth/authorization/issue` API.  Flows whose `response_type` contains `id_token`, and flows that requested Native SSO, are not affected, because both require an ID token.  */
+  @named("idTokenDroppedOnIssueWithoutOpenid") idTokenDroppedOnIssueWithoutOpenid: Option[Boolean] = scala.None,
+  /* The flag indicating whether the `/auth/authorization`, `/auth/token/get/list` and `/client/authorization/get/list` APIs return full representations of the service and its clients.  */
+  @named("returnFullPayload") returnFullPayload: Option[Boolean] = scala.None,
   /* Supported document check methods. This property corresponds to the `documents_check_methods_supported` server metadata which was added by the fourth implementer's draft of OpenID Connect for Identity Assurance 1.0.  */
   @named("supportedDocumentsCheckMethods") supportedDocumentsCheckMethods: Option[Seq[String]] = scala.None,
   /* The flag indicating whether this service signs responses from the resource server.  */
@@ -409,7 +419,9 @@ case class Service(
   /* The flag indicating whether this service supports OpenID Connect Back-Channel Logout 1.0.  */
   @named("backchannelLogoutSupported") backchannelLogoutSupported: Option[Boolean] = scala.None,
   /* The flag indicating whether this service includes a `sid` (session ID) claim in ID tokens, supporting per-session backchannel logout.  */
-  @named("backchannelLogoutSessionSupported") backchannelLogoutSessionSupported: Option[Boolean] = scala.None
+  @named("backchannelLogoutSessionSupported") backchannelLogoutSessionSupported: Option[Boolean] = scala.None,
+  /* The HAIP version to comply with. Valid values for this property are as follows: `\"1.0\"`. If this property is set, requests to this service undergo additional validation based on the specified version of the [HAIP](https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-1_0.html) specification.  */
+  @named("haipVersion") haipVersion: Option[String] = scala.None
 )
 
 object ServiceEnums:
@@ -417,6 +429,12 @@ object ServiceEnums:
     case `FACEBOOK`
 
   object SupportedSnses:
+    import com.github.plokhotnyuk.jsoniter_scala.macros.*
+    import com.github.plokhotnyuk.jsoniter_scala.core.*
+  enum SupportedDeveloperSnses:
+    case `FACEBOOK`
+
+  object SupportedDeveloperSnses:
     import com.github.plokhotnyuk.jsoniter_scala.macros.*
     import com.github.plokhotnyuk.jsoniter_scala.core.*
 end ServiceEnums
