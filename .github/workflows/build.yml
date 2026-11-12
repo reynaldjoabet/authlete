@@ -57,7 +57,7 @@ jobs:
       matrix:
         java: ['17','21', '25']
 
-        distribution: [temurin, corretto]
+        distribution: [temurin, corretto,zulu]
 
     steps:
       - name: Checkout repository
