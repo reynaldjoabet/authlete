@@ -37,8 +37,9 @@ val generatedScalacOptions = Seq(
 
 lazy val root = (project in file("."))
   .settings(
-    name                 := "authlete",
-    libraryDependencies ++= Seq(
+    name                    := "authlete",
+    dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang"),
+    libraryDependencies    ++= Seq(
       sttpCore,
       sttpJsoniter,
       http4sBackend,
