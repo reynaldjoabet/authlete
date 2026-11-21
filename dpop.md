@@ -1,30 +1,30 @@
 DPoP prevents stolen token abuse. Instead of a simple bearer token (anyone who has it can use it), DPoP binds tokens to a cryptographic key that only the legitimate client possesses.
 
 ```sh
-┌──────────────────────────────────────────────────────────────────────────┐
-│                           CLIENT SIDE                                    │
-├──────────────────────────────────────────────────────────────────────────┤
-│  1. Client generates a key pair (RSA or ECDSA)                           │
-│     ┌─────────────────────┐                                              │
-│     │ Private Key (secret)│  ← Client keeps this                         │
-│     │ Public Key          │  ← Sent to IdentityServer                    │
-│     └─────────────────────┘                                              │
-│                                                                          │
-│  2. For EVERY request, client creates a DPoP Proof JWT:                  │
-│     {                                                                    │
-│       "typ": "dpop+jwt",                                                 │
-│       "alg": "PS256",                                                    │
-│       "jwk": { <public key> }    ← Public key in header                  │
-│     }                                                                    │
-│     {                                                                    │
-│       "jti": "unique-id",        ← Prevents replay                       │
-│       "htm": "POST",             ← HTTP method                           │
-│       "htu": "https://ids/token",← Target URL                            │
-│       "iat": 1234567890,         ← Issued at                             │
-│       "ath": "hash-of-token"     ← Hash of access token (when calling API)
-│     }                                                                    │
-│     └── Signed with Private Key                                          │
-└──────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────┐
+│                           CLIENT SIDE                                      │
+├────────────────────────────────────────────────────────────────────────────┤
+│  1. Client generates a key pair (RSA or ECDSA)                             │
+│     ┌─────────────────────┐                                                │
+│     │ Private Key (secret)│  ← Client keeps this                           │
+│     │ Public Key          │  ← Sent to IdentityServer                      │
+│     └─────────────────────┘                                                │
+│                                                                            │
+│  2. For EVERY request, client creates a DPoP Proof JWT:                    │
+│     {                                                                      │
+│       "typ": "dpop+jwt",                                                   │
+│       "alg": "PS256",                                                      │
+│       "jwk": { <public key> }    ← Public key in header                    │
+│     }                                                                      │
+│     {                                                                      │
+│       "jti": "unique-id",        ← Prevents replay                         │
+│       "htm": "POST",             ← HTTP method                             │
+│       "htu": "https://ids/token",← Target URL                              │
+│       "iat": 1234567890,         ← Issued at                               │
+│       "ath": "hash-of-token"     ← Hash of access token (when calling API) │
+│     }                                                                      │
+│     └── Signed with Private Key                                            │
+└────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                    TOKEN REQUEST TO IDENTITYSERVER                       │

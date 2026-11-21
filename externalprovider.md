@@ -28,11 +28,11 @@
            │
            │ 4. POST/Redirect back with token ⭐
            ▼
-┌─────────────────────────────────┐
-│ /sso/external-login-callback    │ ⬅️ EXTERNAL PROVIDER HITS THIS
-│ - Validates authentication      │
-│ - Maps external → internal user │
-│ - Creates session               │
+┌───────────────────────────────────┐
+│ /sso/external-login-callback      │ ⬅️ EXTERNAL PROVIDER HITS THIS
+│ - Validates authentication        │
+│ - Maps external → internal user   │
+│ - Creates session                 │
 └──────────┬────────────────────────┘
            │
            │ 5. Redirect to app

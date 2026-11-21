@@ -306,11 +306,11 @@ intermediary between client applications and Authlete server as illustrated
 below.
 
 ```
-+--------+          +-------------------+          +----------+
-|        |          |                   |          |          |
++--------+          +--------------------+          +----------+
+|        |          |                    |          |          |
 | Client | <------> | scala-oauth-server | <------> | Authlete |
-|        |          |                   |          |          |
-+--------+          +-------------------+          +----------+
+|        |          |                    |          |          |
++--------+          +--------------------+          +----------+
 ```
 
 However, because Authlete focuses on **authorization** and does NOT do
